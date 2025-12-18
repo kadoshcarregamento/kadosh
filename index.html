@@ -1,5 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
+<script>
+  const APP_URL = "https://script.google.com/macros/s/AKfycbys41fQSVd6ArWG4B0l4AZ-j09Dyn4aqR3PaVTxTRfF_MCN3MHSIkm5INfQGpWNgSGa/exec";
+
+  const isIOSStandalone = window.navigator.standalone === true;
+  const isAndroidStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+  if (isIOSStandalone || isAndroidStandalone) {
+    window.location.replace(APP_URL);
+  }
+</script>
+  
 <head>
   <meta charset="UTF-8">
 
