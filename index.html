@@ -660,7 +660,7 @@ body::before {
 // ════════════════════════════════════════════════════════════
 //  CONFIG — cole a URL do seu GAS aqui
 // ════════════════════════════════════════════════════════════
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbx2HDRw-PNOSWaLceETccGNo_d09PVe7XIB7R6lnJrNcCUyCBzMNZlHMs_Vy_cLceTpgQ/exec';
+var GAS_URL = 'COLE_AQUI_A_URL_DO_SEU_GAS';
 
 // ─── ESTADO ──────────────────────────────────────────────────
 var App = { usuario:null, sessaoId:null, vagaId:null, kwhInicial:null, inicio:null, carregando:false };
@@ -870,12 +870,23 @@ function iniciarLeituraFrames(){
   var video=document.getElementById('qr-video'),canvas=document.getElementById('qr-canvas'),ctx=canvas.getContext('2d');
   _qrInterval=setInterval(function(){
     if(_qrProcessing||!video||video.readyState!==video.HAVE_ENOUGH_DATA)return;
-    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-    ctx.drawImage(video,0,0,canvas.width,canvas.height);
-    var d=ctx.getImageData(0,0,canvas.width,canvas.height),code=null;
-    if(typeof jsQR!=='undefined')code=jsQR(d.data,d.width,d.height,{inversionAttempts:'dontInvert'});
+    var vw=video.videoWidth, vh=video.videoHeight;
+    if(!vw||!vh)return;
+
+    // Tenta em resolução nativa e em 50% — aumenta taxa de detecção
+    var scales=[1, 0.5];
+    var code=null;
+    for(var s=0;s<scales.length&&!code;s++){
+      var w=Math.round(vw*scales[s]), h=Math.round(vh*scales[s]);
+      canvas.width=w; canvas.height=h;
+      ctx.drawImage(video,0,0,w,h);
+      var d=ctx.getImageData(0,0,w,h);
+      if(typeof jsQR!=='undefined'){
+        code=jsQR(d.data,d.width,d.height,{inversionAttempts:'attemptBoth'});
+      }
+    }
     if(code&&code.data){_qrProcessing=true;processarQRCode(code.data.trim());}
-  },300);
+  },200);
 }
 function processarQRCode(texto){
   var vagaId=texto.toUpperCase();
