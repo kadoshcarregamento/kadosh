@@ -691,6 +691,11 @@ function api(action, params) {
       + '&payload=' + encodeURIComponent(payload)
       + '&callback=' + cbName;
 
+    if (GAS_URL.indexOf('COLE_AQUI') >= 0) {
+      clearTimeout(timeout);
+      reject(new Error('URL do GAS não configurada. Edite o arquivo e substitua GAS_URL.'));
+      return;
+    }
     var script = document.createElement('script');
     script.id  = cbName;
     script.src = url;
@@ -698,7 +703,7 @@ function api(action, params) {
       clearTimeout(timeout);
       delete window[cbName];
       script.remove();
-      reject(new Error('Falha ao contactar o servidor'));
+      reject(new Error('Falha ao contactar o servidor. Verifique a URL do GAS.'));
     };
     document.head.appendChild(script);
   });
@@ -709,6 +714,12 @@ window.addEventListener('load', function() {
   mostrarTela('tela-login');
   carregarCredenciais();
   mostrarHintPWA();
+  // Avisa se URL do GAS não foi configurada
+  if (GAS_URL.indexOf('COLE_AQUI') >= 0) {
+    var el = document.getElementById('login-erro');
+    el.textContent = '⚠️ Configure a URL do GAS no arquivo (variável GAS_URL).';
+    el.classList.remove('oculto');
+  }
 });
 
 // ─── CREDENCIAIS ──────────────────────────────────────────────
