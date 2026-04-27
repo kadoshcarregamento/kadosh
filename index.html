@@ -11,7 +11,6 @@
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png">
   <link rel="icon" href="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════════════════
    TOKENS & RESET
@@ -659,7 +658,7 @@ body::before {
   </div>
 </div>
 
-<>
+<script>
 // ════════════════════════════════════════════════════════════
 //  CONFIG — cole a URL do seu GAS aqui
 // ════════════════════════════════════════════════════════════
@@ -695,16 +694,16 @@ function api(action, params) {
       + '&payload=' + encodeURIComponent(payload)
       + '&callback=' + cbName;
 
-    var  = document.createElement('');
-    .id  = cbName;
-    .src = url;
-    .onerror = function() {
+    var script = document.createElement('script');
+    script.id  = cbName;
+    script.src = url;
+    script.onerror = function() {
       clearTimeout(timeout);
       delete window[cbName];
-      .remove();
+      script.remove();
       reject(new Error('Falha ao contactar o servidor'));
     };
-    document.head.appendChild();
+    document.head.appendChild(script);
   });
 }
 
@@ -1036,6 +1035,7 @@ document.addEventListener('keydown',function(e){
   if(a.id==='tela-login')efetuarLogin();
   if(a.id==='tela-senha')mudarSenha();
 });
-</>
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js" async></script>
 </body>
 </html>
