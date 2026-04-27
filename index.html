@@ -660,18 +660,49 @@ body::before {
 // ════════════════════════════════════════════════════════════
 //  CONFIG — cole a URL do seu GAS aqui
 // ════════════════════════════════════════════════════════════
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbx2HDRw-PNOSWaLceETccGNo_d09PVe7XIB7R6lnJrNcCUyCBzMNZlHMs_Vy_cLceTpgQ/exec';
+var GAS_URL = 'COLE_AQUI_A_URL_DO_SEU_GAS';
 
 // ─── ESTADO ──────────────────────────────────────────────────
 var App = { usuario:null, sessaoId:null, vagaId:null, kwhInicial:null, inicio:null, carregando:false };
 var LS_KEY = 'ev_charge_creds';
 
-// ─── API ─────────────────────────────────────────────────────
+// ─── API via JSONP (contorna CORS do GAS) ────────────────────
+var _cbCounter = 0;
 function api(action, params) {
-  return fetch(GAS_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: action, params: params || {} })
-  }).then(function(r) { return r.json(); });
+  return new Promise(function(resolve, reject) {
+    var cbName = '_gasCb' + (++_cbCounter);
+    var timeout = setTimeout(function() {
+      delete window[cbName];
+      var s = document.getElementById(cbName);
+      if (s) s.remove();
+      reject(new Error('Timeout — verifique a URL do GAS'));
+    }, 30000);
+
+    window[cbName] = function(data) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      var s = document.getElementById(cbName);
+      if (s) s.remove();
+      resolve(data);
+    };
+
+    var payload = JSON.stringify(params || {});
+    var url = GAS_URL
+      + '?action=' + encodeURIComponent(action)
+      + '&payload=' + encodeURIComponent(payload)
+      + '&callback=' + cbName;
+
+    var script = document.createElement('script');
+    script.id  = cbName;
+    script.src = url;
+    script.onerror = function() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      script.remove();
+      reject(new Error('Falha ao contactar o servidor'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
@@ -964,3 +995,4 @@ document.addEventListener('keydown',function(e){
 </script>
 </body>
 </html>
+
