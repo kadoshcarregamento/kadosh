@@ -850,7 +850,7 @@ function iniciarCameraQR() {
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
     document.getElementById('qr-status').textContent='Câmera não suportada neste navegador.'; return;
   }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1920}, height:{ideal:1080}}})
     .then(function(stream){
       _qrStream=stream;
       var v=document.getElementById('qr-video'); v.srcObject=stream; v.play();
@@ -874,6 +874,7 @@ function iniciarLeituraFrames(){
   var ctx      = canvas.getContext('2d');
   var dbgCanvas= document.getElementById('qr-debug');
   var dbgCtx   = dbgCanvas.getContext('2d');
+  var ctx2     = document.createElement('canvas').getContext('2d');
   var frameCount = 0;
 
   _qrInterval = setInterval(function(){
@@ -883,12 +884,15 @@ function iniciarLeituraFrames(){
     frameCount++;
 
     // Resolução de trabalho: máx 600px no lado maior
-    var scale = Math.min(1, 600 / Math.max(vw, vh));
+    var scale = Math.min(1, 1000 / Math.max(vw, vh));
     var w = Math.round(vw * scale);
     var h = Math.round(vh * scale);
 
     canvas.width = w; canvas.height = h;
     ctx.drawImage(video, 0, 0, w, h);
+    // Salva frame original antes de binarizar
+    ctx2.canvas.width = w; ctx2.canvas.height = h;
+    ctx2.drawImage(video, 0, 0, w, h);
     var imgData = ctx.getImageData(0, 0, w, h);
     var data = imgData.data;
 
@@ -912,6 +916,17 @@ function iniciarLeituraFrames(){
     var code = null;
     if (typeof jsQR !== 'undefined') {
       code = jsQR(imgData.data, w, h, { inversionAttempts: 'attemptBoth' });
+      
+      // Se não leu binarizado, tenta com frame original (cinza sem binarização)
+      if (!code) {
+        var rawData = ctx2.getImageData(0, 0, w, h);
+        var rd = rawData.data;
+        for (var p2 = 0; p2 < rd.length; p2 += 4) {
+          var g = rd[p2]*0.299 + rd[p2+1]*0.587 + rd[p2+2]*0.114;
+          rd[p2] = rd[p2+1] = rd[p2+2] = g;
+        }
+        code = jsQR(rd, w, h, { inversionAttempts: 'attemptBoth' });
+      }
     }
 
     if (code && code.data) {
