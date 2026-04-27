@@ -571,9 +571,6 @@ body::before {
       </div>
     </div>
     <canvas id="qr-canvas" style="display:none"></canvas>
-    <!-- Debug: mostra o que jsQR está processando -->
-    <canvas id="qr-debug" style="width:100%;max-width:320px;border-radius:12px;border:1px solid rgba(59,205,192,.3);margin-top:8px"></canvas>
-    <div id="qr-frames" style="font-size:12px;color:#666;text-align:center;margin-top:4px"></div>
     <div id="qr-status" class="qr-status">Iniciando câmera...</div>
     <div id="qr-erro" class="msg-erro oculto"></div>
   </div>
@@ -841,16 +838,9 @@ function abrirScanner() {
   if(!App.usuario)return;
   mostrarTela('tela-qr');
   document.getElementById('qr-erro').classList.add('oculto');
-  document.getElementById('qr-status').textContent='';
-
-  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  if (isIOS) {
-    // iOS: usa captura nativa de foto — lê QR code com qualidade total
-    iniciarCapturaIOS();
-  } else {
-    document.getElementById('qr-status').textContent='Iniciando câmera...';
-    iniciarCameraQR();
-  }
+  document.getElementById('qr-status').textContent='Iniciando câmera...';
+  // Câmera ao vivo — funciona corretamente no PWA instalado
+  iniciarCameraQR();
 }
 
 function iniciarCapturaIOS() {
@@ -937,24 +927,24 @@ function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
 
 function iniciarCameraQR() {
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    document.getElementById('qr-status').textContent='Câmera não suportada neste navegador.'; return;
+    document.getElementById('qr-status').textContent='Câmera não suportada. Use o app instalado na tela inicial.'; return;
   }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1920}, height:{ideal:1080}}})
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}})
     .then(function(stream){
       _qrStream=stream;
       var v=document.getElementById('qr-video'); v.srcObject=stream; v.play();
       document.getElementById('qr-status').textContent='Aponte para o QR code da vaga';
-      // Usa BarcodeDetector nativo se disponível (iOS 17+, Android Chrome)
-      if (typeof BarcodeDetector !== 'undefined') {
-        document.getElementById('qr-status').textContent='Aponte para o QR code da vaga';
-        iniciarLeituraNativa();
-      } else {
-        iniciarLeituraFrames();
-      }
+      iniciarLeituraFrames();
     })
     .catch(function(err){
       console.error('Cam:',err);
-      document.getElementById('qr-status').textContent='Câmera não autorizada: '+err.message;
+      if (err.name === 'NotAllowedError') {
+        document.getElementById('qr-status').textContent='';
+        document.getElementById('qr-erro').textContent='Permissão de câmera negada. Vá em Ajustes → Safari → Câmera e permita o acesso.';
+        document.getElementById('qr-erro').classList.remove('oculto');
+      } else {
+        document.getElementById('qr-status').textContent='Câmera não disponível: '+err.message;
+      }
     });
 }
 
@@ -990,63 +980,46 @@ function pararCameraQR(){
   _qrProcessing=false;
 }
 function iniciarLeituraFrames(){
-  var video    = document.getElementById('qr-video');
-  var canvas   = document.getElementById('qr-canvas');
-  var ctx      = canvas.getContext('2d');
-  var dbgCanvas= document.getElementById('qr-debug');
-  var dbgCtx   = dbgCanvas.getContext('2d');
-  var ctx2     = document.createElement('canvas').getContext('2d');
-  var frameCount = 0;
+  var video  = document.getElementById('qr-video');
+  var canvas = document.getElementById('qr-canvas');
+  var ctx    = canvas.getContext('2d');
 
   _qrInterval = setInterval(function(){
     if (_qrProcessing || !video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
     var vw = video.videoWidth, vh = video.videoHeight;
     if (!vw || !vh) return;
-    frameCount++;
 
-    // Resolução de trabalho: máx 600px no lado maior
-    var scale = Math.min(1, 1000 / Math.max(vw, vh));
+    var scale = Math.min(1, 800 / Math.max(vw, vh));
     var w = Math.round(vw * scale);
     var h = Math.round(vh * scale);
-
     canvas.width = w; canvas.height = h;
     ctx.drawImage(video, 0, 0, w, h);
-    // Salva frame original antes de binarizar
-    ctx2.canvas.width = w; ctx2.canvas.height = h;
-    ctx2.drawImage(video, 0, 0, w, h);
-    var imgData = ctx.getImageData(0, 0, w, h);
-    var data = imgData.data;
-
-    // Converte para escala de cinza com alto contraste
-    for (var p = 0; p < data.length; p += 4) {
-      var gray = data[p]*0.299 + data[p+1]*0.587 + data[p+2]*0.114;
-      var val  = gray < 140 ? 0 : 255;
-      data[p] = data[p+1] = data[p+2] = val;
-      data[p+3] = 255;
-    }
-    ctx.putImageData(imgData, 0, 0);
-
-    // Mostra no canvas de debug (o que jsQR está vendo)
-    dbgCanvas.width  = w;
-    dbgCanvas.height = h;
-    dbgCtx.drawImage(canvas, 0, 0);
-
-    document.getElementById('qr-frames').textContent =
-      'Frame ' + frameCount + ' — ' + vw + 'x' + vh + 'px → ' + w + 'x' + h + 'px processado';
 
     var code = null;
     if (typeof jsQR !== 'undefined') {
-      code = jsQR(imgData.data, w, h, { inversionAttempts: 'attemptBoth' });
-      
-      // Se não leu binarizado, tenta com frame original (cinza sem binarização)
+      // Tentativa 1: frame colorido original
+      var d1 = ctx.getImageData(0, 0, w, h);
+      code = jsQR(d1.data, w, h, { inversionAttempts: 'attemptBoth' });
+
+      // Tentativa 2: escala de cinza suave
       if (!code) {
-        var rawData = ctx2.getImageData(0, 0, w, h);
-        var rd = rawData.data;
-        for (var p2 = 0; p2 < rd.length; p2 += 4) {
-          var g = rd[p2]*0.299 + rd[p2+1]*0.587 + rd[p2+2]*0.114;
-          rd[p2] = rd[p2+1] = rd[p2+2] = g;
+        var d2 = ctx.getImageData(0, 0, w, h);
+        var px = d2.data;
+        for (var p = 0; p < px.length; p+=4) {
+          var g = Math.round(px[p]*.299 + px[p+1]*.587 + px[p+2]*.114);
+          px[p] = px[p+1] = px[p+2] = g;
         }
-        code = jsQR(rd, w, h, { inversionAttempts: 'attemptBoth' });
+        code = jsQR(px, w, h, { inversionAttempts: 'attemptBoth' });
+      }
+
+      // Tentativa 3: resolução 50%
+      if (!code) {
+        var w2=Math.round(w*.5), h2=Math.round(h*.5);
+        var c2=document.createElement('canvas');
+        c2.width=w2; c2.height=h2;
+        c2.getContext('2d').drawImage(canvas,0,0,w2,h2);
+        var d3=c2.getContext('2d').getImageData(0,0,w2,h2);
+        code = jsQR(d3.data, w2, h2, { inversionAttempts: 'attemptBoth' });
       }
     }
 
@@ -1054,124 +1027,6 @@ function iniciarLeituraFrames(){
       _qrProcessing = true;
       processarQRCode(code.data.trim());
     }
-  }, 300);
-}
-function processarQRCode(texto){
-  var vagaId=texto.toUpperCase();
-  if(!/^VAGA_\d{2}$/.test(vagaId)){
-    document.getElementById('qr-erro').textContent='QR inválido: "'+texto+'". Escaneie o código da vaga.';
-    document.getElementById('qr-erro').classList.remove('oculto');
-    document.getElementById('qr-status').textContent='Tente novamente';
-    setTimeout(function(){_qrProcessing=false;},2000); return;
-  }
-  pararCameraQR();
-  document.getElementById('qr-status').textContent='Vaga '+vagaId+' identificada!';
-  document.getElementById('qr-erro').classList.add('oculto');
-  overlayShow('Verificando vaga '+vagaId+'...');
-  api('verificarVaga',{vagaId:vagaId})
-    .then(function(res){
-      overlayHide();
-      if(res.erro){mostrarTela('tela-dash');alert('❌ '+res.erro);return;}
-      if(res.ocupada){mostrarTela('tela-dash');alert('🚫 '+res.mensagem);return;}
-      iniciarCarregamento(vagaId);
-    }).catch(function(err){overlayHide();mostrarTela('tela-dash');alert('Falha: '+(err?err.message:'tente novamente'));});
+  }, 200);
 }
 
-// ─── CONTROLE ─────────────────────────────────────────────────
-function iniciarCarregamento(vagaId){
-  if(App.carregando||!App.usuario)return;
-  App.carregando=true; mostrarTela('tela-dash');
-  overlayShow('Ligando disjuntor da '+vagaId+'...');
-  document.getElementById('btn-iniciar').disabled=true;
-  api('iniciarCarregamento',{usuarioId:String(App.usuario.id),email:String(App.usuario.email),apartamento:String(App.usuario.apartamento),vagaId:vagaId})
-    .then(function(res){
-      overlayHide(); App.carregando=false;
-      if(!res||res.erro){document.getElementById('btn-iniciar').disabled=false;alert('Erro: '+(res?res.erro:'Resposta vazia'));return;}
-      App.sessaoId=res.sessaoId; App.vagaId=res.vaga; App.kwhInicial=res.kwh; App.inicio=res.inicio;
-      estadoLigado({sessaoId:res.sessaoId,vaga:res.vaga,kwhInicial:res.kwh,inicio:res.inicio});
-      document.getElementById('resultado-card').classList.add('oculto');
-      if(res.sessaoAnteriorEmail)alert('ℹ️ Sessão anterior de '+res.sessaoAnteriorEmail+' encerrada.');
-      carregarHistorico();
-    }).catch(function(err){overlayHide();App.carregando=false;document.getElementById('btn-iniciar').disabled=false;alert('Falha: '+(err?err.message:'Erro'));});
-}
-function pararCarregamento(){
-  if(App.carregando||!App.usuario||!App.sessaoId||!App.vagaId)return;
-  App.carregando=true; overlayShow('Desligando e registrando...');
-  document.getElementById('btn-parar').disabled=true;
-  api('pararCarregamento',{usuarioId:String(App.usuario.id),email:String(App.usuario.email),nome:String(App.usuario.nome),sessaoId:String(App.sessaoId),vagaId:String(App.vagaId)})
-    .then(function(res){
-      overlayHide(); App.carregando=false;
-      if(!res||res.erro){document.getElementById('btn-parar').disabled=false;alert('Erro: '+(res?res.erro:'Resposta vazia'));return;}
-      App.sessaoId=App.vagaId=App.kwhInicial=App.inicio=null;
-      estadoDesligado(); mostrarResultado(res); carregarHistorico();
-    }).catch(function(err){overlayHide();App.carregando=false;document.getElementById('btn-parar').disabled=false;alert('Falha: '+(err?err.message:'Erro'));});
-}
-
-// ─── RESULTADO ────────────────────────────────────────────────
-function mostrarResultado(res){
-  document.getElementById('r-consumo').textContent=fmtBR(res.consumo)+' kWh';
-  document.getElementById('r-duracao').textContent=formatarDuracao(res.duracao);
-  document.getElementById('r-vaga').textContent=res.vaga||'–';
-  document.getElementById('r-kwh-ini').textContent=fmtBR(res.kwhInicial)+' kWh';
-  document.getElementById('r-kwh-fim').textContent=fmtBR(res.kwhFinal)+' kWh';
-  document.getElementById('r-inicio').textContent=res.inicio||'–';
-  document.getElementById('r-fim').textContent=res.fim||'–';
-  var card=document.getElementById('resultado-card'); card.classList.remove('oculto');
-  setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
-}
-function fecharResultado(){document.getElementById('resultado-card').classList.add('oculto');}
-
-// ─── HISTÓRICO ────────────────────────────────────────────────
-function carregarHistorico(){
-  if(!App.usuario)return;
-  api('obterHistoricoUsuario',{usuarioId:String(App.usuario.id)})
-    .then(function(lista){
-      var el=document.getElementById('hist-lista');
-      if(!lista||lista.length===0){el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>';return;}
-      el.innerHTML=lista.map(function(s){
-        var cls=s.status==='CONCLUIDO'?'ok':'prog';
-        var txt=s.status==='CONCLUIDO'?'Concluído':s.status==='ENCERRADO_AUTO'?'Auto-enc.':'Em andamento';
-        var consumo=(s.consumo!==''&&s.consumo!=null)?fmtBR(s.consumo)+' kWh':'–';
-        var data=s.inicio?String(s.inicio).slice(0,16):'–';
-        return '<div class="hist-item">'
-          +'<div><div class="hist-data">'+data+'</div><div class="hist-id">'+s.sessaoId+' · '+(s.vaga||'')+'</div></div>'
-          +'<div><div class="hist-kwh">'+consumo+'</div><div class="hist-dur">'+(s.duracao!==''?formatarDuracao(s.duracao):'')+'</div></div>'
-          +'<span class="hist-badge '+cls+'">'+txt+'</span></div>';
-      }).join('');
-    }).catch(function(){document.getElementById('hist-lista').innerHTML='<div class="hist-vazio">Não foi possível carregar.</div>';});
-}
-
-// ─── SENHA ────────────────────────────────────────────────────
-function mostrarTrocarSenha(){if(App.usuario)document.getElementById('s-email').value=App.usuario.email;mostrarTela('tela-senha');}
-function mudarSenha(){
-  var email=document.getElementById('s-email').value.trim();
-  var atual=document.getElementById('s-atual').value;
-  var nova=document.getElementById('s-nova').value;
-  var conf=document.getElementById('s-conf').value;
-  var msgEl=document.getElementById('s-msg');
-  msgEl.className='msg-erro'; msgEl.classList.remove('oculto');
-  if(!email||!atual||!nova||!conf){msgEl.textContent='Preencha todos os campos.';return;}
-  if(nova!==conf){msgEl.textContent='As senhas não coincidem.';return;}
-  if(nova.length<6){msgEl.textContent='Mínimo 6 caracteres.';return;}
-  msgEl.className=''; msgEl.textContent='Aguarde...';
-  api('alterarSenha',{email:email,senhaAtual:atual,novaSenha:nova})
-    .then(function(res){
-      if(res.erro){msgEl.className='msg-erro';msgEl.textContent=res.erro;}
-      else{
-        msgEl.className='msg-ok';msgEl.textContent='✅ Senha alterada!';
-        try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'null');if(r&&r.email===email){r.senha=nova;localStorage.setItem(LS_KEY,JSON.stringify(r));}}catch(e){}
-        setTimeout(function(){mostrarTela('tela-login');msgEl.classList.add('oculto');['s-email','s-atual','s-nova','s-conf'].forEach(function(id){document.getElementById(id).value='';});},2000);
-      }
-    }).catch(function(err){msgEl.className='msg-erro';msgEl.textContent='Erro: '+(err?err.message:'tente novamente');});
-}
-
-document.addEventListener('keydown',function(e){
-  if(e.key!=='Enter')return;
-  var a=document.querySelector('.tela.ativa'); if(!a)return;
-  if(a.id==='tela-login')efetuarLogin();
-  if(a.id==='tela-senha')mudarSenha();
-});
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js" async></script>
-</body>
-</html>
