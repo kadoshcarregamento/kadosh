@@ -843,86 +843,8 @@ function abrirScanner() {
   iniciarCameraQR();
 }
 
-function iniciarCapturaIOS() {
-  // Esconde viewfinder, mostra interface de captura
-  document.getElementById('qr-viewfinder-wrap').style.display = 'none';
-  document.getElementById('qr-debug').style.display = 'none';
-  document.getElementById('qr-frames').style.display = 'none';
 
-  var wrap = document.getElementById('qr-ios-wrap');
-  if (wrap) {
-    wrap.style.display = 'flex';
-  } else {
-    // Cria interface iOS dinamicamente
-    var el = document.createElement('div');
-    el.id = 'qr-ios-wrap';
-    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;max-width:340px;text-align:center';
-    el.innerHTML =
-      '<div style="font-size:64px">📷</div>' +
-      '<p style="font-size:16px;color:#888;line-height:1.6">Aponte a câmera para o QR code<br>da vaga e tire uma foto</p>' +
-      '<label style="width:100%;padding:18px;background:#3BCDC0;color:#0d0d0d;border-radius:14px;font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:.04em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 20px rgba(59,205,192,.35)">' +
-        '📷 Fotografar QR code' +
-        '<input type="file" accept="image/*" capture="environment" style="display:none" onchange="lerFotoIOS(this)">' +
-      '</label>';
-    // Insere no qr-scroll após o canvas
-    var scroll = document.querySelector('.qr-scroll');
-    var canvas = document.getElementById('qr-canvas');
-    canvas.parentNode.insertBefore(el, canvas.nextSibling);
-  }
-}
 
-function lerFotoIOS(input) {
-  if (!input.files || !input.files[0]) return;
-  var statusEl = document.getElementById('qr-status');
-  statusEl.textContent = 'Lendo QR code...';
-  document.getElementById('qr-erro').classList.add('oculto');
-
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var img = new Image();
-    img.onload = function() {
-      // Tenta múltiplas escalas
-      var scales = [1.0, 0.75, 0.5, 0.35];
-      var code = null;
-      var canvas = document.getElementById('qr-canvas');
-      var ctx = canvas.getContext('2d');
-
-      for (var si = 0; si < scales.length && !code; si++) {
-        var w = Math.round(img.width  * scales[si]);
-        var h = Math.round(img.height * scales[si]);
-        canvas.width = w; canvas.height = h;
-        ctx.drawImage(img, 0, 0, w, h);
-        var imgData = ctx.getImageData(0, 0, w, h);
-        // Tenta direto (colorido) e em cinza
-        if (typeof jsQR !== 'undefined') {
-          code = jsQR(imgData.data, w, h, { inversionAttempts: 'attemptBoth' });
-          if (!code) {
-            // Converte para cinza
-            var d = imgData.data;
-            for (var p = 0; p < d.length; p+=4) {
-              var g = Math.round(d[p]*.299 + d[p+1]*.587 + d[p+2]*.114);
-              d[p]=d[p+1]=d[p+2]=g;
-            }
-            code = jsQR(d, w, h, { inversionAttempts: 'attemptBoth' });
-          }
-        }
-      }
-
-      if (code && code.data) {
-        statusEl.textContent = '';
-        processarQRCode(code.data.trim());
-      } else {
-        statusEl.textContent = '';
-        document.getElementById('qr-erro').textContent = 'Não foi possível ler o QR code. Tente com mais luz e o QR centralizado.';
-        document.getElementById('qr-erro').classList.remove('oculto');
-        // Limpa input para permitir nova tentativa
-        input.value = '';
-      }
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(input.files[0]);
-}
 function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
 
 function iniciarCameraQR() {
@@ -949,30 +871,7 @@ function iniciarCameraQR() {
 }
 
 // Leitura via BarcodeDetector API nativa — mesmo motor da câmera do sistema
-function iniciarLeituraNativa() {
-  var detector = new BarcodeDetector({ formats: ['qr_code'] });
-  var video    = document.getElementById('qr-video');
-  var dbg      = document.getElementById('qr-frames');
 
-  function scan() {
-    if (_qrProcessing) return;
-    detector.detect(video)
-      .then(function(barcodes) {
-        if (dbg) dbg.textContent = 'BarcodeDetector ativo';
-        if (barcodes.length > 0) {
-          _qrProcessing = true;
-          processarQRCode(barcodes[0].rawValue.trim());
-        } else {
-          _qrInterval = setTimeout(scan, 200);
-        }
-      })
-      .catch(function() {
-        // Fallback para jsQR se BarcodeDetector falhar
-        iniciarLeituraFrames();
-      });
-  }
-  video.addEventListener('playing', scan);
-}
 function pararCameraQR(){
   if(_qrInterval){clearInterval(_qrInterval);clearTimeout(_qrInterval);_qrInterval=null;}
   if(_qrStream){_qrStream.getTracks().forEach(function(t){t.stop();});_qrStream=null;}
