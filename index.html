@@ -855,15 +855,47 @@ function iniciarCameraQR() {
       _qrStream=stream;
       var v=document.getElementById('qr-video'); v.srcObject=stream; v.play();
       document.getElementById('qr-status').textContent='Aponte para o QR code da vaga';
-      iniciarLeituraFrames();
+      // Usa BarcodeDetector nativo se disponível (iOS 17+, Android Chrome)
+      if (typeof BarcodeDetector !== 'undefined') {
+        document.getElementById('qr-status').textContent='Aponte para o QR code da vaga';
+        iniciarLeituraNativa();
+      } else {
+        iniciarLeituraFrames();
+      }
     })
     .catch(function(err){
       console.error('Cam:',err);
       document.getElementById('qr-status').textContent='Câmera não autorizada: '+err.message;
     });
 }
+
+// Leitura via BarcodeDetector API nativa — mesmo motor da câmera do sistema
+function iniciarLeituraNativa() {
+  var detector = new BarcodeDetector({ formats: ['qr_code'] });
+  var video    = document.getElementById('qr-video');
+  var dbg      = document.getElementById('qr-frames');
+
+  function scan() {
+    if (_qrProcessing) return;
+    detector.detect(video)
+      .then(function(barcodes) {
+        if (dbg) dbg.textContent = 'BarcodeDetector ativo';
+        if (barcodes.length > 0) {
+          _qrProcessing = true;
+          processarQRCode(barcodes[0].rawValue.trim());
+        } else {
+          _qrInterval = setTimeout(scan, 200);
+        }
+      })
+      .catch(function() {
+        // Fallback para jsQR se BarcodeDetector falhar
+        iniciarLeituraFrames();
+      });
+  }
+  video.addEventListener('playing', scan);
+}
 function pararCameraQR(){
-  if(_qrInterval){clearInterval(_qrInterval);_qrInterval=null;}
+  if(_qrInterval){clearInterval(_qrInterval);clearTimeout(_qrInterval);_qrInterval=null;}
   if(_qrStream){_qrStream.getTracks().forEach(function(t){t.stop();});_qrStream=null;}
   var v=document.getElementById('qr-video'); if(v)v.srcObject=null;
   _qrProcessing=false;
