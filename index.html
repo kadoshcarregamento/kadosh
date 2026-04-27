@@ -1,8 +1,4 @@
-
-
 <!DOCTYPE html>
-
-
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -871,26 +867,75 @@ function pararCameraQR(){
   _qrProcessing=false;
 }
 function iniciarLeituraFrames(){
-  var video=document.getElementById('qr-video'),canvas=document.getElementById('qr-canvas'),ctx=canvas.getContext('2d');
-  _qrInterval=setInterval(function(){
-    if(_qrProcessing||!video||video.readyState!==video.HAVE_ENOUGH_DATA)return;
-    var vw=video.videoWidth, vh=video.videoHeight;
-    if(!vw||!vh)return;
+  var video  = document.getElementById('qr-video');
+  var canvas = document.getElementById('qr-canvas');
+  var ctx    = canvas.getContext('2d');
 
-    // Tenta em resolução nativa e em 50% — aumenta taxa de detecção
-    var scales=[1, 0.5];
-    var code=null;
-    for(var s=0;s<scales.length&&!code;s++){
-      var w=Math.round(vw*scales[s]), h=Math.round(vh*scales[s]);
-      canvas.width=w; canvas.height=h;
-      ctx.drawImage(video,0,0,w,h);
-      var d=ctx.getImageData(0,0,w,h);
-      if(typeof jsQR!=='undefined'){
-        code=jsQR(d.data,d.width,d.height,{inversionAttempts:'attemptBoth'});
+  // Canvas auxiliar para pré-processamento
+  var aux    = document.createElement('canvas');
+  var axCtx  = aux.getContext('2d');
+
+  _qrInterval = setInterval(function(){
+    if (_qrProcessing || !video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    var vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) return;
+
+    var code = null;
+
+    // Tenta em 3 configurações diferentes para maximizar detecção
+    var configs = [
+      { scale: 1.0,  process: 'gray'     },  // nativo + escala de cinza
+      { scale: 0.6,  process: 'gray'     },  // reduzido + escala de cinza
+      { scale: 1.0,  process: 'contrast' },  // nativo + alto contraste
+    ];
+
+    for (var ci = 0; ci < configs.length && !code; ci++) {
+      var cfg = configs[ci];
+      var w = Math.round(vw * cfg.scale);
+      var h = Math.round(vh * cfg.scale);
+
+      // Desenha frame no canvas auxiliar
+      aux.width = w; aux.height = h;
+      axCtx.drawImage(video, 0, 0, w, h);
+
+      var imgData = axCtx.getImageData(0, 0, w, h);
+      var data    = imgData.data;
+
+      if (cfg.process === 'gray') {
+        // Converte para escala de cinza — elimina problema de QR colorido
+        for (var p = 0; p < data.length; p += 4) {
+          // Luminância perceptual (elimina o verde dos marcadores)
+          var gray = Math.round(data[p]*0.299 + data[p+1]*0.587 + data[p+2]*0.114);
+          data[p] = data[p+1] = data[p+2] = gray;
+        }
+      } else if (cfg.process === 'contrast') {
+        // Alto contraste: pixels abaixo de 128 → 0, acima → 255
+        for (var p = 0; p < data.length; p += 4) {
+          var gray = Math.round(data[p]*0.299 + data[p+1]*0.587 + data[p+2]*0.114);
+          var bin  = gray < 128 ? 0 : 255;
+          data[p] = data[p+1] = data[p+2] = bin;
+        }
+      }
+
+      axCtx.putImageData(imgData, 0, 0);
+
+      // Copia para canvas principal para jsQR
+      canvas.width = w; canvas.height = h;
+      ctx.drawImage(aux, 0, 0);
+      var final = ctx.getImageData(0, 0, w, h);
+
+      if (typeof jsQR !== 'undefined') {
+        code = jsQR(final.data, final.width, final.height, {
+          inversionAttempts: 'attemptBoth'
+        });
       }
     }
-    if(code&&code.data){_qrProcessing=true;processarQRCode(code.data.trim());}
-  },200);
+
+    if (code && code.data) {
+      _qrProcessing = true;
+      processarQRCode(code.data.trim());
+    }
+  }, 250);
 }
 function processarQRCode(texto){
   var vagaId=texto.toUpperCase();
