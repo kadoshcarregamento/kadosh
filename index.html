@@ -572,6 +572,9 @@ body::before {
       </div>
     </div>
     <canvas id="qr-canvas" style="display:none"></canvas>
+    <!-- Debug: mostra o que jsQR está processando -->
+    <canvas id="qr-debug" style="width:100%;max-width:320px;border-radius:12px;border:1px solid rgba(59,205,192,.3);margin-top:8px"></canvas>
+    <div id="qr-frames" style="font-size:12px;color:#666;text-align:center;margin-top:4px"></div>
     <div id="qr-status" class="qr-status">Iniciando câmera...</div>
     <div id="qr-erro" class="msg-erro oculto"></div>
   </div>
@@ -656,11 +659,11 @@ body::before {
   </div>
 </div>
 
-<script>
+<>
 // ════════════════════════════════════════════════════════════
 //  CONFIG — cole a URL do seu GAS aqui
 // ════════════════════════════════════════════════════════════
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbx2HDRw-PNOSWaLceETccGNo_d09PVe7XIB7R6lnJrNcCUyCBzMNZlHMs_Vy_cLceTpgQ/exec';
+var GAS_URL = 'COLE_AQUI_A_URL_DO_SEU_GAS';
 
 // ─── ESTADO ──────────────────────────────────────────────────
 var App = { usuario:null, sessaoId:null, vagaId:null, kwhInicial:null, inicio:null, carregando:false };
@@ -692,16 +695,16 @@ function api(action, params) {
       + '&payload=' + encodeURIComponent(payload)
       + '&callback=' + cbName;
 
-    var script = document.createElement('script');
-    script.id  = cbName;
-    script.src = url;
-    script.onerror = function() {
+    var  = document.createElement('');
+    .id  = cbName;
+    .src = url;
+    .onerror = function() {
       clearTimeout(timeout);
       delete window[cbName];
-      script.remove();
+      .remove();
       reject(new Error('Falha ao contactar o servidor'));
     };
-    document.head.appendChild(script);
+    document.head.appendChild();
   });
 }
 
@@ -867,75 +870,56 @@ function pararCameraQR(){
   _qrProcessing=false;
 }
 function iniciarLeituraFrames(){
-  var video  = document.getElementById('qr-video');
-  var canvas = document.getElementById('qr-canvas');
-  var ctx    = canvas.getContext('2d');
-
-  // Canvas auxiliar para pré-processamento
-  var aux    = document.createElement('canvas');
-  var axCtx  = aux.getContext('2d');
+  var video    = document.getElementById('qr-video');
+  var canvas   = document.getElementById('qr-canvas');
+  var ctx      = canvas.getContext('2d');
+  var dbgCanvas= document.getElementById('qr-debug');
+  var dbgCtx   = dbgCanvas.getContext('2d');
+  var frameCount = 0;
 
   _qrInterval = setInterval(function(){
     if (_qrProcessing || !video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
     var vw = video.videoWidth, vh = video.videoHeight;
     if (!vw || !vh) return;
+    frameCount++;
+
+    // Resolução de trabalho: máx 600px no lado maior
+    var scale = Math.min(1, 600 / Math.max(vw, vh));
+    var w = Math.round(vw * scale);
+    var h = Math.round(vh * scale);
+
+    canvas.width = w; canvas.height = h;
+    ctx.drawImage(video, 0, 0, w, h);
+    var imgData = ctx.getImageData(0, 0, w, h);
+    var data = imgData.data;
+
+    // Converte para escala de cinza com alto contraste
+    for (var p = 0; p < data.length; p += 4) {
+      var gray = data[p]*0.299 + data[p+1]*0.587 + data[p+2]*0.114;
+      var val  = gray < 140 ? 0 : 255;
+      data[p] = data[p+1] = data[p+2] = val;
+      data[p+3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // Mostra no canvas de debug (o que jsQR está vendo)
+    dbgCanvas.width  = w;
+    dbgCanvas.height = h;
+    dbgCtx.drawImage(canvas, 0, 0);
+
+    document.getElementById('qr-frames').textContent =
+      'Frame ' + frameCount + ' — ' + vw + 'x' + vh + 'px → ' + w + 'x' + h + 'px processado';
 
     var code = null;
-
-    // Tenta em 3 configurações diferentes para maximizar detecção
-    var configs = [
-      { scale: 1.0,  process: 'gray'     },  // nativo + escala de cinza
-      { scale: 0.6,  process: 'gray'     },  // reduzido + escala de cinza
-      { scale: 1.0,  process: 'contrast' },  // nativo + alto contraste
-    ];
-
-    for (var ci = 0; ci < configs.length && !code; ci++) {
-      var cfg = configs[ci];
-      var w = Math.round(vw * cfg.scale);
-      var h = Math.round(vh * cfg.scale);
-
-      // Desenha frame no canvas auxiliar
-      aux.width = w; aux.height = h;
-      axCtx.drawImage(video, 0, 0, w, h);
-
-      var imgData = axCtx.getImageData(0, 0, w, h);
-      var data    = imgData.data;
-
-      if (cfg.process === 'gray') {
-        // Converte para escala de cinza — elimina problema de QR colorido
-        for (var p = 0; p < data.length; p += 4) {
-          // Luminância perceptual (elimina o verde dos marcadores)
-          var gray = Math.round(data[p]*0.299 + data[p+1]*0.587 + data[p+2]*0.114);
-          data[p] = data[p+1] = data[p+2] = gray;
-        }
-      } else if (cfg.process === 'contrast') {
-        // Alto contraste: pixels abaixo de 128 → 0, acima → 255
-        for (var p = 0; p < data.length; p += 4) {
-          var gray = Math.round(data[p]*0.299 + data[p+1]*0.587 + data[p+2]*0.114);
-          var bin  = gray < 128 ? 0 : 255;
-          data[p] = data[p+1] = data[p+2] = bin;
-        }
-      }
-
-      axCtx.putImageData(imgData, 0, 0);
-
-      // Copia para canvas principal para jsQR
-      canvas.width = w; canvas.height = h;
-      ctx.drawImage(aux, 0, 0);
-      var final = ctx.getImageData(0, 0, w, h);
-
-      if (typeof jsQR !== 'undefined') {
-        code = jsQR(final.data, final.width, final.height, {
-          inversionAttempts: 'attemptBoth'
-        });
-      }
+    if (typeof jsQR !== 'undefined') {
+      code = jsQR(imgData.data, w, h, { inversionAttempts: 'attemptBoth' });
     }
 
     if (code && code.data) {
       _qrProcessing = true;
       processarQRCode(code.data.trim());
     }
-  }, 250);
+  }, 300);
 }
 function processarQRCode(texto){
   var vagaId=texto.toUpperCase();
@@ -1052,7 +1036,6 @@ document.addEventListener('keydown',function(e){
   if(a.id==='tela-login')efetuarLogin();
   if(a.id==='tela-senha')mudarSenha();
 });
-</script>
+</>
 </body>
 </html>
-
