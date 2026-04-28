@@ -12,491 +12,145 @@
   <link rel="icon" href="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════════════════
-   TOKENS & RESET
-═══════════════════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-:root {
-  /* Cores Kadosh */
-  --k-green:      #3BCDC0;
-  --k-green-glow: rgba(59,205,192,.35);
-  --k-green-dim:  rgba(59,205,192,.12);
-  --k-gray:       #95969B;
-
-  /* Dark theme */
-  --bg:           #0d0d0d;
-  --bg-card:      rgba(255,255,255,.04);
-  --bg-card-hov:  rgba(255,255,255,.07);
-  --bg-input:     rgba(255,255,255,.06);
-  --border:       rgba(255,255,255,.09);
-  --border-focus: rgba(59,205,192,.6);
-  --txt:          #f0f0f0;
-  --txt-sub:      #888;
-  --txt-dim:      #555;
-
-  /* Red */
-  --red:          #ff4d4d;
-  --red-glow:     rgba(255,77,77,.3);
-
-  /* Spacing & shape */
-  --r:            18px;
-  --r-sm:         12px;
-  --sat: env(safe-area-inset-top, 0px);
-  --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left, 0px);
-  --sar: env(safe-area-inset-right, 0px);
-
-  /* Fonts */
-  --f-display: 'Bebas Neue', sans-serif;
-  --f-body:    'Space Grotesk', sans-serif;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --k-green:#3BCDC0;--k-green-glow:rgba(59,205,192,.35);--k-green-dim:rgba(59,205,192,.12);
+  --bg:#0d0d0d;--bg-card:rgba(255,255,255,.04);--bg-input:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.09);--border-focus:rgba(59,205,192,.6);
+  --txt:#f0f0f0;--txt-sub:#888;--txt-dim:#555;
+  --red:#ff4d4d;--red-glow:rgba(255,77,77,.3);
+  --r:18px;--r-sm:12px;
+  --f-display:'Bebas Neue',sans-serif;--f-body:'Space Grotesk',sans-serif;
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px);
 }
-
-html { height: 100%; overflow: hidden; position: fixed; width: 100%; }
-
-body {
-  height: 100%; width: 100%;
-  font-family: var(--f-body);
-  background: var(--bg);
-  color: var(--txt);
-  -webkit-font-smoothing: antialiased;
-  -webkit-text-size-adjust: 100%;
-  overflow-y: auto; overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Grain texture overlay */
-body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity: .4;
-}
-
-/* ═══════════════════════════════════════════════════════
-   TELAS
-═══════════════════════════════════════════════════════ */
-.tela { display: none; min-height: 100%; flex-direction: column; position: relative; z-index: 1; }
-.tela.ativa { display: flex; }
-
-/* ═══════════════════════════════════════════════════════
-   LOGIN
-═══════════════════════════════════════════════════════ */
-#tela-login, #tela-senha {
-  background: var(--bg);
-  /* Subtle radial glow behind logo */
-  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59,205,192,.15) 0%, transparent 70%);
-  align-items: stretch;
-}
-
-.login-scroll {
-  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: calc(var(--sat) + 40px) 24px calc(var(--sab) + 40px);
-  display: flex; flex-direction: column; align-items: center; gap: 28px;
-}
-
-/* Logo block */
-.logo-block { text-align: center; }
-.logo-img {
-  width: 100px; height: 100px;
-  border-radius: 28px;
-  object-fit: contain;
-  display: block; margin: 0 auto 16px;
-  /* Green glow ring */
-  box-shadow: 0 0 0 1px rgba(59,205,192,.2), 0 0 32px rgba(59,205,192,.2), 0 8px 32px rgba(0,0,0,.5);
-  animation: logoPulse 4s ease-in-out infinite;
-}
-@keyframes logoPulse {
-  0%,100% { box-shadow: 0 0 0 1px rgba(59,205,192,.2), 0 0 32px rgba(59,205,192,.2), 0 8px 32px rgba(0,0,0,.5); }
-  50%      { box-shadow: 0 0 0 1px rgba(59,205,192,.4), 0 0 48px rgba(59,205,192,.35), 0 8px 32px rgba(0,0,0,.5); }
-}
-.logo-sub {
-  font-family: var(--f-body); font-size: 13px; font-weight: 500;
-  color: var(--txt-sub); letter-spacing: .08em; text-transform: uppercase;
-}
-
-/* Card */
-.card {
-  width: 100%; background: var(--bg-card);
-  border-radius: var(--r); border: 1px solid var(--border);
-  padding: 24px 20px;
-  display: flex; flex-direction: column; gap: 16px;
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-}
-
-/* Campo */
-.campo { display: flex; flex-direction: column; gap: 8px; }
-.campo label {
-  font-size: 11px; font-weight: 600; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--k-green);
-}
-.campo input {
-  font-size: 16px; font-family: var(--f-body);
-  padding: 15px 18px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  color: var(--txt); outline: none; width: 100%;
-  -webkit-appearance: none;
-  transition: border-color .2s, background .2s, box-shadow .2s;
-}
-.campo input::placeholder { color: var(--txt-dim); }
-.campo input:focus {
-  border-color: var(--border-focus);
-  background: rgba(59,205,192,.06);
-  box-shadow: 0 0 0 3px rgba(59,205,192,.1);
-}
-
-.input-wrap { position: relative; }
-.input-wrap input { padding-right: 52px; }
-.olho {
-  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; font-size: 18px;
-  cursor: pointer; opacity: .4; padding: 8px; -webkit-appearance: none;
-  transition: opacity .2s;
-}
-.olho:active { opacity: .8; }
-
-.campo-check { display: flex; align-items: center; }
-.check-label {
-  display: flex; align-items: center; gap: 12px;
-  font-size: 14px; color: var(--txt-sub); cursor: pointer;
-}
-.check-label input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--k-green); cursor: pointer; }
-
-/* Banner lembrado */
-.banner-lembrado {
-  background: var(--k-green-dim);
-  border: 1px solid rgba(59,205,192,.25);
-  border-radius: var(--r-sm);
-  padding: 14px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 14px; font-weight: 600; color: var(--k-green);
-}
-.banner-trocar {
-  background: none; border: none; color: var(--txt-sub);
-  font-size: 12px; cursor: pointer; text-decoration: underline;
-  font-family: var(--f-body); padding: 2px;
-}
-
-/* Hint PWA */
-.hint-pwa {
-  font-size: 12px; color: var(--txt-dim); text-align: center;
-  max-width: 280px; line-height: 1.7; padding: 0 8px;
-}
-
-/* ═══════════════════════════════════════════════════════
-   BOTÕES
-═══════════════════════════════════════════════════════ */
-.btn-primary {
-  width: 100%; padding: 17px 20px;
-  background: var(--k-green);
-  color: #0d0d0d;
-  border: none; border-radius: var(--r-sm);
-  font-family: var(--f-display); font-size: 22px; letter-spacing: .04em;
-  cursor: pointer;
-  box-shadow: 0 4px 20px var(--k-green-glow);
-  transition: transform .12s, opacity .12s, box-shadow .2s;
-  -webkit-appearance: none;
-  min-height: 58px;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-}
-.btn-primary:active { transform: scale(.97); opacity: .9; box-shadow: 0 2px 10px var(--k-green-glow); }
-.btn-primary:disabled { opacity: .4; }
-
-.btn-link {
-  background: none; border: none; color: var(--txt-sub);
-  font-size: 14px; cursor: pointer; text-align: center;
-  padding: 12px; text-decoration: underline;
-  font-family: var(--f-body); min-height: 44px;
-  display: flex; align-items: center; justify-content: center;
-  transition: color .2s;
-}
-.btn-link:hover { color: var(--k-green); }
-
-/* ═══════════════════════════════════════════════════════
-   MENSAGENS
-═══════════════════════════════════════════════════════ */
-.msg-erro {
-  padding: 14px 16px; border-radius: var(--r-sm);
-  background: rgba(255,77,77,.1); border: 1px solid rgba(255,77,77,.25);
-  color: #ff8080; font-size: 14px; font-weight: 500; line-height: 1.5;
-}
-.msg-ok {
-  padding: 14px 16px; border-radius: var(--r-sm);
-  background: var(--k-green-dim); border: 1px solid rgba(59,205,192,.25);
-  color: var(--k-green); font-size: 14px; font-weight: 500;
-}
-
-/* ═══════════════════════════════════════════════════════
-   HEADER
-═══════════════════════════════════════════════════════ */
-.app-header {
-  background: rgba(13,13,13,.85);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid var(--border);
-  padding-top: calc(var(--sat) + 12px); padding-bottom: 12px;
-  padding-left: calc(var(--sal) + 16px); padding-right: calc(var(--sar) + 16px);
-  display: flex; align-items: center; gap: 12px;
-  position: sticky; top: 0; z-index: 50;
-}
-.hdr-logo-img {
-  width: 40px; height: 40px; border-radius: 10px;
-  object-fit: contain; flex-shrink: 0;
-  border: 1px solid rgba(59,205,192,.2);
-}
-.hdr-titulo {
-  flex: 1;
-  font-family: var(--f-body); font-size: 12px; font-weight: 600;
-  color: var(--txt-sub); line-height: 1.4; letter-spacing: .02em;
-}
-.hdr-titulo span { display: block; color: var(--k-green); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
-.hdr-dir { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.apto-badge {
-  background: var(--k-green-dim); color: var(--k-green);
-  font-size: 12px; font-weight: 600; padding: 4px 12px;
-  border-radius: 20px; border: 1px solid rgba(59,205,192,.2);
-}
-.btn-sair {
-  background: rgba(255,255,255,.05); border: 1px solid var(--border);
-  color: var(--txt-sub); border-radius: 8px;
-  padding: 8px 14px; font-size: 13px; cursor: pointer;
-  font-family: var(--f-body); -webkit-appearance: none;
-  min-height: 36px; white-space: nowrap;
-  transition: background .2s, color .2s;
-}
-.btn-sair:active { background: rgba(255,255,255,.1); color: var(--txt); }
-
-/* ═══════════════════════════════════════════════════════
-   DASHBOARD
-═══════════════════════════════════════════════════════ */
-.dash-main {
-  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 20px 16px calc(var(--sab) + 28px);
-  display: flex; flex-direction: column; gap: 14px;
-}
-
-/* Perfil */
-.perfil-card { flex-direction: row !important; align-items: center; gap: 14px; padding: 18px 20px; }
-.avatar {
-  width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0;
-  background: var(--k-green);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--f-display); font-size: 26px; color: #0d0d0d;
-  box-shadow: 0 0 16px var(--k-green-glow);
-}
-.perfil-info { flex: 1; min-width: 0; }
-.perfil-nome {
-  font-family: var(--f-body); font-size: 17px; font-weight: 700;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--txt);
-}
-.perfil-sub  { font-size: 12px; color: var(--txt-sub); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.perfil-apto { font-size: 12px; color: var(--k-green); font-weight: 600; margin-top: 2px; }
-.btn-senha-ico {
-  width: 40px; height: 40px; flex-shrink: 0;
-  background: var(--bg-input); border: 1px solid var(--border);
-  border-radius: 10px; font-size: 18px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  -webkit-appearance: none; transition: background .2s;
-}
-.btn-senha-ico:active { background: var(--bg-card-hov); }
-
-/* Status */
-.status-card { padding: 20px; gap: 0 !important; }
-.status-row { display: flex; align-items: center; gap: 12px; }
-.status-dot {
-  width: 12px; height: 12px; border-radius: 50%;
-  background: var(--txt-dim); flex-shrink: 0; transition: background .4s;
-}
-.status-dot.ligado {
-  background: var(--k-green);
-  box-shadow: 0 0 0 4px var(--k-green-dim);
-  animation: pingVerde 1.8s infinite;
-}
-@keyframes pingVerde {
-  0%,100% { box-shadow: 0 0 0 4px var(--k-green-dim); }
-  50%      { box-shadow: 0 0 0 10px rgba(59,205,192,.04); }
-}
-.status-label {
-  font-size: 11px; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--txt-sub);
-}
-.status-txt {
-  font-family: var(--f-display); font-size: 28px; letter-spacing: .02em; color: var(--txt);
-  margin-top: 2px;
-}
-
-.painel-sessao {
-  margin-top: 16px; background: var(--k-green-dim);
-  border-radius: var(--r-sm); padding: 14px;
-  display: flex; flex-direction: column; gap: 10px;
-  border: 1px solid rgba(59,205,192,.15);
-}
-.info-linha { display: flex; justify-content: space-between; align-items: center; }
-.info-label { font-size: 11px; color: var(--txt-sub); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; flex-shrink: 0; margin-right: 8px; }
-.info-val   { font-size: 14px; font-weight: 600; color: var(--k-green); text-align: right; word-break: break-all; }
-.sess-id-val { font-size: 11px !important; color: var(--txt-dim) !important; font-weight: 500 !important; }
-
-/* Controles */
-.controles { display: flex; flex-direction: column; gap: 12px; }
-
-.btn-iniciar, .btn-parar {
-  width: 100%; min-height: 58px; padding: 17px 20px;
-  border: none; border-radius: var(--r-sm);
-  font-family: var(--f-display); font-size: 22px; letter-spacing: .04em;
-  cursor: pointer; -webkit-appearance: none;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: transform .12s, opacity .15s, box-shadow .2s;
-}
-.btn-iniciar {
-  background: var(--k-green); color: #0d0d0d;
-  box-shadow: 0 4px 20px var(--k-green-glow);
-}
-.btn-parar {
-  background: var(--red); color: #fff;
-  box-shadow: 0 4px 20px var(--red-glow);
-  animation: entradaBtn .3s ease both;
-}
-.btn-iniciar:active, .btn-parar:active { transform: scale(.97); opacity: .9; }
-.btn-iniciar:disabled, .btn-parar:disabled { opacity: .35; }
-@keyframes entradaBtn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-
-/* Resultado */
-.resultado-card { text-align: center; gap: 0 !important; padding: 28px 20px; }
-.result-check { font-size: 48px; margin-bottom: 8px; }
-.result-titulo {
-  font-family: var(--f-display); font-size: 32px; letter-spacing: .04em;
-  color: var(--k-green); margin-bottom: 20px;
-}
-.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.result-item { background: var(--bg-input); border-radius: var(--r-sm); padding: 14px 12px; border: 1px solid var(--border); text-align: left; }
-.result-item.destaque { background: var(--k-green-dim); border-color: rgba(59,205,192,.2); grid-column: span 2; }
-.result-label { display: block; font-size: 11px; color: var(--txt-sub); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
-.result-val { display: block; font-family: var(--f-display); font-size: 22px; color: var(--txt); margin-top: 4px; word-break: break-word; letter-spacing: .02em; }
-.result-item.destaque .result-val { font-size: 36px; color: var(--k-green); }
-.result-email { font-size: 13px; color: var(--txt-sub); margin: 6px 0 14px; }
-
-/* Histórico */
-.hist-card { gap: 0 !important; }
-.hist-titulo {
-  font-family: var(--f-display); font-size: 22px; letter-spacing: .04em;
-  color: var(--txt); margin-bottom: 14px;
-}
-.hist-item {
-  background: var(--bg-input); border-radius: var(--r-sm);
-  padding: 14px 16px; border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  margin-bottom: 8px; transition: background .2s;
-}
-.hist-item:active { background: var(--bg-card-hov); }
-.hist-data  { font-size: 13px; color: var(--txt-sub); }
-.hist-id    { font-size: 11px; color: var(--txt-dim); margin-top: 3px; font-family: monospace; }
-.hist-kwh   { font-family: var(--f-display); font-weight: 700; color: var(--k-green); font-size: 20px; text-align: center; letter-spacing: .02em; }
-.hist-dur   { font-size: 12px; color: var(--txt-sub); text-align: center; margin-top: 2px; }
-.hist-badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
-.hist-badge.ok   { background: var(--k-green-dim); color: var(--k-green); border: 1px solid rgba(59,205,192,.2); }
-.hist-badge.prog { background: rgba(255,200,0,.1); color: #ffc800; border: 1px solid rgba(255,200,0,.2); }
-.hist-vazio { font-size: 14px; color: var(--txt-dim); text-align: center; padding: 28px 0; }
-
-/* ═══════════════════════════════════════════════════════
-   QR SCANNER
-═══════════════════════════════════════════════════════ */
-.qr-scroll {
-  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 28px 20px calc(var(--sab) + 28px);
-  display: flex; flex-direction: column; align-items: center; gap: 20px;
-}
-.qr-instrucao { text-align: center; }
-.qr-titulo {
-  font-family: var(--f-display); font-size: 36px; letter-spacing: .04em; color: var(--txt);
-}
-.qr-sub { font-size: 14px; color: var(--txt-sub); margin-top: 6px; line-height: 1.6; max-width: 300px; }
-
-.qr-viewfinder-wrap {
-  position: relative; width: 100%; max-width: 320px;
-  border-radius: 20px; overflow: hidden;
-  background: #000; aspect-ratio: 1/1;
-  border: 1px solid var(--border);
-  box-shadow: 0 0 0 1px rgba(59,205,192,.15), 0 8px 40px rgba(0,0,0,.6);
-}
-.qr-video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.qr-frame { position: absolute; inset: 0; pointer-events: none; }
-
-/* Corners */
-.qr-corner { position: absolute; width: 28px; height: 28px; border-color: var(--k-green); border-style: solid; border-width: 0; }
-.qr-corner.tl { top:18px; left:18px; border-top-width:3px; border-left-width:3px; border-radius:4px 0 0 0; }
-.qr-corner.tr { top:18px; right:18px; border-top-width:3px; border-right-width:3px; border-radius:0 4px 0 0; }
-.qr-corner.bl { bottom:18px; left:18px; border-bottom-width:3px; border-left-width:3px; border-radius:0 0 0 4px; }
-.qr-corner.br { bottom:18px; right:18px; border-bottom-width:3px; border-right-width:3px; border-radius:0 0 4px 0; }
-
-.qr-scan-line {
-  position: absolute; left: 18px; right: 18px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--k-green), transparent);
-  animation: scanLine 2.2s ease-in-out infinite;
-  box-shadow: 0 0 12px var(--k-green), 0 0 24px rgba(59,205,192,.3);
-}
-@keyframes scanLine {
-  0%   { top: 18px; opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { top: calc(100% - 20px); opacity: 0; }
-}
-
-.qr-status {
-  font-family: var(--f-body); font-size: 14px; font-weight: 500;
-  color: var(--txt-sub); text-align: center; letter-spacing: .02em;
-}
-
-/* ═══════════════════════════════════════════════════════
-   OVERLAY
-═══════════════════════════════════════════════════════ */
-.overlay {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,.75);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
-}
-.overlay-box {
-  background: rgba(20,20,20,.95); border-radius: 20px;
-  border: 1px solid var(--border);
-  padding: 32px 36px; text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
-  box-shadow: 0 0 0 1px rgba(59,205,192,.1), 0 32px 64px rgba(0,0,0,.5);
-  min-width: 200px;
-}
-.spinner {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 3px solid rgba(59,205,192,.15);
-  border-top-color: var(--k-green);
-  animation: giro .7s linear infinite;
-}
-@keyframes giro { to { transform: rotate(360deg); } }
-.overlay-msg {
-  font-family: var(--f-body); font-weight: 600;
-  color: var(--txt-sub); font-size: 15px;
-}
-
-.oculto { display: none !important; }
-
-/* Esconde TODA a UI padrão do html5-qrcode — usamos nossa própria */
-#qr-reader { border: none !important; width: 100% !important; height: 100% !important; }
-#qr-reader__scan_region { width: 100% !important; height: 100% !important; }
-#qr-reader__scan_region video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-#qr-reader__scan_region img { display: none !important; }
-#qr-reader__dashboard { display: none !important; }
-#qr-reader__header_message { display: none !important; }
-#qr-reader__status_span { display: none !important; }
-
+html{height:100%;overflow:hidden;position:fixed;width:100%}
+body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color:var(--txt);
+  -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;
+  overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.tela{display:none;min-height:100%;flex-direction:column;position:relative;z-index:1}
+.tela.ativa{display:flex}
+#tela-login,#tela-senha{background:var(--bg);background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(59,205,192,.15) 0%,transparent 70%);align-items:stretch}
+.login-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(var(--sat) + 40px) 24px calc(var(--sab) + 40px);display:flex;flex-direction:column;align-items:center;gap:28px}
+.logo-block{text-align:center}
+.logo-img{width:100px;height:100px;border-radius:28px;object-fit:contain;display:block;margin:0 auto 16px;box-shadow:0 0 0 1px rgba(59,205,192,.2),0 0 32px rgba(59,205,192,.2),0 8px 32px rgba(0,0,0,.5);animation:logoPulse 4s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 0 1px rgba(59,205,192,.2),0 0 32px rgba(59,205,192,.2),0 8px 32px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 1px rgba(59,205,192,.4),0 0 48px rgba(59,205,192,.35),0 8px 32px rgba(0,0,0,.5)}}
+.logo-sub{font-size:13px;font-weight:500;color:var(--txt-sub);letter-spacing:.08em;text-transform:uppercase}
+.logo-titulo{font-family:var(--f-display);font-size:28px;color:var(--txt);margin-top:6px}
+.card{width:100%;background:var(--bg-card);border-radius:var(--r);border:1px solid var(--border);padding:24px 20px;display:flex;flex-direction:column;gap:16px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.campo{display:flex;flex-direction:column;gap:8px}
+.campo label{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--k-green)}
+.campo input{font-size:16px;font-family:var(--f-body);padding:15px 18px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);outline:none;width:100%;-webkit-appearance:none;transition:border-color .2s,background .2s,box-shadow .2s}
+.campo input::placeholder{color:var(--txt-dim)}
+.campo input:focus{border-color:var(--border-focus);background:rgba(59,205,192,.06);box-shadow:0 0 0 3px rgba(59,205,192,.1)}
+.input-wrap{position:relative}
+.input-wrap input{padding-right:52px}
+.olho{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;opacity:.4;padding:8px;-webkit-appearance:none}
+.campo-check{display:flex;align-items:center}
+.check-label{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--txt-sub);cursor:pointer}
+.check-label input[type=checkbox]{width:18px;height:18px;accent-color:var(--k-green);cursor:pointer}
+.banner-lembrado{background:var(--k-green-dim);border:1px solid rgba(59,205,192,.25);border-radius:var(--r-sm);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:600;color:var(--k-green)}
+.banner-trocar{background:none;border:none;color:var(--txt-sub);font-size:12px;cursor:pointer;text-decoration:underline;font-family:var(--f-body);padding:2px}
+.hint-pwa{font-size:12px;color:var(--txt-dim);text-align:center;max-width:280px;line-height:1.7;padding:0 8px}
+.btn-primary{width:100%;padding:17px 20px;background:var(--k-green);color:#0d0d0d;border:none;border-radius:var(--r-sm);font-family:var(--f-display);font-size:22px;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px var(--k-green-glow);transition:transform .12s,opacity .12s;-webkit-appearance:none;min-height:58px;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-primary:active{transform:scale(.97);opacity:.9}
+.btn-primary:disabled{opacity:.4}
+.btn-link{background:none;border:none;color:var(--txt-sub);font-size:14px;cursor:pointer;text-align:center;padding:12px;text-decoration:underline;font-family:var(--f-body);min-height:44px;display:flex;align-items:center;justify-content:center}
+.msg-erro{padding:14px 16px;border-radius:var(--r-sm);background:rgba(255,77,77,.1);border:1px solid rgba(255,77,77,.25);color:#ff8080;font-size:14px;font-weight:500;line-height:1.5}
+.msg-ok{padding:14px 16px;border-radius:var(--r-sm);background:var(--k-green-dim);border:1px solid rgba(59,205,192,.25);color:var(--k-green);font-size:14px;font-weight:500}
+.app-header{background:rgba(13,13,13,.9);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding-top:calc(var(--sat) + 12px);padding-bottom:12px;padding-left:calc(var(--sal) + 16px);padding-right:calc(var(--sar) + 16px);display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.hdr-logo-img{width:40px;height:40px;border-radius:10px;object-fit:contain;flex-shrink:0;border:1px solid rgba(59,205,192,.2)}
+.hdr-titulo{flex:1;font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--txt-sub);line-height:1.4;letter-spacing:.02em}
+.hdr-titulo span{display:block;color:var(--k-green);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.hdr-dir{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.apto-badge{background:var(--k-green-dim);color:var(--k-green);font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;border:1px solid rgba(59,205,192,.2)}
+.btn-sair{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--txt-sub);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:var(--f-body);-webkit-appearance:none;min-height:36px;white-space:nowrap}
+#tela-dash,#tela-qr{background:#0d0d0d}
+.dash-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(--sab) + 28px);display:flex;flex-direction:column;gap:14px}
+.perfil-card{flex-direction:row!important;align-items:center;gap:14px;padding:18px 20px}
+.avatar{width:50px;height:50px;border-radius:50%;flex-shrink:0;background:var(--k-green);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:26px;color:#0d0d0d;box-shadow:0 0 16px var(--k-green-glow)}
+.perfil-info{flex:1;min-width:0}
+.perfil-nome{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.perfil-sub{font-size:12px;color:var(--txt-sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.perfil-apto{font-size:12px;color:var(--k-green);font-weight:600;margin-top:2px}
+.btn-senha-ico{width:40px;height:40px;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none}
+.status-card{padding:20px;gap:0!important}
+.status-row{display:flex;align-items:center;gap:12px}
+.status-dot{width:12px;height:12px;border-radius:50%;background:var(--txt-dim);flex-shrink:0;transition:background .4s}
+.status-dot.ligado{background:var(--k-green);box-shadow:0 0 0 4px var(--k-green-dim);animation:pingVerde 1.8s infinite}
+@keyframes pingVerde{0%,100%{box-shadow:0 0 0 4px var(--k-green-dim)}50%{box-shadow:0 0 0 10px rgba(59,205,192,.04)}}
+.status-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub)}
+.status-txt{font-family:var(--f-display);font-size:28px;letter-spacing:.02em;color:var(--txt);margin-top:2px}
+.painel-sessao{margin-top:16px;background:var(--k-green-dim);border-radius:var(--r-sm);padding:14px;display:flex;flex-direction:column;gap:10px;border:1px solid rgba(59,205,192,.15)}
+.info-linha{display:flex;justify-content:space-between;align-items:center}
+.info-label{font-size:11px;color:var(--txt-sub);text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex-shrink:0;margin-right:8px}
+.info-val{font-size:14px;font-weight:600;color:var(--k-green);text-align:right;word-break:break-all}
+.sess-id-val{font-size:11px!important;color:var(--txt-dim)!important;font-weight:500!important}
+.controles{display:flex;flex-direction:column;gap:12px}
+.btn-iniciar,.btn-parar{width:100%;min-height:58px;padding:17px 20px;border:none;border-radius:var(--r-sm);font-family:var(--f-display);font-size:22px;letter-spacing:.04em;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s,opacity .15s}
+.btn-iniciar{background:var(--k-green);color:#0d0d0d;box-shadow:0 4px 20px var(--k-green-glow)}
+.btn-parar{background:var(--red);color:#fff;box-shadow:0 4px 20px var(--red-glow);animation:entradaBtn .3s ease both}
+.btn-iniciar:active,.btn-parar:active{transform:scale(.97);opacity:.9}
+.btn-iniciar:disabled,.btn-parar:disabled{opacity:.35}
+@keyframes entradaBtn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.resultado-card{text-align:center;gap:0!important;padding:28px 20px}
+.result-check{font-size:48px;margin-bottom:8px}
+.result-titulo{font-family:var(--f-display);font-size:32px;letter-spacing:.04em;color:var(--k-green);margin-bottom:20px}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.result-item{background:var(--bg-input);border-radius:var(--r-sm);padding:14px 12px;border:1px solid var(--border);text-align:left}
+.result-item.destaque{background:var(--k-green-dim);border-color:rgba(59,205,192,.2);grid-column:span 2}
+.result-label{display:block;font-size:11px;color:var(--txt-sub);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.result-val{display:block;font-family:var(--f-display);font-size:22px;color:var(--txt);margin-top:4px;word-break:break-word;letter-spacing:.02em}
+.result-item.destaque .result-val{font-size:36px;color:var(--k-green)}
+.result-email{font-size:13px;color:var(--txt-sub);margin:6px 0 14px}
+.hist-card{gap:0!important}
+.hist-titulo{font-family:var(--f-display);font-size:22px;letter-spacing:.04em;color:var(--txt);margin-bottom:14px}
+.hist-item{background:var(--bg-input);border-radius:var(--r-sm);padding:14px 16px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.hist-data{font-size:13px;color:var(--txt-sub)}
+.hist-id{font-size:11px;color:var(--txt-dim);margin-top:3px;font-family:monospace}
+.hist-kwh{font-family:var(--f-display);font-weight:700;color:var(--k-green);font-size:20px;text-align:center;letter-spacing:.02em}
+.hist-dur{font-size:12px;color:var(--txt-sub);text-align:center;margin-top:2px}
+.hist-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.hist-badge.ok{background:var(--k-green-dim);color:var(--k-green);border:1px solid rgba(59,205,192,.2)}
+.hist-badge.prog{background:rgba(255,200,0,.1);color:#ffc800;border:1px solid rgba(255,200,0,.2)}
+.hist-vazio{font-size:14px;color:var(--txt-dim);text-align:center;padding:28px 0}
+/* QR Scanner */
+.qr-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:28px 20px calc(var(--sab) + 28px);display:flex;flex-direction:column;align-items:center;gap:20px}
+.qr-titulo{font-family:var(--f-display);font-size:36px;letter-spacing:.04em;color:var(--txt);text-align:center}
+.qr-sub{font-size:14px;color:var(--txt-sub);margin-top:6px;line-height:1.6;max-width:300px;text-align:center}
+.qr-viewfinder-wrap{position:relative;width:100%;max-width:320px;border-radius:20px;overflow:hidden;background:#000;aspect-ratio:1/1;border:1px solid var(--border);box-shadow:0 0 0 1px rgba(59,205,192,.15),0 8px 40px rgba(0,0,0,.6)}
+.qr-corner{position:absolute;width:28px;height:28px;border-color:var(--k-green);border-style:solid;border-width:0;z-index:10;pointer-events:none}
+.qr-corner.tl{top:18px;left:18px;border-top-width:3px;border-left-width:3px;border-radius:4px 0 0 0}
+.qr-corner.tr{top:18px;right:18px;border-top-width:3px;border-right-width:3px;border-radius:0 4px 0 0}
+.qr-corner.bl{bottom:18px;left:18px;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 4px}
+.qr-corner.br{bottom:18px;right:18px;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 4px 0}
+.qr-scan-line{position:absolute;left:18px;right:18px;height:1px;background:linear-gradient(90deg,transparent,var(--k-green),transparent);animation:scanLine 2.2s ease-in-out infinite;box-shadow:0 0 12px var(--k-green),0 0 24px rgba(59,205,192,.3);z-index:10;pointer-events:none}
+@keyframes scanLine{0%{top:18px;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:calc(100% - 20px);opacity:0}}
+.qr-status{font-size:14px;font-weight:500;color:var(--txt-sub);text-align:center}
+/* Esconde UI padrão do html5-qrcode completamente */
+#qr-reader{width:100%!important;height:100%!important;border:none!important}
+#qr-reader__scan_region{width:100%!important;height:100%!important}
+#qr-reader__scan_region video{width:100%!important;height:100%!important;object-fit:cover!important}
+#qr-reader__scan_region img{display:none!important}
+#qr-reader__dashboard{display:none!important}
+#qr-reader__header_message{display:none!important}
+#qr-reader__status_span{display:none!important}
+/* Overlay */
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px}
+.overlay-box{background:rgba(20,20,20,.95);border-radius:20px;border:1px solid var(--border);padding:32px 36px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 0 0 1px rgba(59,205,192,.1),0 32px 64px rgba(0,0,0,.5);min-width:200px}
+.spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(59,205,192,.15);border-top-color:var(--k-green);animation:giro .7s linear infinite}
+@keyframes giro{to{transform:rotate(360deg)}}
+.overlay-msg{font-family:var(--f-body);font-weight:600;color:var(--txt-sub);font-size:15px}
+.oculto{display:none!important}
 </style>
 </head>
 <body>
 
-<!-- ══ LOGIN ══════════════════════════════════════════════════ -->
+<!-- LOGIN -->
 <div id="tela-login" class="tela ativa">
   <div class="login-scroll">
     <div class="logo-block">
-      <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png"
-           class="logo-img" alt="Kadosh EV">
+      <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="logo-img" alt="Kadosh EV">
       <p class="logo-sub">Sistema de Carregamento Elétrico</p>
     </div>
     <div class="card">
@@ -505,13 +159,11 @@ body::before {
         <button class="banner-trocar" onclick="limparCredenciais()">Trocar conta</button>
       </div>
       <div id="form-email-wrap">
-        <div class="campo">
-          <label>Email</label>
+        <div class="campo"><label>Email</label>
           <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
         </div>
       </div>
-      <div class="campo">
-        <label>Senha</label>
+      <div class="campo"><label>Senha</label>
         <div class="input-wrap">
           <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
           <button class="olho" onclick="toggleSenha('login-senha',this)" type="button">👁</button>
@@ -519,8 +171,7 @@ body::before {
       </div>
       <div class="campo-check">
         <label class="check-label">
-          <input type="checkbox" id="lembrar-me" checked>
-          <span>Lembrar neste dispositivo</span>
+          <input type="checkbox" id="lembrar-me" checked><span>Lembrar neste dispositivo</span>
         </label>
       </div>
       <div id="login-erro" class="msg-erro oculto"></div>
@@ -534,12 +185,11 @@ body::before {
   </div>
 </div>
 
-<!-- ══ ALTERAR SENHA ══════════════════════════════════════════ -->
+<!-- ALTERAR SENHA -->
 <div id="tela-senha" class="tela">
   <div class="login-scroll">
     <div class="logo-block">
-      <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png"
-           class="logo-img" alt="Kadosh EV">
+      <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="logo-img" alt="Kadosh EV">
       <p class="logo-sub">Alterar Senha</p>
     </div>
     <div class="card">
@@ -554,69 +204,53 @@ body::before {
   </div>
 </div>
 
-<!-- ══ SCANNER QR ═════════════════════════════════════════════ -->
+<!-- SCANNER QR -->
 <div id="tela-qr" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png"
-         class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">
-      Sistema de registro
-      <span>Carros Elétricos · Kadosh</span>
-    </div>
+    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="fecharScanner()">← Voltar</button></div>
   </header>
   <div class="qr-scroll">
-    <div class="qr-instrucao">
+    <div>
       <h2 class="qr-titulo">Escanear Vaga</h2>
       <p class="qr-sub">Aponte a câmera para o QR code da vaga</p>
     </div>
-    <!-- Nosso viewfinder customizado — html5-qrcode injeta o vídeo aqui -->
     <div class="qr-viewfinder-wrap">
-      <div id="qr-reader" style="width:100%;height:100%"></div>
-      <div class="qr-frame">
-        <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
-        <div class="qr-corner bl"></div><div class="qr-corner br"></div>
-        <div class="qr-scan-line"></div>
-      </div>
+      <div id="qr-reader"></div>
+      <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
+      <div class="qr-corner bl"></div><div class="qr-corner br"></div>
+      <div class="qr-scan-line"></div>
     </div>
     <div id="qr-status" class="qr-status">Iniciando câmera...</div>
     <div id="qr-erro" class="msg-erro oculto"></div>
   </div>
 </div>
 
-<!-- ══ DASHBOARD ══════════════════════════════════════════════ -->
+<!-- DASHBOARD -->
 <div id="tela-dash" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png"
-         class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">
-      Sistema de registro
-      <span>Carros Elétricos · Kadosh</span>
-    </div>
+    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir">
       <span class="apto-badge" id="hdr-apto"></span>
       <button class="btn-sair" onclick="fazerLogout()">Sair</button>
     </div>
   </header>
   <main class="dash-main">
-
     <div class="card perfil-card">
       <div class="avatar" id="av-inicial"></div>
       <div class="perfil-info">
         <div class="perfil-nome" id="perfil-nome"></div>
-        <div class="perfil-sub"  id="perfil-email"></div>
+        <div class="perfil-sub" id="perfil-email"></div>
         <div class="perfil-apto" id="perfil-apto"></div>
       </div>
-      <button class="btn-senha-ico" onclick="mostrarTrocarSenha()" title="Alterar senha">🔑</button>
+      <button class="btn-senha-ico" onclick="mostrarTrocarSenha()">🔑</button>
     </div>
-
     <div class="card status-card">
       <div class="status-row">
         <div class="status-dot" id="status-dot"></div>
-        <div>
-          <div class="status-label">Status</div>
-          <div class="status-txt" id="status-txt">Pronto para carregar</div>
-        </div>
+        <div><div class="status-label">Status</div><div class="status-txt" id="status-txt">Pronto para carregar</div></div>
       </div>
       <div id="painel-sessao" class="painel-sessao oculto">
         <div class="info-linha"><span class="info-label">Vaga</span><span class="info-val" id="sess-vaga">–</span></div>
@@ -625,12 +259,10 @@ body::before {
         <div class="info-linha"><span class="info-label">Sessão</span><span class="info-val sess-id-val" id="sess-id">–</span></div>
       </div>
     </div>
-
     <div class="controles">
-      <button class="btn-iniciar" id="btn-iniciar" onclick="abrirScanner()">📷&nbsp; Escanear Vaga</button>
-      <button class="btn-parar oculto" id="btn-parar" onclick="pararCarregamento()">■&nbsp; Parar Carregamento</button>
+      <button class="btn-iniciar" id="btn-iniciar" onclick="abrirScanner()">📷  Escanear Vaga</button>
+      <button class="btn-parar oculto" id="btn-parar" onclick="pararCarregamento()">■  Parar Carregamento</button>
     </div>
-
     <div class="card resultado-card oculto" id="resultado-card">
       <div class="result-check">✅</div>
       <div class="result-titulo">Carregamento Concluído</div>
@@ -646,16 +278,14 @@ body::before {
       <div class="result-email">📧 Resumo enviado para o seu email</div>
       <button class="btn-link" onclick="fecharResultado()">Fechar</button>
     </div>
-
     <div class="card hist-card">
       <div class="hist-titulo">Últimas sessões</div>
       <div id="hist-lista"><div class="hist-vazio">Carregando...</div></div>
     </div>
-
   </main>
 </div>
 
-<!-- ══ OVERLAY ════════════════════════════════════════════════ -->
+<!-- OVERLAY -->
 <div id="overlay" class="overlay oculto">
   <div class="overlay-box">
     <div class="spinner"></div>
@@ -664,17 +294,17 @@ body::before {
 </div>
 
 <script>
-// ════════════════════════════════════════════════════════════
-//  CONFIG — cole a URL do seu GAS aqui
-// ════════════════════════════════════════════════════════════
+// ══ CONFIG ══════════════════════════════════════════════════
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbx2HDRw-PNOSWaLceETccGNo_d09PVe7XIB7R6lnJrNcCUyCBzMNZlHMs_Vy_cLceTpgQ/exec';
 
-// ─── ESTADO ──────────────────────────────────────────────────
+// ══ ESTADO ══════════════════════════════════════════════════
 var App = { usuario:null, sessaoId:null, vagaId:null, kwhInicial:null, inicio:null, carregando:false };
 var LS_KEY = 'ev_charge_creds';
-
-// ─── API via JSONP (contorna CORS do GAS) ────────────────────
+var _qrScanner = null;
+var _qrProcessing = false;
 var _cbCounter = 0;
+
+// ══ API JSONP ════════════════════════════════════════════════
 function api(action, params) {
   return new Promise(function(resolve, reject) {
     var cbName = '_gasCb' + (++_cbCounter);
@@ -684,7 +314,6 @@ function api(action, params) {
       if (s) s.remove();
       reject(new Error('Timeout — verifique a URL do GAS'));
     }, 30000);
-
     window[cbName] = function(data) {
       clearTimeout(timeout);
       delete window[cbName];
@@ -692,59 +321,49 @@ function api(action, params) {
       if (s) s.remove();
       resolve(data);
     };
-
-    var payload = JSON.stringify(params || {});
-    var url = GAS_URL
-      + '?action=' + encodeURIComponent(action)
-      + '&payload=' + encodeURIComponent(payload)
-      + '&callback=' + cbName;
-
     if (GAS_URL.indexOf('COLE_AQUI') >= 0) {
       clearTimeout(timeout);
-      reject(new Error('URL do GAS não configurada. Edite o arquivo e substitua GAS_URL.'));
+      reject(new Error('Configure a URL do GAS no arquivo'));
       return;
     }
+    var url = GAS_URL + '?action=' + encodeURIComponent(action) + '&payload=' + encodeURIComponent(JSON.stringify(params||{})) + '&callback=' + cbName;
     var script = document.createElement('script');
-    script.id  = cbName;
-    script.src = url;
+    script.id = cbName; script.src = url;
     script.onerror = function() {
-      clearTimeout(timeout);
-      delete window[cbName];
-      script.remove();
-      reject(new Error('Falha ao contactar o servidor. Verifique a URL do GAS.'));
+      clearTimeout(timeout); delete window[cbName]; script.remove();
+      reject(new Error('Falha ao contactar o servidor'));
     };
     document.head.appendChild(script);
   });
 }
 
-// ─── INIT ─────────────────────────────────────────────────────
+// ══ INIT ════════════════════════════════════════════════════
 window.addEventListener('load', function() {
   mostrarTela('tela-login');
   carregarCredenciais();
   mostrarHintPWA();
-  // Avisa se URL do GAS não foi configurada
   if (GAS_URL.indexOf('COLE_AQUI') >= 0) {
     var el = document.getElementById('login-erro');
-    el.textContent = '⚠️ Configure a URL do GAS no arquivo (variável GAS_URL).';
+    el.textContent = '⚠️ Configure a URL do GAS (variável GAS_URL).';
     el.classList.remove('oculto');
   }
 });
 
-// ─── CREDENCIAIS ──────────────────────────────────────────────
+// ══ CREDENCIAIS ══════════════════════════════════════════════
 function salvarCredenciais(email, senha) {
   try { localStorage.setItem(LS_KEY, JSON.stringify({ email:email, senha:senha, nome:App.usuario?App.usuario.nome:'' })); } catch(e) {}
 }
 function carregarCredenciais() {
   try {
     var raw = localStorage.getItem(LS_KEY); if (!raw) return;
-    var c = JSON.parse(raw); if (!c||!c.email) return;
-    document.getElementById('login-email').value = c.email;
-    if (c.nome) {
-      document.getElementById('banner-nome').textContent = '👋 Bem-vindo, '+c.nome.split(' ')[0]+'!';
+    var cr = JSON.parse(raw); if (!cr||!cr.email) return;
+    document.getElementById('login-email').value = cr.email;
+    if (cr.nome) {
+      document.getElementById('banner-nome').textContent = '👋 Bem-vindo, ' + cr.nome.split(' ')[0] + '!';
       document.getElementById('banner-lembrado').classList.remove('oculto');
       document.getElementById('form-email-wrap').classList.add('oculto');
     }
-    if (c.senha) document.getElementById('login-senha').value = c.senha;
+    if (cr.senha) document.getElementById('login-senha').value = cr.senha;
   } catch(e) {}
 }
 function limparCredenciais() {
@@ -755,86 +374,85 @@ function limparCredenciais() {
   document.getElementById('login-senha').value = '';
 }
 
-// ─── PWA ──────────────────────────────────────────────────────
+// ══ PWA HINT ════════════════════════════════════════════════
 function mostrarHintPWA() {
   var h = document.getElementById('hint-pwa'), ua = navigator.userAgent;
-  if (window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches) { h.textContent='✅ App instalado!'; return; }
-  if (/iPhone|iPad|iPod/.test(ua)) h.textContent='Para instalar: Compartilhar → "Adicionar à Tela de Início"';
-  else if (/Android/.test(ua)) h.textContent='Para instalar: menu ⋮ → "Adicionar à tela inicial"';
+  if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) { h.textContent = '✅ App instalado!'; return; }
+  if (/iPhone|iPad|iPod/.test(ua)) h.textContent = 'Para instalar: Compartilhar → "Adicionar à Tela de Início"';
+  else if (/Android/.test(ua)) h.textContent = 'Para instalar: menu ⋮ → "Adicionar à tela inicial"';
 }
 
-// ─── NAVEGAÇÃO ────────────────────────────────────────────────
+// ══ NAVEGAÇÃO ════════════════════════════════════════════════
 function mostrarTela(id) {
-  document.querySelectorAll('.tela').forEach(function(t){ t.classList.remove('ativa'); t.style.display=''; });
-  var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa');
-  window.scrollTo(0,0);
+  document.querySelectorAll('.tela').forEach(function(t) { t.classList.remove('ativa'); t.style.display = ''; });
+  var el = document.getElementById(id); el.style.display = ''; el.classList.add('ativa');
+  window.scrollTo(0, 0);
 }
-function overlayShow(msg) { document.getElementById('overlay-msg').textContent=msg||'Aguarde...'; document.getElementById('overlay').classList.remove('oculto'); }
+function overlayShow(msg) { document.getElementById('overlay-msg').textContent = msg||'Aguarde...'; document.getElementById('overlay').classList.remove('oculto'); }
 function overlayHide() { document.getElementById('overlay').classList.add('oculto'); }
-function toggleSenha(id,btn) { var i=document.getElementById(id); i.type=i.type==='password'?'text':'password'; btn.textContent=i.type==='password'?'👁':'🙈'; }
-function formatarDuracao(min) { if(min===''||min==null)return'–'; min=Number(min); if(isNaN(min))return'–'; if(min<60)return min+' min'; return Math.floor(min/60)+'h '+(min%60)+'min'; }
-function fmtBR(num,casas) {
-  if(num===''||num==null)return'–'; var n=Number(num); if(isNaN(n))return'–'; var c=casas!==undefined?casas:4;
+function toggleSenha(id, btn) { var i = document.getElementById(id); i.type = i.type==='password'?'text':'password'; btn.textContent = i.type==='password'?'👁':'🙈'; }
+function formatarDuracao(min) { if(min==null||min==='')return'–'; min=Number(min); if(isNaN(min))return'–'; if(min<60)return min+' min'; return Math.floor(min/60)+'h '+(min%60)+'min'; }
+function fmtBR(num, casas) {
+  if(num==null||num==='')return'–'; var n=Number(num); if(isNaN(n))return'–'; var c=casas!==undefined?casas:4;
   try{return n.toLocaleString('pt-BR',{minimumFractionDigits:c,maximumFractionDigits:c});}
   catch(e){var p=n.toFixed(c).split('.');return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+(p[1]||'');}
 }
 
-// ─── LOGIN ────────────────────────────────────────────────────
+// ══ LOGIN ════════════════════════════════════════════════════
 function efetuarLogin() {
   var bannerVis = !document.getElementById('banner-lembrado').classList.contains('oculto');
-  var email = bannerVis?JSON.parse(localStorage.getItem(LS_KEY)||'{}').email||'':document.getElementById('login-email').value.trim();
-  var senha=document.getElementById('login-senha').value;
-  var erroEl=document.getElementById('login-erro'), btn=document.getElementById('btn-login');
-  var lembrar=document.getElementById('lembrar-me').checked;
+  var email = bannerVis ? JSON.parse(localStorage.getItem(LS_KEY)||'{}').email||'' : document.getElementById('login-email').value.trim();
+  var senha = document.getElementById('login-senha').value;
+  var erroEl = document.getElementById('login-erro');
+  var btn = document.getElementById('btn-login');
+  var lembrar = document.getElementById('lembrar-me').checked;
   erroEl.classList.add('oculto');
-  if(!email||!senha){erroEl.textContent='Preencha email e senha.';erroEl.classList.remove('oculto');return;}
+  if (!email||!senha) { erroEl.textContent='Preencha email e senha.'; erroEl.classList.remove('oculto'); return; }
   btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
-  api('fazerLogin',{email:email,senha:senha})
-    .then(function(res){
+  api('fazerLogin', {email:email, senha:senha})
+    .then(function(res) {
       btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-      if(res.erro){erroEl.textContent=res.erro;erroEl.classList.remove('oculto');return;}
-      App.usuario=res;
-      if(lembrar){salvarCredenciais(email,senha);try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'{}');r.nome=res.nome;localStorage.setItem(LS_KEY,JSON.stringify(r));}catch(e){}}
-      else{try{localStorage.removeItem(LS_KEY);}catch(e){}}
+      if (res.erro) { erroEl.textContent=res.erro; erroEl.classList.remove('oculto'); return; }
+      App.usuario = res;
+      if (lembrar) {
+        salvarCredenciais(email, senha);
+        try { var r=JSON.parse(localStorage.getItem(LS_KEY)||'{}'); r.nome=res.nome; localStorage.setItem(LS_KEY,JSON.stringify(r)); } catch(e) {}
+      } else { try{localStorage.removeItem(LS_KEY);}catch(e){} }
       entrarDashboard();
-    }).catch(function(err){
+    })
+    .catch(function(err) {
       btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
       erroEl.textContent='Erro de conexão: '+(err?err.message:'tente novamente'); erroEl.classList.remove('oculto');
     });
 }
+
 function fazerLogout() {
-  pararCameraQR();
+  pararScanner();
   App.usuario=App.sessaoId=App.vagaId=App.kwhInicial=App.inicio=null; App.carregando=false;
-  document.getElementById('login-senha').value=''; document.getElementById('login-erro').classList.add('oculto');
+  document.getElementById('login-senha').value='';
+  document.getElementById('login-erro').classList.add('oculto');
   carregarCredenciais(); mostrarTela('tela-login');
 }
 
-// ─── DASHBOARD ────────────────────────────────────────────────
+// ══ DASHBOARD ════════════════════════════════════════════════
 function entrarDashboard() {
-  var u=App.usuario;
-  document.getElementById('hdr-apto').textContent='Apt '+u.apartamento;
-  document.getElementById('av-inicial').textContent=u.nome.charAt(0).toUpperCase();
-  document.getElementById('perfil-nome').textContent=u.nome;
-  document.getElementById('perfil-email').textContent=u.email;
-  document.getElementById('perfil-apto').textContent='🏠 Apartamento '+u.apartamento;
+  var u = App.usuario;
+  document.getElementById('hdr-apto').textContent = 'Apt '+u.apartamento;
+  document.getElementById('av-inicial').textContent = u.nome.charAt(0).toUpperCase();
+  document.getElementById('perfil-nome').textContent = u.nome;
+  document.getElementById('perfil-email').textContent = u.email;
+  document.getElementById('perfil-apto').textContent = '🏠 Apartamento '+u.apartamento;
   mostrarTela('tela-dash');
   document.getElementById('resultado-card').classList.add('oculto');
   estadoDesligado();
   overlayShow('Verificando sessão...');
-  api('verificarSessaoAtiva',{usuarioId:String(u.id)})
-    .then(function(res){
+  api('verificarSessaoAtiva', {usuarioId:String(u.id)})
+    .then(function(res) {
       overlayHide();
-      if(res&&res.ativa){
-        App.sessaoId=res.sessaoId;App.vagaId=res.vaga;
-        App.kwhInicial=res.kwhInicial;App.inicio=res.inicio;
-        estadoLigado(res);
-      }
+      if (res&&res.ativa) { App.sessaoId=res.sessaoId; App.vagaId=res.vaga; App.kwhInicial=res.kwhInicial; App.inicio=res.inicio; estadoLigado(res); }
       carregarHistorico();
     })
-    .catch(function(){
-      overlayHide();
-      carregarHistorico();
-    });
+    .catch(function() { overlayHide(); carregarHistorico(); });
 }
 
 function estadoLigado(s) {
@@ -858,532 +476,151 @@ function estadoDesligado() {
   document.getElementById('btn-iniciar').disabled=false;
 }
 
-// ─── QR SCANNER ───────────────────────────────────────────────
-var _qrProcessing=false;
-
-function abrirScanner() {
-  if(!App.usuario) return;
-  mostrarTela('tela-qr');
-  document.getElementById('qr-erro').classList.add('oculto');
-  document.getElementById('qr-status').textContent='Iniciando câmera...';
-  _qrProcessing = false;
-  // Pequeno delay para o DOM da tela estar pronto
-  setTimeout(iniciarCameraQR, 200);
-}
-
-
-
-function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
-
-var _html5Scanner = null;
-
-function iniciarCameraQR() {
-  if (typeof Html5Qrcode === 'undefined') {
-    setTimeout(iniciarCameraQR, 400);
-    return;
-  }
-
-  if (_html5Scanner) {
-    _html5Scanner.stop().catch(function(){});
-    _html5Scanner = null;
-  }
-
-  // Limpa o reader div
-  document.getElementById('qr-reader').innerHTML = '';
-
-  _html5Scanner = new Html5Qrcode('qr-reader');
-
-  var config = {
-    fps: 10,
-    qrbox: { width: 220, height: 220 },
-    aspectRatio: 1.0,
-    formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
-    showTorchButtonIfSupported: false,
-    showZoomSliderIfSupported: false,
-    defaultZoomValueIfSupported: 2,
-  };
-
-  Html5Qrcode.getCameras()
-    .then(function(cameras) {
-      if (!cameras || cameras.length === 0) {
-        document.getElementById('qr-status').textContent = '';
-        document.getElementById('qr-erro').textContent = 'Nenhuma câmera encontrada.';
-        document.getElementById('qr-erro').classList.remove('oculto');
-        return;
-      }
-      // Prefere câmera traseira
-      var cam = cameras[cameras.length - 1];
-      return _html5Scanner.start(
-        { facingMode: 'environment' },
-        config,
-        function(decodedText) {
-          // Sucesso — para câmera e processa
-          if (_qrProcessing) return;
-          _qrProcessing = true;
-          var texto = decodedText.trim();
-          _html5Scanner.stop()
-            .catch(function(){})
-            .then(function(){
-              processarQRCode(texto);
-            });
-        },
-        function() { /* erros de frame — ignorar */ }
-      );
-    })
-    .then(function() {
-      document.getElementById('qr-status').textContent = 'Aponte para o QR code da vaga';
-    })
-    .catch(function(err) {
-      console.error('Cam err:', err);
-      document.getElementById('qr-status').textContent = '';
-      document.getElementById('qr-erro').textContent =
-        String(err).indexOf('ermission') >= 0
-          ? 'Permissão negada. Vá em Ajustes → Safari → Câmera.'
-          : 'Câmera indisponível: ' + err;
-      document.getElementById('qr-erro').classList.remove('oculto');
-    });
-}
-
-function pararCameraQR(){
-  if (_html5Scanner) {
-    _html5Scanner.stop().catch(function(){});
-    _html5Scanner = null;
-  }
-  _qrProcessing = false;
-}
-
-</script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer>
-// ─── HISTÓRICO ────────────────────────────────────────────────
-function carregarHistorico(){
-  if(!App.usuario) return;
+// ══ HISTÓRICO ════════════════════════════════════════════════
+function carregarHistorico() {
+  if (!App.usuario) return;
   var el = document.getElementById('hist-lista');
   el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
-  api('obterHistoricoUsuario', {usuarioId: String(App.usuario.id)})
-    .then(function(lista){
-      if(!lista || !Array.isArray(lista) || lista.length===0){
-        el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>';
-        return;
-      }
-      el.innerHTML = lista.map(function(s){
-        var status  = String(s.status||'');
-        var cls     = status==='CONCLUIDO' ? 'ok' : 'prog';
-        var txt     = status==='CONCLUIDO' ? 'Concluído'
-                    : status==='ENCERRADO_AUTO' ? 'Auto-enc.'
-                    : 'Em andamento';
-        var consumo = (s.consumo!=null && s.consumo!=='')
-                    ? fmtBR(s.consumo)+' kWh' : '–';
-        var data    = s.inicio ? String(s.inicio).slice(0,16) : '–';
-        var dur     = (s.duracao!=null && s.duracao!=='') ? formatarDuracao(s.duracao) : '';
+  api('obterHistoricoUsuario', {usuarioId:String(App.usuario.id)})
+    .then(function(lista) {
+      if (!lista||!Array.isArray(lista)||lista.length===0) { el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>'; return; }
+      el.innerHTML = lista.map(function(s) {
+        var status = String(s.status||'');
+        var cls = status==='CONCLUIDO'?'ok':'prog';
+        var txt = status==='CONCLUIDO'?'Concluído':status==='ENCERRADO_AUTO'?'Auto-enc.':'Em andamento';
+        var consumo = (s.consumo!=null&&s.consumo!=='') ? fmtBR(s.consumo)+' kWh' : '–';
+        var data = s.inicio ? String(s.inicio).slice(0,16) : '–';
+        var dur = (s.duracao!=null&&s.duracao!=='') ? formatarDuracao(s.duracao) : '';
         return '<div class="hist-item">'
-          +'<div><div class="hist-data">'+data+'</div>'
-          +'<div class="hist-id">'+String(s.sessaoId||'')+(s.vaga?' · '+s.vaga:'')+'</div></div>'
-          +'<div><div class="hist-kwh">'+consumo+'</div>'
-          +'<div class="hist-dur">'+dur+'</div></div>'
-          +'<span class="hist-badge '+cls+'">'+txt+'</span>'
-          +'</div>';
+          +'<div><div class="hist-data">'+data+'</div><div class="hist-id">'+String(s.sessaoId||'')+(s.vaga?' · '+s.vaga:'')+'</div></div>'
+          +'<div><div class="hist-kwh">'+consumo+'</div><div class="hist-dur">'+dur+'</div></div>'
+          +'<span class="hist-badge '+cls+'">'+txt+'</span></div>';
       }).join('');
     })
-    .catch(function(){
-      el.innerHTML='<div class="hist-vazio">Não foi possível carregar o histórico.</div>';
-    });
+    .catch(function() { el.innerHTML='<div class="hist-vazio">Não foi possível carregar o histórico.</div>'; });
 }
 
-// ─── SENHA ────────────────────────────────────────────────────
-function mostrarTrocarSenha(){
-  if(App.usuario) document.getElementById('s-email').value=App.usuario.email;
-  mostrarTela('tela-senha');
+// ══ SCANNER QR ═══════════════════════════════════════════════
+function abrirScanner() {
+  if (!App.usuario) return;
+  _qrProcessing = false;
+  mostrarTela('tela-qr');
+  document.getElementById('qr-erro').classList.add('oculto');
+  document.getElementById('qr-status').textContent = 'Iniciando câmera...';
+  setTimeout(iniciarScanner, 200);
 }
 
-function mudarSenha(){
-  var email=document.getElementById('s-email').value.trim();
-  var atual=document.getElementById('s-atual').value;
-  var nova=document.getElementById('s-nova').value;
-  var conf=document.getElementById('s-conf').value;
-  var msgEl=document.getElementById('s-msg');
-  msgEl.className='msg-erro'; msgEl.classList.remove('oculto');
-  if(!email||!atual||!nova||!conf){msgEl.textContent='Preencha todos os campos.';return;}
-  if(nova!==conf){msgEl.textContent='As senhas não coincidem.';return;}
-  if(nova.length<6){msgEl.textContent='Mínimo 6 caracteres.';return;}
-  msgEl.className=''; msgEl.textContent='Aguarde...';
-  api('alterarSenha',{email:email,senhaAtual:atual,novaSenha:nova})
-    .then(function(res){
-      if(res.erro){msgEl.className='msg-erro';msgEl.textContent=res.erro;}
-      else{
-        msgEl.className='msg-ok';msgEl.textContent='✅ Senha alterada!';
-        try{
-          var r=JSON.parse(localStorage.getItem(LS_KEY)||'null');
-          if(r&&r.email===email){r.senha=nova;localStorage.setItem(LS_KEY,JSON.stringify(r));}
-        }catch(e){}
-        setTimeout(function(){
-          mostrarTela('tela-login');
-          msgEl.classList.add('oculto');
-          ['s-email','s-atual','s-nova','s-conf'].forEach(function(id){
-            document.getElementById(id).value='';
-          });
-        },2000);
-      }
-    })
-    .catch(function(err){
-      msgEl.className='msg-erro';
-      msgEl.textContent='Erro: '+(err?err.message:'tente novamente');
-    });
+function fecharScanner() {
+  pararScanner();
+  mostrarTela('tela-dash');
 }
 
-document.addEventListener('keydown',function(e){
-  if(e.key!=='Enter')return;
-  var a=document.querySelector('.tela.ativa');
-  if(!a)return;
-  if(a.id==='tela-login')efetuarLogin();
-  if(a.id==='tela-senha')mudarSenha();
-});
-</script>
-</body>
-</htmlfunction processarQRCode(texto){
-  var vagaId = texto.toUpperCase();
-  if(!/^VAGA_[A-Z0-9]{1,4}$/.test(vagaId)){
-    document.getElementById('qr-erro').textContent='QR inválido: "'+texto+'". Escaneie o código da vaga.';
+function iniciarScanner() {
+  if (typeof Html5Qrcode === 'undefined') { setTimeout(iniciarScanner, 400); return; }
+  pararScanner();
+  document.getElementById('qr-reader').innerHTML = '';
+  _qrScanner = new Html5Qrcode('qr-reader');
+  _qrScanner.start(
+    { facingMode: 'environment' },
+    { fps:10, qrbox:{width:220,height:220}, aspectRatio:1.0, formatsToSupport:[Html5QrcodeSupportedFormats.QR_CODE] },
+    function(decodedText) {
+      if (_qrProcessing) return;
+      _qrProcessing = true;
+      var texto = decodedText.trim();
+      pararScanner();
+      processarQRCode(texto);
+    },
+    function() {}
+  )
+  .then(function() { document.getElementById('qr-status').textContent = 'Aponte para o QR code da vaga'; })
+  .catch(function(err) {
+    document.getElementById('qr-status').textContent = '';
+    document.getElementById('qr-erro').textContent = String(err).indexOf('ermission')>=0
+      ? 'Permissão negada. Vá em Ajustes → Safari → Câmera.' : 'Câmera indisponível: '+err;
     document.getElementById('qr-erro').classList.remove('oculto');
-    document.getElementById('qr-status').textContent='Tente novamente';
-    setTimeout(function(){ _qrProcessing=false; iniciarCameraQR(); }, 2500);
+  });
+}
+
+function pararScanner() {
+  if (_qrScanner) {
+    _qrScanner.stop().catch(function(){});
+    _qrScanner = null;
+  }
+  _qrProcessing = false;
+}
+
+function processarQRCode(texto) {
+  var vagaId = texto.toUpperCase();
+  if (!/^VAGA_[A-Z0-9]{1,4}$/.test(vagaId)) {
+    document.getElementById('qr-erro').textContent = 'QR inválido: "'+texto+'". Escaneie o código da vaga.';
+    document.getElementById('qr-erro').classList.remove('oculto');
+    document.getElementById('qr-status').textContent = 'Tente novamente';
+    setTimeout(function() { _qrProcessing=false; iniciarScanner(); }, 2500);
     return;
   }
   mostrarTela('tela-dash');
   overlayShow('Verificando vaga '+vagaId+'...');
-  api('verificarVaga',{vagaId:vagaId})
-    .then(function(res){
+  api('verificarVaga', {vagaId:vagaId})
+    .then(function(res) {
       overlayHide();
-      if(res.erro){ alert('❌ '+res.erro); return; }
-      if(res.ocupada){ alert('🚫 '+res.mensagem); return; }
+      if (res.erro) { alert('❌ '+res.erro); return; }
+      if (res.ocupada) { alert('🚫 '+res.mensagem); return; }
       iniciarCarregamento(vagaId);
     })
-    .catch(function(err){
-      overlayHide();
-      alert('Falha: '+(err?err.message:'tente novamente'));
-    });
+    .catch(function(err) { overlayHide(); alert('Falha: '+(err?err.message:'tente novamente')); });
 }
 
-function api(action, params) {
-  return new Promise(function(resolve, reject) {
-    var cbName = '_gasCb' + (++_cbCounter);
-    var timeout = setTimeout(function() {
-      delete window[cbName];
-      var s = document.getElementById(cbName);
-      if (s) s.remove();
-      reject(new Error('Timeout — verifique a URL do GAS'));
-    }, 30000);
-
-    window[cbName] = function(data) {
-      clearTimeout(timeout);
-      delete window[cbName];
-      var s = document.getElementById(cbName);
-      if (s) s.remove();
-      resolve(data);
-    };
-
-    var payload = JSON.stringify(params || {});
-    var url = GAS_URL
-      + '?action=' + encodeURIComponent(action)
-      + '&payload=' + encodeURIComponent(payload)
-      + '&callback=' + cbName;
-
-    if (GAS_URL.indexOf('COLE_AQUI') >= 0) {
-      clearTimeout(timeout);
-      reject(new Error('URL do GAS não configurada. Edite o arquivo e substitua GAS_URL.'));
-      return;
-    }
-    var script = document.createElement('script');
-    script.id  = cbName;
-    script.src = url;
-    script.onerror = function() {
-      clearTimeout(timeout);
-      delete window[cbName];
-      script.remove();
-      reject(new Error('Falha ao contactar o servidor. Verifique a URL do GAS.'));
-    };
-    document.head.appendChild(script);
-  });
-}
-
-// ─── INIT ─────────────────────────────────────────────────────
-window.addEventListener('load', function() {
-  mostrarTela('tela-login');
-  carregarCredenciais();
-  mostrarHintPWA();
-  // Avisa se URL do GAS não foi configurada
-  if (GAS_URL.indexOf('COLE_AQUI') >= 0) {
-    var el = document.getElementById('login-erro');
-    el.textContent = '⚠️ Configure a URL do GAS no arquivo (variável GAS_URL).';
-    el.classList.remove('oculto');
-  }
-});
-
-// ─── CREDENCIAIS ──────────────────────────────────────────────
-function salvarCredenciais(email, senha) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify({ email:email, senha:senha, nome:App.usuario?App.usuario.nome:'' })); } catch(e) {}
-}
-function carregarCredenciais() {
-  try {
-    var raw = localStorage.getItem(LS_KEY); if (!raw) return;
-    var c = JSON.parse(raw); if (!c||!c.email) return;
-    document.getElementById('login-email').value = c.email;
-    if (c.nome) {
-      document.getElementById('banner-nome').textContent = '👋 Bem-vindo, '+c.nome.split(' ')[0]+'!';
-      document.getElementById('banner-lembrado').classList.remove('oculto');
-      document.getElementById('form-email-wrap').classList.add('oculto');
-    }
-    if (c.senha) document.getElementById('login-senha').value = c.senha;
-  } catch(e) {}
-}
-function limparCredenciais() {
-  try { localStorage.removeItem(LS_KEY); } catch(e) {}
-  document.getElementById('banner-lembrado').classList.add('oculto');
-  document.getElementById('form-email-wrap').classList.remove('oculto');
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-senha').value = '';
-}
-
-// ─── PWA ──────────────────────────────────────────────────────
-function mostrarHintPWA() {
-  var h = document.getElementById('hint-pwa'), ua = navigator.userAgent;
-  if (window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches) { h.textContent='✅ App instalado!'; return; }
-  if (/iPhone|iPad|iPod/.test(ua)) h.textContent='Para instalar: Compartilhar → "Adicionar à Tela de Início"';
-  else if (/Android/.test(ua)) h.textContent='Para instalar: menu ⋮ → "Adicionar à tela inicial"';
-}
-
-// ─── NAVEGAÇÃO ────────────────────────────────────────────────
-function mostrarTela(id) {
-  document.querySelectorAll('.tela').forEach(function(t){ t.classList.remove('ativa'); t.style.display=''; });
-  var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa');
-  window.scrollTo(0,0);
-}
-function overlayShow(msg) { document.getElementById('overlay-msg').textContent=msg||'Aguarde...'; document.getElementById('overlay').classList.remove('oculto'); }
-function overlayHide() { document.getElementById('overlay').classList.add('oculto'); }
-function toggleSenha(id,btn) { var i=document.getElementById(id); i.type=i.type==='password'?'text':'password'; btn.textContent=i.type==='password'?'👁':'🙈'; }
-function formatarDuracao(min) { if(min===''||min==null)return'–'; min=Number(min); if(isNaN(min))return'–'; if(min<60)return min+' min'; return Math.floor(min/60)+'h '+(min%60)+'min'; }
-function fmtBR(num,casas) {
-  if(num===''||num==null)return'–'; var n=Number(num); if(isNaN(n))return'–'; var c=casas!==undefined?casas:4;
-  try{return n.toLocaleString('pt-BR',{minimumFractionDigits:c,maximumFractionDigits:c});}
-  catch(e){var p=n.toFixed(c).split('.');return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+(p[1]||'');}
-}
-
-// ─── LOGIN ────────────────────────────────────────────────────
-function efetuarLogin() {
-  var bannerVis = !document.getElementById('banner-lembrado').classList.contains('oculto');
-  var email = bannerVis?JSON.parse(localStorage.getItem(LS_KEY)||'{}').email||'':document.getElementById('login-email').value.trim();
-  var senha=document.getElementById('login-senha').value;
-  var erroEl=document.getElementById('login-erro'), btn=document.getElementById('btn-login');
-  var lembrar=document.getElementById('lembrar-me').checked;
-  erroEl.classList.add('oculto');
-  if(!email||!senha){erroEl.textContent='Preencha email e senha.';erroEl.classList.remove('oculto');return;}
-  btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
-  api('fazerLogin',{email:email,senha:senha})
-    .then(function(res){
-      btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-      if(res.erro){erroEl.textContent=res.erro;erroEl.classList.remove('oculto');return;}
-      App.usuario=res;
-      if(lembrar){salvarCredenciais(email,senha);try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'{}');r.nome=res.nome;localStorage.setItem(LS_KEY,JSON.stringify(r));}catch(e){}}
-      else{try{localStorage.removeItem(LS_KEY);}catch(e){}}
-      entrarDashboard();
-    }).catch(function(err){
-      btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-      erroEl.textContent='Erro de conexão: '+(err?err.message:'tente novamente'); erroEl.classList.remove('oculto');
-    });
-}
-function fazerLogout() {
-  pararCameraQR();
-  App.usuario=App.sessaoId=App.vagaId=App.kwhInicial=App.inicio=null; App.carregando=false;
-  document.getElementById('login-senha').value=''; document.getElementById('login-erro').classList.add('oculto');
-  carregarCredenciais(); mostrarTela('tela-login');
-}
-
-// ─── DASHBOARD ────────────────────────────────────────────────
-function entrarDashboard() {
-  var u=App.usuario;
-  document.getElementById('hdr-apto').textContent='Apt '+u.apartamento;
-  document.getElementById('av-inicial').textContent=u.nome.charAt(0).toUpperCase();
-  document.getElementById('perfil-nome').textContent=u.nome;
-  document.getElementById('perfil-email').textContent=u.email;
-  document.getElementById('perfil-apto').textContent='🏠 Apartamento '+u.apartamento;
-  mostrarTela('tela-dash');
-  document.getElementById('resultado-card').classList.add('oculto');
-  estadoDesligado();
-  overlayShow('Verificando sessão...');
-  api('verificarSessaoAtiva',{usuarioId:String(u.id)})
-    .then(function(res){
-      overlayHide();
-      if(res&&res.ativa){
-        App.sessaoId=res.sessaoId;App.vagaId=res.vaga;
-        App.kwhInicial=res.kwhInicial;App.inicio=res.inicio;
-        estadoLigado(res);
-      }
+// ══ CONTROLE ═════════════════════════════════════════════════
+function iniciarCarregamento(vagaId) {
+  if (App.carregando||!App.usuario) return;
+  App.carregando=true;
+  overlayShow('Ligando disjuntor da '+vagaId+'...');
+  document.getElementById('btn-iniciar').disabled=true;
+  api('iniciarCarregamento', {usuarioId:String(App.usuario.id),email:String(App.usuario.email),apartamento:String(App.usuario.apartamento),vagaId:vagaId})
+    .then(function(res) {
+      overlayHide(); App.carregando=false;
+      if (!res||res.erro) { document.getElementById('btn-iniciar').disabled=false; alert('Erro: '+(res?res.erro:'Resposta vazia')); return; }
+      App.sessaoId=res.sessaoId; App.vagaId=res.vaga; App.kwhInicial=res.kwh; App.inicio=res.inicio;
+      estadoLigado({sessaoId:res.sessaoId,vaga:res.vaga,kwhInicial:res.kwh,inicio:res.inicio});
+      document.getElementById('resultado-card').classList.add('oculto');
+      if (res.sessaoAnteriorEmail) alert('ℹ️ Sessão de '+res.sessaoAnteriorEmail+' encerrada.');
       carregarHistorico();
     })
-    .catch(function(){
-      overlayHide();
-      carregarHistorico();
-    });
+    .catch(function(err) { overlayHide(); App.carregando=false; document.getElementById('btn-iniciar').disabled=false; alert('Falha: '+(err?err.message:'Erro')); });
 }
 
-function estadoLigado(s) {
-  document.getElementById('status-dot').className='status-dot ligado';
-  document.getElementById('status-txt').textContent='⚡ Carregando';
-  document.getElementById('sess-vaga').textContent=s.vaga||'–';
-  document.getElementById('sess-inicio').textContent=s.inicio||'–';
-  document.getElementById('sess-kwh-ini').textContent=fmtBR(s.kwhInicial)+' kWh';
-  document.getElementById('sess-id').textContent=s.sessaoId||'–';
-  document.getElementById('painel-sessao').classList.remove('oculto');
-  document.getElementById('btn-iniciar').classList.add('oculto');
-  document.getElementById('btn-parar').classList.remove('oculto');
-  document.getElementById('btn-parar').disabled=false;
-}
-function estadoDesligado() {
-  document.getElementById('status-dot').className='status-dot';
-  document.getElementById('status-txt').textContent='Pronto para carregar';
-  document.getElementById('painel-sessao').classList.add('oculto');
-  document.getElementById('btn-parar').classList.add('oculto');
-  document.getElementById('btn-iniciar').classList.remove('oculto');
-  document.getElementById('btn-iniciar').disabled=false;
-}
-
-// ─── QR SCANNER ───────────────────────────────────────────────
-var _qrProcessing=false;
-
-function abrirScanner() {
-  if(!App.usuario) return;
-  mostrarTela('tela-qr');
-  document.getElementById('qr-erro').classList.add('oculto');
-  document.getElementById('qr-status').textContent='Iniciando câmera...';
-  _qrProcessing = false;
-  // Pequeno delay para o DOM da tela estar pronto
-  setTimeout(iniciarCameraQR, 200);
-}
-
-
-
-function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
-
-var _html5Scanner = null;
-
-function iniciarCameraQR() {
-  if (typeof Html5Qrcode === 'undefined') {
-    setTimeout(iniciarCameraQR, 400);
-    return;
-  }
-
-  if (_html5Scanner) {
-    _html5Scanner.stop().catch(function(){});
-    _html5Scanner = null;
-  }
-
-  // Limpa o reader div
-  document.getElementById('qr-reader').innerHTML = '';
-
-  _html5Scanner = new Html5Qrcode('qr-reader');
-
-  var config = {
-    fps: 10,
-    qrbox: { width: 220, height: 220 },
-    aspectRatio: 1.0,
-    formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
-    showTorchButtonIfSupported: false,
-    showZoomSliderIfSupported: false,
-    defaultZoomValueIfSupported: 2,
-  };
-
-  Html5Qrcode.getCameras()
-    .then(function(cameras) {
-      if (!cameras || cameras.length === 0) {
-        document.getElementById('qr-status').textContent = '';
-        document.getElementById('qr-erro').textContent = 'Nenhuma câmera encontrada.';
-        document.getElementById('qr-erro').classList.remove('oculto');
-        return;
-      }
-      // Prefere câmera traseira
-      var cam = cameras[cameras.length - 1];
-      return _html5Scanner.start(
-        { facingMode: 'environment' },
-        config,
-        function(decodedText) {
-          // Sucesso — para câmera e processa
-          if (_qrProcessing) return;
-          _qrProcessing = true;
-          var texto = decodedText.trim();
-          _html5Scanner.stop()
-            .catch(function(){})
-            .then(function(){
-              processarQRCode(texto);
-            });
-        },
-        function() { /* erros de frame — ignorar */ }
-      );
+function pararCarregamento() {
+  if (App.carregando||!App.usuario||!App.sessaoId||!App.vagaId) return;
+  App.carregando=true;
+  overlayShow('Desligando e registrando...');
+  document.getElementById('btn-parar').disabled=true;
+  api('pararCarregamento', {usuarioId:String(App.usuario.id),email:String(App.usuario.email),nome:String(App.usuario.nome),sessaoId:String(App.sessaoId),vagaId:String(App.vagaId)})
+    .then(function(res) {
+      overlayHide(); App.carregando=false;
+      if (!res||res.erro) { document.getElementById('btn-parar').disabled=false; alert('Erro: '+(res?res.erro:'Resposta vazia')); return; }
+      App.sessaoId=App.vagaId=App.kwhInicial=App.inicio=null;
+      estadoDesligado(); mostrarResultado(res); carregarHistorico();
     })
-    .then(function() {
-      document.getElementById('qr-status').textContent = 'Aponte para o QR code da vaga';
-    })
-    .catch(function(err) {
-      console.error('Cam err:', err);
-      document.getElementById('qr-status').textContent = '';
-      document.getElementById('qr-erro').textContent =
-        String(err).indexOf('ermission') >= 0
-          ? 'Permissão negada. Vá em Ajustes → Safari → Câmera.'
-          : 'Câmera indisponível: ' + err;
-      document.getElementById('qr-erro').classList.remove('oculto');
-    });
+    .catch(function(err) { overlayHide(); App.carregando=false; document.getElementById('btn-parar').disabled=false; alert('Falha: '+(err?err.message:'Erro')); });
 }
 
-function pararCameraQR(){
-  if (_html5Scanner) {
-    _html5Scanner.stop().catch(function(){});
-    _html5Scanner = null;
-  }
-  _qrProcessing = false;
+// ══ RESULTADO ════════════════════════════════════════════════
+function mostrarResultado(res) {
+  document.getElementById('r-consumo').textContent=fmtBR(res.consumo)+' kWh';
+  document.getElementById('r-duracao').textContent=formatarDuracao(res.duracao);
+  document.getElementById('r-vaga').textContent=res.vaga||'–';
+  document.getElementById('r-kwh-ini').textContent=fmtBR(res.kwhInicial)+' kWh';
+  document.getElementById('r-kwh-fim').textContent=fmtBR(res.kwhFinal)+' kWh';
+  document.getElementById('r-inicio').textContent=res.inicio||'–';
+  document.getElementById('r-fim').textContent=res.fim||'–';
+  var card=document.getElementById('resultado-card'); card.classList.remove('oculto');
+  setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
 }
+function fecharResultado() { document.getElementById('resultado-card').classList.add('oculto'); }
 
-</script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer>
-// ─── HISTÓRICO ────────────────────────────────────────────────
-function carregarHistorico(){
-  if(!App.usuario) return;
-  var el = document.getElementById('hist-lista');
-  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
-  api('obterHistoricoUsuario', {usuarioId: String(App.usuario.id)})
-    .then(function(lista){
-      if(!lista || !Array.isArray(lista) || lista.length===0){
-        el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>';
-        return;
-      }
-      el.innerHTML = lista.map(function(s){
-        var status  = String(s.status||'');
-        var cls     = status==='CONCLUIDO' ? 'ok' : 'prog';
-        var txt     = status==='CONCLUIDO' ? 'Concluído'
-                    : status==='ENCERRADO_AUTO' ? 'Auto-enc.'
-                    : 'Em andamento';
-        var consumo = (s.consumo!=null && s.consumo!=='')
-                    ? fmtBR(s.consumo)+' kWh' : '–';
-        var data    = s.inicio ? String(s.inicio).slice(0,16) : '–';
-        var dur     = (s.duracao!=null && s.duracao!=='') ? formatarDuracao(s.duracao) : '';
-        return '<div class="hist-item">'
-          +'<div><div class="hist-data">'+data+'</div>'
-          +'<div class="hist-id">'+String(s.sessaoId||'')+(s.vaga?' · '+s.vaga:'')+'</div></div>'
-          +'<div><div class="hist-kwh">'+consumo+'</div>'
-          +'<div class="hist-dur">'+dur+'</div></div>'
-          +'<span class="hist-badge '+cls+'">'+txt+'</span>'
-          +'</div>';
-      }).join('');
-    })
-    .catch(function(){
-      el.innerHTML='<div class="hist-vazio">Não foi possível carregar o histórico.</div>';
-    });
-}
-
-// ─── SENHA ────────────────────────────────────────────────────
-function mostrarTrocarSenha(){
-  if(App.usuario) document.getElementById('s-email').value=App.usuario.email;
-  mostrarTela('tela-senha');
-}
-
-function mudarSenha(){
+// ══ SENHA ════════════════════════════════════════════════════
+function mostrarTrocarSenha() { if(App.usuario) document.getElementById('s-email').value=App.usuario.email; mostrarTela('tela-senha'); }
+function mudarSenha() {
   var email=document.getElementById('s-email').value.trim();
   var atual=document.getElementById('s-atual').value;
   var nova=document.getElementById('s-nova').value;
@@ -1399,32 +636,21 @@ function mudarSenha(){
       if(res.erro){msgEl.className='msg-erro';msgEl.textContent=res.erro;}
       else{
         msgEl.className='msg-ok';msgEl.textContent='✅ Senha alterada!';
-        try{
-          var r=JSON.parse(localStorage.getItem(LS_KEY)||'null');
-          if(r&&r.email===email){r.senha=nova;localStorage.setItem(LS_KEY,JSON.stringify(r));}
-        }catch(e){}
-        setTimeout(function(){
-          mostrarTela('tela-login');
-          msgEl.classList.add('oculto');
-          ['s-email','s-atual','s-nova','s-conf'].forEach(function(id){
-            document.getElementById(id).value='';
-          });
-        },2000);
+        try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'null');if(r&&r.email===email){r.senha=nova;localStorage.setItem(LS_KEY,JSON.stringify(r));}}catch(e){}
+        setTimeout(function(){mostrarTela('tela-login');msgEl.classList.add('oculto');['s-email','s-atual','s-nova','s-conf'].forEach(function(id){document.getElementById(id).value='';});},2000);
       }
     })
-    .catch(function(err){
-      msgEl.className='msg-erro';
-      msgEl.textContent='Erro: '+(err?err.message:'tente novamente');
-    });
+    .catch(function(err){msgEl.className='msg-erro';msgEl.textContent='Erro: '+(err?err.message:'tente novamente');});
 }
 
 document.addEventListener('keydown',function(e){
   if(e.key!=='Enter')return;
-  var a=document.querySelector('.tela.ativa');
-  if(!a)return;
+  var a=document.querySelector('.tela.ativa'); if(!a)return;
   if(a.id==='tela-login')efetuarLogin();
   if(a.id==='tela-senha')mudarSenha();
 });
 </script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
