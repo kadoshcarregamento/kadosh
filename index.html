@@ -477,6 +477,26 @@ body::before {
 }
 
 .oculto { display: none !important; }
+
+/* Override html5-qrcode default styles */
+#qr-reader { border: none !important; }
+#qr-reader__scan_region { border-radius: 14px; overflow: hidden; }
+#qr-reader__scan_region img { display: none !important; }
+#qr-reader__dashboard { padding: 8px 0 0 !important; }
+#qr-reader__dashboard_section_csr button {
+  background: var(--k-green) !important;
+  color: #0d0d0d !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 10px 20px !important;
+  font-family: var(--f-display) !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+}
+#qr-reader__dashboard_section_fsr { display: none !important; }
+#qr-reader__status_span { color: var(--txt-sub) !important; font-size: 13px !important; }
+#qr-reader__header_message { display: none !important; }
+
 </style>
 </head>
 <body>
@@ -560,16 +580,9 @@ body::before {
       <h2 class="qr-titulo">Escanear Vaga</h2>
       <p class="qr-sub">Aponte a câmera para o QR code da vaga</p>
     </div>
-    <div class="qr-viewfinder-wrap" id="qr-viewfinder-wrap">
-      <video id="qr-video" class="qr-video" autoplay muted playsinline></video>
-      <div class="qr-frame">
-        <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
-        <div class="qr-corner bl"></div><div class="qr-corner br"></div>
-        <div class="qr-scan-line"></div>
-      </div>
-    </div>
-    <canvas id="qr-canvas" style="display:none"></canvas>
-    <div id="qr-status" class="qr-status">Iniciando câmera...</div>
+    <!-- html5-qrcode renderiza aqui -->
+    <div id="qr-reader" style="width:100%;max-width:340px;border-radius:18px;overflow:hidden"></div>
+    <div id="qr-status" class="qr-status"></div>
     <div id="qr-erro" class="msg-erro oculto"></div>
   </div>
 </div>
@@ -844,84 +857,74 @@ function estadoDesligado() {
 var _qrProcessing=false;
 
 function abrirScanner() {
-  if(!App.usuario)return;
+  if(!App.usuario) return;
   mostrarTela('tela-qr');
   document.getElementById('qr-erro').classList.add('oculto');
   document.getElementById('qr-status').textContent='Iniciando câmera...';
   _qrProcessing = false;
-  iniciarCameraQR();
+  // Pequeno delay para o DOM da tela estar pronto
+  setTimeout(iniciarCameraQR, 200);
 }
 
 
 
 function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
 
-var _qrScannerInstance = null;
+var _html5Scanner = null;
 
 function iniciarCameraQR() {
-  var statusEl = document.getElementById('qr-status');
-  var erroEl   = document.getElementById('qr-erro');
-
-  if (typeof QrScanner === 'undefined') {
+  if (typeof Html5QrcodeScanner === 'undefined') {
     setTimeout(iniciarCameraQR, 400);
     return;
   }
 
-  var video = document.getElementById('qr-video');
-
-  if (_qrScannerInstance) {
-    _qrScannerInstance.destroy();
-    _qrScannerInstance = null;
+  // Limpa instância anterior se existir
+  if (_html5Scanner) {
+    _html5Scanner.clear().catch(function(){});
+    _html5Scanner = null;
   }
 
-  _qrScannerInstance = new QrScanner(
-    video,
-    function(result) {
+  // Limpa o div do reader
+  var readerEl = document.getElementById('qr-reader');
+  readerEl.innerHTML = '';
+
+  _html5Scanner = new Html5QrcodeScanner(
+    'qr-reader',
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 250 },
+      aspectRatio: 1.0,
+      formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+    },
+    false // verbose = false
+  );
+
+  _html5Scanner.render(
+    function(decodedText) {
+      // Sucesso
       if (_qrProcessing) return;
       _qrProcessing = true;
-      processarQRCode(result.data.trim());
+      _html5Scanner.clear().catch(function(){});
+      document.getElementById('qr-status').textContent = '';
+      processarQRCode(decodedText.trim());
     },
-    {
-      returnDetailedScanResult: true,
-      preferredCamera: 'environment',
-      maxScansPerSecond: 5,
-      highlightScanRegion: false,
-      highlightCodeOutline: false,
+    function(errorMsg) {
+      // Erros de frame são normais, ignorar
     }
   );
 
-  _qrScannerInstance.start()
-    .then(function() {
-      statusEl.textContent = 'Aponte para o QR code da vaga';
-      // Força foco contínuo no iOS
-      var track = video.srcObject && video.srcObject.getVideoTracks()[0];
-      if (track && track.applyConstraints) {
-        track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
-          .catch(function() {}); // ignora se não suportado
-      }
-    })
-    .catch(function(err) {
-      console.error('QrScanner:', err);
-      statusEl.textContent = '';
-      erroEl.textContent = String(err).indexOf('ermission') >= 0
-        ? 'Permissão negada. Vá em Ajustes → Safari → Câmera e permita.'
-        : 'Câmera indisponível: ' + err;
-      erroEl.classList.remove('oculto');
-    });
+  document.getElementById('qr-status').textContent = '';
 }
 
-// Leitura via BarcodeDetector API nativa — mesmo motor da câmera do sistema
-
 function pararCameraQR(){
-  if (_qrScannerInstance) {
-    _qrScannerInstance.stop();
-    _qrScannerInstance.destroy();
-    _qrScannerInstance = null;
+  if (_html5Scanner) {
+    _html5Scanner.clear().catch(function(){});
+    _html5Scanner = null;
   }
   _qrProcessing = false;
 }
 
 </script>
-<script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js" defer></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
