@@ -117,7 +117,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 /* QR Scanner */
 .qr-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:28px 20px calc(var(--sab) + 28px);display:flex;flex-direction:column;align-items:center;gap:20px}
 .qr-titulo{font-family:var(--f-display);font-size:36px;letter-spacing:.04em;color:var(--txt);text-align:center}
-.qr-sub{font-size:14px;color:var(--txt-sub);margin-top:6px;line-height:1.6;max-width:300px;text-align:center}
+.qr-sub{font-size:24px;color:var(--txt-sub);margin-top:6px;line-height:1.6;max-width:300px;text-align:center}
 .qr-viewfinder-wrap{position:relative;width:100%;max-width:320px;border-radius:20px;overflow:hidden;background:#000;aspect-ratio:1/1;border:1px solid var(--border);box-shadow:0 0 0 1px rgba(59,205,192,.15),0 8px 40px rgba(0,0,0,.6)}
 .qr-corner{position:absolute;width:28px;height:28px;border-color:var(--k-green);border-style:solid;border-width:0;z-index:10;pointer-events:none}
 .qr-corner.tl{top:18px;left:18px;border-top-width:3px;border-left-width:3px;border-radius:4px 0 0 0}
@@ -532,7 +532,7 @@ function iniciarScanner() {
     },
     function() {}
   )
-  .then(function() { document.getElementById('qr-status').textContent = 'Aponte para o QR code da vaga'; })
+  .then(function() { document.getElementById('qr-status').textContent = 'Aponte a câmera para o QR code da vaga'; })
   .catch(function(err) {
     document.getElementById('qr-status').textContent = '';
     document.getElementById('qr-erro').textContent = String(err).indexOf('ermission')>=0
