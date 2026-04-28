@@ -557,17 +557,19 @@ body::before {
   </header>
   <div class="qr-scroll">
     <div class="qr-instrucao">
-      <h2 class="qr-titulo">Identificar Vaga</h2>
-      <p class="qr-sub">Fotografe o QR code da vaga que deseja utilizar</p>
+      <h2 class="qr-titulo">Escanear Vaga</h2>
+      <p class="qr-sub">Aponte a câmera para o QR code da vaga</p>
     </div>
-    <div style="font-size:80px;text-align:center;padding:20px 0">📷</div>
-    <label class="btn-primary" style="cursor:pointer;max-width:340px;width:100%">
-      Fotografar QR code
-      <input type="file" id="qr-file-input" accept="image/*" capture="environment"
-             style="display:none" onchange="lerFoto(this)">
-    </label>
+    <div class="qr-viewfinder-wrap" id="qr-viewfinder-wrap">
+      <video id="qr-video" class="qr-video" autoplay muted playsinline></video>
+      <div class="qr-frame">
+        <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
+        <div class="qr-corner bl"></div><div class="qr-corner br"></div>
+        <div class="qr-scan-line"></div>
+      </div>
+    </div>
     <canvas id="qr-canvas" style="display:none"></canvas>
-    <div id="qr-status" class="qr-status"></div>
+    <div id="qr-status" class="qr-status">Iniciando câmera...</div>
     <div id="qr-erro" class="msg-erro oculto"></div>
   </div>
 </div>
@@ -845,59 +847,78 @@ function abrirScanner() {
   if(!App.usuario)return;
   mostrarTela('tela-qr');
   document.getElementById('qr-erro').classList.add('oculto');
-  document.getElementById('qr-status').textContent='';
-  // Abre câmera diretamente no modo FOTO
-  setTimeout(function() {
-    document.getElementById('qr-file-input').click();
-  }, 300);
+  document.getElementById('qr-status').textContent='Iniciando câmera...';
+  _qrProcessing = false;
+  iniciarCameraQR();
 }
 
 
 
 function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
 
-// Lê QR code de foto tirada pelo usuário usando nimiq/qr-scanner
-function lerFoto(input) {
-  if (!input.files || !input.files[0]) return;
+var _qrScannerInstance = null;
+
+function iniciarCameraQR() {
   var statusEl = document.getElementById('qr-status');
   var erroEl   = document.getElementById('qr-erro');
-  statusEl.textContent = 'Lendo QR code...';
-  erroEl.classList.add('oculto');
 
-  var file = input.files[0];
-
-  // nimiq QrScanner.scanImage processa imagem estática com WebAssembly
-  if (typeof QrScanner !== 'undefined' && QrScanner.scanImage) {
-    QrScanner.scanImage(file, { returnDetailedScanResult: true })
-      .then(function(result) {
-        statusEl.textContent = '';
-        processarQRCode(result.data.trim());
-      })
-      .catch(function(err) {
-        statusEl.textContent = '';
-        erroEl.textContent = 'QR code não encontrado. Tente centralizar o código e garantir boa iluminação.';
-        erroEl.classList.remove('oculto');
-        // Limpa input para nova tentativa
-        input.value = '';
-        // Re-abre câmera automaticamente após 2s
-        setTimeout(function() {
-          erroEl.classList.add('oculto');
-          document.getElementById('qr-file-input').click();
-        }, 2000);
-      });
-  } else {
-    // Fallback: aguarda carregar a lib
-    statusEl.textContent = 'Carregando scanner...';
-    setTimeout(function() { lerFoto(input); }, 500);
+  if (typeof QrScanner === 'undefined') {
+    setTimeout(iniciarCameraQR, 400);
+    return;
   }
+
+  var video = document.getElementById('qr-video');
+
+  if (_qrScannerInstance) {
+    _qrScannerInstance.destroy();
+    _qrScannerInstance = null;
+  }
+
+  _qrScannerInstance = new QrScanner(
+    video,
+    function(result) {
+      if (_qrProcessing) return;
+      _qrProcessing = true;
+      processarQRCode(result.data.trim());
+    },
+    {
+      returnDetailedScanResult: true,
+      preferredCamera: 'environment',
+      maxScansPerSecond: 5,
+      highlightScanRegion: false,
+      highlightCodeOutline: false,
+    }
+  );
+
+  _qrScannerInstance.start()
+    .then(function() {
+      statusEl.textContent = 'Aponte para o QR code da vaga';
+      // Força foco contínuo no iOS
+      var track = video.srcObject && video.srcObject.getVideoTracks()[0];
+      if (track && track.applyConstraints) {
+        track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+          .catch(function() {}); // ignora se não suportado
+      }
+    })
+    .catch(function(err) {
+      console.error('QrScanner:', err);
+      statusEl.textContent = '';
+      erroEl.textContent = String(err).indexOf('ermission') >= 0
+        ? 'Permissão negada. Vá em Ajustes → Safari → Câmera e permita.'
+        : 'Câmera indisponível: ' + err;
+      erroEl.classList.remove('oculto');
+    });
 }
 
 // Leitura via BarcodeDetector API nativa — mesmo motor da câmera do sistema
 
 function pararCameraQR(){
-  _qrProcessing=false;
-  var inp=document.getElementById('qr-file-input');
-  if(inp) inp.value='';
+  if (_qrScannerInstance) {
+    _qrScannerInstance.stop();
+    _qrScannerInstance.destroy();
+    _qrScannerInstance = null;
+  }
+  _qrProcessing = false;
 }
 
 </script>
