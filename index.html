@@ -827,9 +827,17 @@ function entrarDashboard() {
   api('verificarSessaoAtiva',{usuarioId:String(u.id)})
     .then(function(res){
       overlayHide();
-      if(res&&res.ativa){App.sessaoId=res.sessaoId;App.vagaId=res.vaga;App.kwhInicial=res.kwhInicial;App.inicio=res.inicio;estadoLigado(res);}
+      if(res&&res.ativa){
+        App.sessaoId=res.sessaoId;App.vagaId=res.vaga;
+        App.kwhInicial=res.kwhInicial;App.inicio=res.inicio;
+        estadoLigado(res);
+      }
       carregarHistorico();
-    }).catch(function(){overlayHide();carregarHistorico();});
+    })
+    .catch(function(){
+      overlayHide();
+      carregarHistorico();
+    });
 }
 
 function estadoLigado(s) {
@@ -904,9 +912,13 @@ function iniciarCameraQR() {
       // Sucesso
       if (_qrProcessing) return;
       _qrProcessing = true;
-      _html5Scanner.clear().catch(function(){});
-      document.getElementById('qr-status').textContent = '';
-      processarQRCode(decodedText.trim());
+      var texto = decodedText.trim();
+      // Para scanner primeiro, depois processa
+      _html5Scanner.clear()
+        .catch(function(){})
+        .finally(function(){
+          processarQRCode(texto);
+        });
     },
     function(errorMsg) {
       // Erros de frame são normais, ignorar
@@ -925,6 +937,90 @@ function pararCameraQR(){
 }
 
 </script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer>
+// ─── HISTÓRICO ────────────────────────────────────────────────
+function carregarHistorico(){
+  if(!App.usuario) return;
+  var el = document.getElementById('hist-lista');
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  api('obterHistoricoUsuario', {usuarioId: String(App.usuario.id)})
+    .then(function(lista){
+      if(!lista || !Array.isArray(lista) || lista.length===0){
+        el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>';
+        return;
+      }
+      el.innerHTML = lista.map(function(s){
+        var status  = String(s.status||'');
+        var cls     = status==='CONCLUIDO' ? 'ok' : 'prog';
+        var txt     = status==='CONCLUIDO' ? 'Concluído'
+                    : status==='ENCERRADO_AUTO' ? 'Auto-enc.'
+                    : 'Em andamento';
+        var consumo = (s.consumo!=null && s.consumo!=='')
+                    ? fmtBR(s.consumo)+' kWh' : '–';
+        var data    = s.inicio ? String(s.inicio).slice(0,16) : '–';
+        var dur     = (s.duracao!=null && s.duracao!=='') ? formatarDuracao(s.duracao) : '';
+        return '<div class="hist-item">'
+          +'<div><div class="hist-data">'+data+'</div>'
+          +'<div class="hist-id">'+String(s.sessaoId||'')+(s.vaga?' · '+s.vaga:'')+'</div></div>'
+          +'<div><div class="hist-kwh">'+consumo+'</div>'
+          +'<div class="hist-dur">'+dur+'</div></div>'
+          +'<span class="hist-badge '+cls+'">'+txt+'</span>'
+          +'</div>';
+      }).join('');
+    })
+    .catch(function(){
+      el.innerHTML='<div class="hist-vazio">Não foi possível carregar o histórico.</div>';
+    });
+}
+
+// ─── SENHA ────────────────────────────────────────────────────
+function mostrarTrocarSenha(){
+  if(App.usuario) document.getElementById('s-email').value=App.usuario.email;
+  mostrarTela('tela-senha');
+}
+
+function mudarSenha(){
+  var email=document.getElementById('s-email').value.trim();
+  var atual=document.getElementById('s-atual').value;
+  var nova=document.getElementById('s-nova').value;
+  var conf=document.getElementById('s-conf').value;
+  var msgEl=document.getElementById('s-msg');
+  msgEl.className='msg-erro'; msgEl.classList.remove('oculto');
+  if(!email||!atual||!nova||!conf){msgEl.textContent='Preencha todos os campos.';return;}
+  if(nova!==conf){msgEl.textContent='As senhas não coincidem.';return;}
+  if(nova.length<6){msgEl.textContent='Mínimo 6 caracteres.';return;}
+  msgEl.className=''; msgEl.textContent='Aguarde...';
+  api('alterarSenha',{email:email,senhaAtual:atual,novaSenha:nova})
+    .then(function(res){
+      if(res.erro){msgEl.className='msg-erro';msgEl.textContent=res.erro;}
+      else{
+        msgEl.className='msg-ok';msgEl.textContent='✅ Senha alterada!';
+        try{
+          var r=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+          if(r&&r.email===email){r.senha=nova;localStorage.setItem(LS_KEY,JSON.stringify(r));}
+        }catch(e){}
+        setTimeout(function(){
+          mostrarTela('tela-login');
+          msgEl.classList.add('oculto');
+          ['s-email','s-atual','s-nova','s-conf'].forEach(function(id){
+            document.getElementById(id).value='';
+          });
+        },2000);
+      }
+    })
+    .catch(function(err){
+      msgEl.className='msg-erro';
+      msgEl.textContent='Erro: '+(err?err.message:'tente novamente');
+    });
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;
+  var a=document.querySelector('.tela.ativa');
+  if(!a)return;
+  if(a.id==='tela-login')efetuarLogin();
+  if(a.id==='tela-senha')mudarSenha();
+});
+</script>
 </body>
 </html>
