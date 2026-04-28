@@ -553,25 +553,21 @@ body::before {
       Sistema de registro
       <span>Carros Elétricos · Kadosh</span>
     </div>
-    <div class="hdr-dir">
-      <button class="btn-sair" onclick="fecharScanner()">← Voltar</button>
-    </div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="fecharScanner()">← Voltar</button></div>
   </header>
   <div class="qr-scroll">
     <div class="qr-instrucao">
-      <h2 class="qr-titulo">Escanear Vaga</h2>
-      <p class="qr-sub">Aponte a câmera para o QR code fixado na vaga que deseja utilizar</p>
+      <h2 class="qr-titulo">Identificar Vaga</h2>
+      <p class="qr-sub">Fotografe o QR code da vaga que deseja utilizar</p>
     </div>
-    <div class="qr-viewfinder-wrap" id="qr-viewfinder-wrap">
-      <video id="qr-video" class="qr-video" autoplay muted playsinline></video>
-      <div class="qr-frame">
-        <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
-        <div class="qr-corner bl"></div><div class="qr-corner br"></div>
-        <div class="qr-scan-line"></div>
-      </div>
-    </div>
+    <div style="font-size:80px;text-align:center;padding:20px 0">📷</div>
+    <label class="btn-primary" style="cursor:pointer;max-width:340px;width:100%">
+      Fotografar QR code
+      <input type="file" id="qr-file-input" accept="image/*" capture="environment"
+             style="display:none" onchange="lerFoto(this)">
+    </label>
     <canvas id="qr-canvas" style="display:none"></canvas>
-    <div id="qr-status" class="qr-status">Iniciando câmera...</div>
+    <div id="qr-status" class="qr-status"></div>
     <div id="qr-erro" class="msg-erro oculto"></div>
   </div>
 </div>
@@ -843,80 +839,65 @@ function estadoDesligado() {
 }
 
 // ─── QR SCANNER ───────────────────────────────────────────────
-var _qrStream=null,_qrInterval=null,_qrProcessing=false;
+var _qrProcessing=false;
 
 function abrirScanner() {
   if(!App.usuario)return;
   mostrarTela('tela-qr');
   document.getElementById('qr-erro').classList.add('oculto');
-  document.getElementById('qr-status').textContent='Iniciando câmera...';
-  // Câmera ao vivo — funciona corretamente no PWA instalado
-  iniciarCameraQR();
+  document.getElementById('qr-status').textContent='';
+  // Abre câmera diretamente no modo FOTO
+  setTimeout(function() {
+    document.getElementById('qr-file-input').click();
+  }, 300);
 }
 
 
 
 function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
 
-var _qrScannerInstance = null;
-
-function iniciarCameraQR() {
+// Lê QR code de foto tirada pelo usuário usando nimiq/qr-scanner
+function lerFoto(input) {
+  if (!input.files || !input.files[0]) return;
   var statusEl = document.getElementById('qr-status');
   var erroEl   = document.getElementById('qr-erro');
-  statusEl.textContent = 'Iniciando câmera...';
+  statusEl.textContent = 'Lendo QR code...';
   erroEl.classList.add('oculto');
 
-  if (typeof QrScanner === 'undefined') {
+  var file = input.files[0];
+
+  // nimiq QrScanner.scanImage processa imagem estática com WebAssembly
+  if (typeof QrScanner !== 'undefined' && QrScanner.scanImage) {
+    QrScanner.scanImage(file, { returnDetailedScanResult: true })
+      .then(function(result) {
+        statusEl.textContent = '';
+        processarQRCode(result.data.trim());
+      })
+      .catch(function(err) {
+        statusEl.textContent = '';
+        erroEl.textContent = 'QR code não encontrado. Tente centralizar o código e garantir boa iluminação.';
+        erroEl.classList.remove('oculto');
+        // Limpa input para nova tentativa
+        input.value = '';
+        // Re-abre câmera automaticamente após 2s
+        setTimeout(function() {
+          erroEl.classList.add('oculto');
+          document.getElementById('qr-file-input').click();
+        }, 2000);
+      });
+  } else {
+    // Fallback: aguarda carregar a lib
     statusEl.textContent = 'Carregando scanner...';
-    setTimeout(iniciarCameraQR, 500);
-    return;
+    setTimeout(function() { lerFoto(input); }, 500);
   }
-
-  var video = document.getElementById('qr-video');
-
-  _qrScannerInstance = new QrScanner(
-    video,
-    function(result) {
-      if (_qrProcessing) return;
-      _qrProcessing = true;
-      processarQRCode(result.data.trim());
-    },
-    {
-      returnDetailedScanResult: true,
-      preferredCamera: 'environment',
-      highlightScanRegion: false,
-      highlightCodeOutline: false,
-    }
-  );
-
-  _qrScannerInstance.start()
-    .then(function() {
-      statusEl.textContent = 'Aponte para o QR code da vaga';
-    })
-    .catch(function(err) {
-      console.error('QrScanner error:', err);
-      statusEl.textContent = '';
-      if (String(err).indexOf('permission') >= 0 || String(err).indexOf('NotAllowed') >= 0) {
-        erroEl.textContent = 'Permissão de câmera negada. Vá em Ajustes do iPhone → Safari → Câmera e permita o acesso.';
-      } else {
-        erroEl.textContent = 'Câmera não disponível: ' + err;
-      }
-      erroEl.classList.remove('oculto');
-    });
 }
 
 // Leitura via BarcodeDetector API nativa — mesmo motor da câmera do sistema
 
 function pararCameraQR(){
-  if (_qrScannerInstance) {
-    _qrScannerInstance.stop();
-    _qrScannerInstance.destroy();
-    _qrScannerInstance = null;
-  }
-  if(_qrInterval){clearInterval(_qrInterval);clearTimeout(_qrInterval);_qrInterval=null;}
-  if(_qrStream){_qrStream.getTracks().forEach(function(t){t.stop();});_qrStream=null;}
-  var v=document.getElementById('qr-video'); if(v)v.srcObject=null;
   _qrProcessing=false;
+  var inp=document.getElementById('qr-file-input');
+  if(inp) inp.value='';
 }
 
 </script>
