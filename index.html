@@ -478,24 +478,14 @@ body::before {
 
 .oculto { display: none !important; }
 
-/* Override html5-qrcode default styles */
-#qr-reader { border: none !important; }
-#qr-reader__scan_region { border-radius: 14px; overflow: hidden; }
+/* Esconde TODA a UI padrão do html5-qrcode — usamos nossa própria */
+#qr-reader { border: none !important; width: 100% !important; height: 100% !important; }
+#qr-reader__scan_region { width: 100% !important; height: 100% !important; }
+#qr-reader__scan_region video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 #qr-reader__scan_region img { display: none !important; }
-#qr-reader__dashboard { padding: 8px 0 0 !important; }
-#qr-reader__dashboard_section_csr button {
-  background: var(--k-green) !important;
-  color: #0d0d0d !important;
-  border: none !important;
-  border-radius: 10px !important;
-  padding: 10px 20px !important;
-  font-family: var(--f-display) !important;
-  font-size: 18px !important;
-  cursor: pointer !important;
-}
-#qr-reader__dashboard_section_fsr { display: none !important; }
-#qr-reader__status_span { color: var(--txt-sub) !important; font-size: 13px !important; }
+#qr-reader__dashboard { display: none !important; }
 #qr-reader__header_message { display: none !important; }
+#qr-reader__status_span { display: none !important; }
 
 </style>
 </head>
@@ -580,9 +570,16 @@ body::before {
       <h2 class="qr-titulo">Escanear Vaga</h2>
       <p class="qr-sub">Aponte a câmera para o QR code da vaga</p>
     </div>
-    <!-- html5-qrcode renderiza aqui -->
-    <div id="qr-reader" style="width:100%;max-width:340px;border-radius:18px;overflow:hidden"></div>
-    <div id="qr-status" class="qr-status"></div>
+    <!-- Nosso viewfinder customizado — html5-qrcode injeta o vídeo aqui -->
+    <div class="qr-viewfinder-wrap">
+      <div id="qr-reader" style="width:100%;height:100%"></div>
+      <div class="qr-frame">
+        <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
+        <div class="qr-corner bl"></div><div class="qr-corner br"></div>
+        <div class="qr-scan-line"></div>
+      </div>
+    </div>
+    <div id="qr-status" class="qr-status">Iniciando câmera...</div>
     <div id="qr-erro" class="msg-erro oculto"></div>
   </div>
 </div>
@@ -881,56 +878,463 @@ function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
 var _html5Scanner = null;
 
 function iniciarCameraQR() {
-  if (typeof Html5QrcodeScanner === 'undefined') {
+  if (typeof Html5Qrcode === 'undefined') {
     setTimeout(iniciarCameraQR, 400);
     return;
   }
 
-  // Limpa instância anterior se existir
   if (_html5Scanner) {
-    _html5Scanner.clear().catch(function(){});
+    _html5Scanner.stop().catch(function(){});
     _html5Scanner = null;
   }
 
-  // Limpa o div do reader
-  var readerEl = document.getElementById('qr-reader');
-  readerEl.innerHTML = '';
+  // Limpa o reader div
+  document.getElementById('qr-reader').innerHTML = '';
 
-  _html5Scanner = new Html5QrcodeScanner(
-    'qr-reader',
-    {
-      fps: 10,
-      qrbox: { width: 250, height: 250 },
-      aspectRatio: 1.0,
-      formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
-    },
-    false // verbose = false
-  );
+  _html5Scanner = new Html5Qrcode('qr-reader');
 
-  _html5Scanner.render(
-    function(decodedText) {
-      // Sucesso
-      if (_qrProcessing) return;
-      _qrProcessing = true;
-      var texto = decodedText.trim();
-      // Para scanner primeiro, depois processa
-      _html5Scanner.clear()
-        .catch(function(){})
-        .finally(function(){
-          processarQRCode(texto);
-        });
-    },
-    function(errorMsg) {
-      // Erros de frame são normais, ignorar
-    }
-  );
+  var config = {
+    fps: 10,
+    qrbox: { width: 220, height: 220 },
+    aspectRatio: 1.0,
+    formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+    showTorchButtonIfSupported: false,
+    showZoomSliderIfSupported: false,
+    defaultZoomValueIfSupported: 2,
+  };
 
-  document.getElementById('qr-status').textContent = '';
+  Html5Qrcode.getCameras()
+    .then(function(cameras) {
+      if (!cameras || cameras.length === 0) {
+        document.getElementById('qr-status').textContent = '';
+        document.getElementById('qr-erro').textContent = 'Nenhuma câmera encontrada.';
+        document.getElementById('qr-erro').classList.remove('oculto');
+        return;
+      }
+      // Prefere câmera traseira
+      var cam = cameras[cameras.length - 1];
+      return _html5Scanner.start(
+        { facingMode: 'environment' },
+        config,
+        function(decodedText) {
+          // Sucesso — para câmera e processa
+          if (_qrProcessing) return;
+          _qrProcessing = true;
+          var texto = decodedText.trim();
+          _html5Scanner.stop()
+            .catch(function(){})
+            .then(function(){
+              processarQRCode(texto);
+            });
+        },
+        function() { /* erros de frame — ignorar */ }
+      );
+    })
+    .then(function() {
+      document.getElementById('qr-status').textContent = 'Aponte para o QR code da vaga';
+    })
+    .catch(function(err) {
+      console.error('Cam err:', err);
+      document.getElementById('qr-status').textContent = '';
+      document.getElementById('qr-erro').textContent =
+        String(err).indexOf('ermission') >= 0
+          ? 'Permissão negada. Vá em Ajustes → Safari → Câmera.'
+          : 'Câmera indisponível: ' + err;
+      document.getElementById('qr-erro').classList.remove('oculto');
+    });
 }
 
 function pararCameraQR(){
   if (_html5Scanner) {
-    _html5Scanner.clear().catch(function(){});
+    _html5Scanner.stop().catch(function(){});
+    _html5Scanner = null;
+  }
+  _qrProcessing = false;
+}
+
+</script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer>
+// ─── HISTÓRICO ────────────────────────────────────────────────
+function carregarHistorico(){
+  if(!App.usuario) return;
+  var el = document.getElementById('hist-lista');
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  api('obterHistoricoUsuario', {usuarioId: String(App.usuario.id)})
+    .then(function(lista){
+      if(!lista || !Array.isArray(lista) || lista.length===0){
+        el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>';
+        return;
+      }
+      el.innerHTML = lista.map(function(s){
+        var status  = String(s.status||'');
+        var cls     = status==='CONCLUIDO' ? 'ok' : 'prog';
+        var txt     = status==='CONCLUIDO' ? 'Concluído'
+                    : status==='ENCERRADO_AUTO' ? 'Auto-enc.'
+                    : 'Em andamento';
+        var consumo = (s.consumo!=null && s.consumo!=='')
+                    ? fmtBR(s.consumo)+' kWh' : '–';
+        var data    = s.inicio ? String(s.inicio).slice(0,16) : '–';
+        var dur     = (s.duracao!=null && s.duracao!=='') ? formatarDuracao(s.duracao) : '';
+        return '<div class="hist-item">'
+          +'<div><div class="hist-data">'+data+'</div>'
+          +'<div class="hist-id">'+String(s.sessaoId||'')+(s.vaga?' · '+s.vaga:'')+'</div></div>'
+          +'<div><div class="hist-kwh">'+consumo+'</div>'
+          +'<div class="hist-dur">'+dur+'</div></div>'
+          +'<span class="hist-badge '+cls+'">'+txt+'</span>'
+          +'</div>';
+      }).join('');
+    })
+    .catch(function(){
+      el.innerHTML='<div class="hist-vazio">Não foi possível carregar o histórico.</div>';
+    });
+}
+
+// ─── SENHA ────────────────────────────────────────────────────
+function mostrarTrocarSenha(){
+  if(App.usuario) document.getElementById('s-email').value=App.usuario.email;
+  mostrarTela('tela-senha');
+}
+
+function mudarSenha(){
+  var email=document.getElementById('s-email').value.trim();
+  var atual=document.getElementById('s-atual').value;
+  var nova=document.getElementById('s-nova').value;
+  var conf=document.getElementById('s-conf').value;
+  var msgEl=document.getElementById('s-msg');
+  msgEl.className='msg-erro'; msgEl.classList.remove('oculto');
+  if(!email||!atual||!nova||!conf){msgEl.textContent='Preencha todos os campos.';return;}
+  if(nova!==conf){msgEl.textContent='As senhas não coincidem.';return;}
+  if(nova.length<6){msgEl.textContent='Mínimo 6 caracteres.';return;}
+  msgEl.className=''; msgEl.textContent='Aguarde...';
+  api('alterarSenha',{email:email,senhaAtual:atual,novaSenha:nova})
+    .then(function(res){
+      if(res.erro){msgEl.className='msg-erro';msgEl.textContent=res.erro;}
+      else{
+        msgEl.className='msg-ok';msgEl.textContent='✅ Senha alterada!';
+        try{
+          var r=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+          if(r&&r.email===email){r.senha=nova;localStorage.setItem(LS_KEY,JSON.stringify(r));}
+        }catch(e){}
+        setTimeout(function(){
+          mostrarTela('tela-login');
+          msgEl.classList.add('oculto');
+          ['s-email','s-atual','s-nova','s-conf'].forEach(function(id){
+            document.getElementById(id).value='';
+          });
+        },2000);
+      }
+    })
+    .catch(function(err){
+      msgEl.className='msg-erro';
+      msgEl.textContent='Erro: '+(err?err.message:'tente novamente');
+    });
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;
+  var a=document.querySelector('.tela.ativa');
+  if(!a)return;
+  if(a.id==='tela-login')efetuarLogin();
+  if(a.id==='tela-senha')mudarSenha();
+});
+</script>
+</body>
+</htmlfunction processarQRCode(texto){
+  var vagaId = texto.toUpperCase();
+  if(!/^VAGA_[A-Z0-9]{1,4}$/.test(vagaId)){
+    document.getElementById('qr-erro').textContent='QR inválido: "'+texto+'". Escaneie o código da vaga.';
+    document.getElementById('qr-erro').classList.remove('oculto');
+    document.getElementById('qr-status').textContent='Tente novamente';
+    setTimeout(function(){ _qrProcessing=false; iniciarCameraQR(); }, 2500);
+    return;
+  }
+  mostrarTela('tela-dash');
+  overlayShow('Verificando vaga '+vagaId+'...');
+  api('verificarVaga',{vagaId:vagaId})
+    .then(function(res){
+      overlayHide();
+      if(res.erro){ alert('❌ '+res.erro); return; }
+      if(res.ocupada){ alert('🚫 '+res.mensagem); return; }
+      iniciarCarregamento(vagaId);
+    })
+    .catch(function(err){
+      overlayHide();
+      alert('Falha: '+(err?err.message:'tente novamente'));
+    });
+}
+
+function api(action, params) {
+  return new Promise(function(resolve, reject) {
+    var cbName = '_gasCb' + (++_cbCounter);
+    var timeout = setTimeout(function() {
+      delete window[cbName];
+      var s = document.getElementById(cbName);
+      if (s) s.remove();
+      reject(new Error('Timeout — verifique a URL do GAS'));
+    }, 30000);
+
+    window[cbName] = function(data) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      var s = document.getElementById(cbName);
+      if (s) s.remove();
+      resolve(data);
+    };
+
+    var payload = JSON.stringify(params || {});
+    var url = GAS_URL
+      + '?action=' + encodeURIComponent(action)
+      + '&payload=' + encodeURIComponent(payload)
+      + '&callback=' + cbName;
+
+    if (GAS_URL.indexOf('COLE_AQUI') >= 0) {
+      clearTimeout(timeout);
+      reject(new Error('URL do GAS não configurada. Edite o arquivo e substitua GAS_URL.'));
+      return;
+    }
+    var script = document.createElement('script');
+    script.id  = cbName;
+    script.src = url;
+    script.onerror = function() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      script.remove();
+      reject(new Error('Falha ao contactar o servidor. Verifique a URL do GAS.'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  mostrarTela('tela-login');
+  carregarCredenciais();
+  mostrarHintPWA();
+  // Avisa se URL do GAS não foi configurada
+  if (GAS_URL.indexOf('COLE_AQUI') >= 0) {
+    var el = document.getElementById('login-erro');
+    el.textContent = '⚠️ Configure a URL do GAS no arquivo (variável GAS_URL).';
+    el.classList.remove('oculto');
+  }
+});
+
+// ─── CREDENCIAIS ──────────────────────────────────────────────
+function salvarCredenciais(email, senha) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ email:email, senha:senha, nome:App.usuario?App.usuario.nome:'' })); } catch(e) {}
+}
+function carregarCredenciais() {
+  try {
+    var raw = localStorage.getItem(LS_KEY); if (!raw) return;
+    var c = JSON.parse(raw); if (!c||!c.email) return;
+    document.getElementById('login-email').value = c.email;
+    if (c.nome) {
+      document.getElementById('banner-nome').textContent = '👋 Bem-vindo, '+c.nome.split(' ')[0]+'!';
+      document.getElementById('banner-lembrado').classList.remove('oculto');
+      document.getElementById('form-email-wrap').classList.add('oculto');
+    }
+    if (c.senha) document.getElementById('login-senha').value = c.senha;
+  } catch(e) {}
+}
+function limparCredenciais() {
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+  document.getElementById('banner-lembrado').classList.add('oculto');
+  document.getElementById('form-email-wrap').classList.remove('oculto');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-senha').value = '';
+}
+
+// ─── PWA ──────────────────────────────────────────────────────
+function mostrarHintPWA() {
+  var h = document.getElementById('hint-pwa'), ua = navigator.userAgent;
+  if (window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches) { h.textContent='✅ App instalado!'; return; }
+  if (/iPhone|iPad|iPod/.test(ua)) h.textContent='Para instalar: Compartilhar → "Adicionar à Tela de Início"';
+  else if (/Android/.test(ua)) h.textContent='Para instalar: menu ⋮ → "Adicionar à tela inicial"';
+}
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────────────
+function mostrarTela(id) {
+  document.querySelectorAll('.tela').forEach(function(t){ t.classList.remove('ativa'); t.style.display=''; });
+  var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa');
+  window.scrollTo(0,0);
+}
+function overlayShow(msg) { document.getElementById('overlay-msg').textContent=msg||'Aguarde...'; document.getElementById('overlay').classList.remove('oculto'); }
+function overlayHide() { document.getElementById('overlay').classList.add('oculto'); }
+function toggleSenha(id,btn) { var i=document.getElementById(id); i.type=i.type==='password'?'text':'password'; btn.textContent=i.type==='password'?'👁':'🙈'; }
+function formatarDuracao(min) { if(min===''||min==null)return'–'; min=Number(min); if(isNaN(min))return'–'; if(min<60)return min+' min'; return Math.floor(min/60)+'h '+(min%60)+'min'; }
+function fmtBR(num,casas) {
+  if(num===''||num==null)return'–'; var n=Number(num); if(isNaN(n))return'–'; var c=casas!==undefined?casas:4;
+  try{return n.toLocaleString('pt-BR',{minimumFractionDigits:c,maximumFractionDigits:c});}
+  catch(e){var p=n.toFixed(c).split('.');return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+(p[1]||'');}
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────
+function efetuarLogin() {
+  var bannerVis = !document.getElementById('banner-lembrado').classList.contains('oculto');
+  var email = bannerVis?JSON.parse(localStorage.getItem(LS_KEY)||'{}').email||'':document.getElementById('login-email').value.trim();
+  var senha=document.getElementById('login-senha').value;
+  var erroEl=document.getElementById('login-erro'), btn=document.getElementById('btn-login');
+  var lembrar=document.getElementById('lembrar-me').checked;
+  erroEl.classList.add('oculto');
+  if(!email||!senha){erroEl.textContent='Preencha email e senha.';erroEl.classList.remove('oculto');return;}
+  btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
+  api('fazerLogin',{email:email,senha:senha})
+    .then(function(res){
+      btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
+      if(res.erro){erroEl.textContent=res.erro;erroEl.classList.remove('oculto');return;}
+      App.usuario=res;
+      if(lembrar){salvarCredenciais(email,senha);try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'{}');r.nome=res.nome;localStorage.setItem(LS_KEY,JSON.stringify(r));}catch(e){}}
+      else{try{localStorage.removeItem(LS_KEY);}catch(e){}}
+      entrarDashboard();
+    }).catch(function(err){
+      btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
+      erroEl.textContent='Erro de conexão: '+(err?err.message:'tente novamente'); erroEl.classList.remove('oculto');
+    });
+}
+function fazerLogout() {
+  pararCameraQR();
+  App.usuario=App.sessaoId=App.vagaId=App.kwhInicial=App.inicio=null; App.carregando=false;
+  document.getElementById('login-senha').value=''; document.getElementById('login-erro').classList.add('oculto');
+  carregarCredenciais(); mostrarTela('tela-login');
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────
+function entrarDashboard() {
+  var u=App.usuario;
+  document.getElementById('hdr-apto').textContent='Apt '+u.apartamento;
+  document.getElementById('av-inicial').textContent=u.nome.charAt(0).toUpperCase();
+  document.getElementById('perfil-nome').textContent=u.nome;
+  document.getElementById('perfil-email').textContent=u.email;
+  document.getElementById('perfil-apto').textContent='🏠 Apartamento '+u.apartamento;
+  mostrarTela('tela-dash');
+  document.getElementById('resultado-card').classList.add('oculto');
+  estadoDesligado();
+  overlayShow('Verificando sessão...');
+  api('verificarSessaoAtiva',{usuarioId:String(u.id)})
+    .then(function(res){
+      overlayHide();
+      if(res&&res.ativa){
+        App.sessaoId=res.sessaoId;App.vagaId=res.vaga;
+        App.kwhInicial=res.kwhInicial;App.inicio=res.inicio;
+        estadoLigado(res);
+      }
+      carregarHistorico();
+    })
+    .catch(function(){
+      overlayHide();
+      carregarHistorico();
+    });
+}
+
+function estadoLigado(s) {
+  document.getElementById('status-dot').className='status-dot ligado';
+  document.getElementById('status-txt').textContent='⚡ Carregando';
+  document.getElementById('sess-vaga').textContent=s.vaga||'–';
+  document.getElementById('sess-inicio').textContent=s.inicio||'–';
+  document.getElementById('sess-kwh-ini').textContent=fmtBR(s.kwhInicial)+' kWh';
+  document.getElementById('sess-id').textContent=s.sessaoId||'–';
+  document.getElementById('painel-sessao').classList.remove('oculto');
+  document.getElementById('btn-iniciar').classList.add('oculto');
+  document.getElementById('btn-parar').classList.remove('oculto');
+  document.getElementById('btn-parar').disabled=false;
+}
+function estadoDesligado() {
+  document.getElementById('status-dot').className='status-dot';
+  document.getElementById('status-txt').textContent='Pronto para carregar';
+  document.getElementById('painel-sessao').classList.add('oculto');
+  document.getElementById('btn-parar').classList.add('oculto');
+  document.getElementById('btn-iniciar').classList.remove('oculto');
+  document.getElementById('btn-iniciar').disabled=false;
+}
+
+// ─── QR SCANNER ───────────────────────────────────────────────
+var _qrProcessing=false;
+
+function abrirScanner() {
+  if(!App.usuario) return;
+  mostrarTela('tela-qr');
+  document.getElementById('qr-erro').classList.add('oculto');
+  document.getElementById('qr-status').textContent='Iniciando câmera...';
+  _qrProcessing = false;
+  // Pequeno delay para o DOM da tela estar pronto
+  setTimeout(iniciarCameraQR, 200);
+}
+
+
+
+function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
+
+var _html5Scanner = null;
+
+function iniciarCameraQR() {
+  if (typeof Html5Qrcode === 'undefined') {
+    setTimeout(iniciarCameraQR, 400);
+    return;
+  }
+
+  if (_html5Scanner) {
+    _html5Scanner.stop().catch(function(){});
+    _html5Scanner = null;
+  }
+
+  // Limpa o reader div
+  document.getElementById('qr-reader').innerHTML = '';
+
+  _html5Scanner = new Html5Qrcode('qr-reader');
+
+  var config = {
+    fps: 10,
+    qrbox: { width: 220, height: 220 },
+    aspectRatio: 1.0,
+    formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+    showTorchButtonIfSupported: false,
+    showZoomSliderIfSupported: false,
+    defaultZoomValueIfSupported: 2,
+  };
+
+  Html5Qrcode.getCameras()
+    .then(function(cameras) {
+      if (!cameras || cameras.length === 0) {
+        document.getElementById('qr-status').textContent = '';
+        document.getElementById('qr-erro').textContent = 'Nenhuma câmera encontrada.';
+        document.getElementById('qr-erro').classList.remove('oculto');
+        return;
+      }
+      // Prefere câmera traseira
+      var cam = cameras[cameras.length - 1];
+      return _html5Scanner.start(
+        { facingMode: 'environment' },
+        config,
+        function(decodedText) {
+          // Sucesso — para câmera e processa
+          if (_qrProcessing) return;
+          _qrProcessing = true;
+          var texto = decodedText.trim();
+          _html5Scanner.stop()
+            .catch(function(){})
+            .then(function(){
+              processarQRCode(texto);
+            });
+        },
+        function() { /* erros de frame — ignorar */ }
+      );
+    })
+    .then(function() {
+      document.getElementById('qr-status').textContent = 'Aponte para o QR code da vaga';
+    })
+    .catch(function(err) {
+      console.error('Cam err:', err);
+      document.getElementById('qr-status').textContent = '';
+      document.getElementById('qr-erro').textContent =
+        String(err).indexOf('ermission') >= 0
+          ? 'Permissão negada. Vá em Ajustes → Safari → Câmera.'
+          : 'Câmera indisponível: ' + err;
+      document.getElementById('qr-erro').classList.remove('oculto');
+    });
+}
+
+function pararCameraQR(){
+  if (_html5Scanner) {
+    _html5Scanner.stop().catch(function(){});
     _html5Scanner = null;
   }
   _qrProcessing = false;
