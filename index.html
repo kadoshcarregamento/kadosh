@@ -858,89 +858,68 @@ function abrirScanner() {
 
 function fecharScanner(){pararCameraQR();mostrarTela('tela-dash');}
 
+var _qrScannerInstance = null;
+
 function iniciarCameraQR() {
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    document.getElementById('qr-status').textContent='Câmera não suportada. Use o app instalado na tela inicial.'; return;
+  var statusEl = document.getElementById('qr-status');
+  var erroEl   = document.getElementById('qr-erro');
+  statusEl.textContent = 'Iniciando câmera...';
+  erroEl.classList.add('oculto');
+
+  if (typeof QrScanner === 'undefined') {
+    statusEl.textContent = 'Carregando scanner...';
+    setTimeout(iniciarCameraQR, 500);
+    return;
   }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}})
-    .then(function(stream){
-      _qrStream=stream;
-      var v=document.getElementById('qr-video'); v.srcObject=stream; v.play();
-      document.getElementById('qr-status').textContent='Aponte para o QR code da vaga';
-      iniciarLeituraFrames();
+
+  var video = document.getElementById('qr-video');
+
+  _qrScannerInstance = new QrScanner(
+    video,
+    function(result) {
+      if (_qrProcessing) return;
+      _qrProcessing = true;
+      processarQRCode(result.data.trim());
+    },
+    {
+      returnDetailedScanResult: true,
+      preferredCamera: 'environment',
+      highlightScanRegion: false,
+      highlightCodeOutline: false,
+    }
+  );
+
+  _qrScannerInstance.start()
+    .then(function() {
+      statusEl.textContent = 'Aponte para o QR code da vaga';
     })
-    .catch(function(err){
-      console.error('Cam:',err);
-      if (err.name === 'NotAllowedError') {
-        document.getElementById('qr-status').textContent='';
-        document.getElementById('qr-erro').textContent='Permissão de câmera negada. Vá em Ajustes → Safari → Câmera e permita o acesso.';
-        document.getElementById('qr-erro').classList.remove('oculto');
+    .catch(function(err) {
+      console.error('QrScanner error:', err);
+      statusEl.textContent = '';
+      if (String(err).indexOf('permission') >= 0 || String(err).indexOf('NotAllowed') >= 0) {
+        erroEl.textContent = 'Permissão de câmera negada. Vá em Ajustes do iPhone → Safari → Câmera e permita o acesso.';
       } else {
-        document.getElementById('qr-status').textContent='Câmera não disponível: '+err.message;
+        erroEl.textContent = 'Câmera não disponível: ' + err;
       }
+      erroEl.classList.remove('oculto');
     });
 }
 
 // Leitura via BarcodeDetector API nativa — mesmo motor da câmera do sistema
 
 function pararCameraQR(){
+  if (_qrScannerInstance) {
+    _qrScannerInstance.stop();
+    _qrScannerInstance.destroy();
+    _qrScannerInstance = null;
+  }
   if(_qrInterval){clearInterval(_qrInterval);clearTimeout(_qrInterval);_qrInterval=null;}
   if(_qrStream){_qrStream.getTracks().forEach(function(t){t.stop();});_qrStream=null;}
   var v=document.getElementById('qr-video'); if(v)v.srcObject=null;
   _qrProcessing=false;
 }
-function iniciarLeituraFrames(){
-  var video  = document.getElementById('qr-video');
-  var canvas = document.getElementById('qr-canvas');
-  var ctx    = canvas.getContext('2d');
-
-  _qrInterval = setInterval(function(){
-    if (_qrProcessing || !video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-    var vw = video.videoWidth, vh = video.videoHeight;
-    if (!vw || !vh) return;
-
-    var scale = Math.min(1, 800 / Math.max(vw, vh));
-    var w = Math.round(vw * scale);
-    var h = Math.round(vh * scale);
-    canvas.width = w; canvas.height = h;
-    ctx.drawImage(video, 0, 0, w, h);
-
-    var code = null;
-    if (typeof jsQR !== 'undefined') {
-      // Tentativa 1: frame colorido original
-      var d1 = ctx.getImageData(0, 0, w, h);
-      code = jsQR(d1.data, w, h, { inversionAttempts: 'attemptBoth' });
-
-      // Tentativa 2: escala de cinza suave
-      if (!code) {
-        var d2 = ctx.getImageData(0, 0, w, h);
-        var px = d2.data;
-        for (var p = 0; p < px.length; p+=4) {
-          var g = Math.round(px[p]*.299 + px[p+1]*.587 + px[p+2]*.114);
-          px[p] = px[p+1] = px[p+2] = g;
-        }
-        code = jsQR(px, w, h, { inversionAttempts: 'attemptBoth' });
-      }
-
-      // Tentativa 3: resolução 50%
-      if (!code) {
-        var w2=Math.round(w*.5), h2=Math.round(h*.5);
-        var c2=document.createElement('canvas');
-        c2.width=w2; c2.height=h2;
-        c2.getContext('2d').drawImage(canvas,0,0,w2,h2);
-        var d3=c2.getContext('2d').getImageData(0,0,w2,h2);
-        code = jsQR(d3.data, w2, h2, { inversionAttempts: 'attemptBoth' });
-      }
-    }
-
-    if (code && code.data) {
-      _qrProcessing = true;
-      processarQRCode(code.data.trim());
-    }
-  }, 200);
-}
 
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js" defer></script>
+<script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js" defer></script>
 </body>
 </html>
