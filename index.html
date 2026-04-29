@@ -484,7 +484,7 @@ function carregarHistorico() {
   api('obterHistoricoUsuario', {usuarioId:String(App.usuario.id)})
     .then(function(lista) {
       if (!lista||!Array.isArray(lista)||lista.length===0) { el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>'; return; }
-      el.innerHTML = lista.map(function(s) {
+      el.innerHTML = lista.slice(0, 3).map(function(s) {
         var status = String(s.status||'');
         var cls = status==='CONCLUIDO'?'ok':'prog';
         var txt = status==='CONCLUIDO'?'Concluído':status==='ENCERRADO_AUTO'?'Auto-enc.':'Em andamento';
