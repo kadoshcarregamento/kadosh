@@ -550,6 +550,14 @@ function pararScanner() {
 }
 
 function processarQRCode(texto) {
+
+// ── MODO TESTE: mostrar conteúdo bruto do QR ─────────────────────────────
+  alert("QR lido:\n\n" + texto);
+  _qrProcessing = false;
+  iniciarScanner();
+  return;
+  // ── FIM MODO TESTE ────────────────────────────────────────────────────────
+  
   var vagaId = texto.toUpperCase();
   if (!/^VAGA_[A-Z0-9]{1,4}$/.test(vagaId)) {
     document.getElementById('qr-erro').textContent = 'QR inválido: "'+texto+'". Escaneie o código da vaga.';
