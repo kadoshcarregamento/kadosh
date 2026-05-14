@@ -105,10 +105,10 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .hist-card{gap:0!important}
 .hist-titulo{font-family:var(--f-display);font-size:22px;letter-spacing:.04em;color:var(--txt);margin-bottom:14px}
 .hist-item{background:var(--bg-input);border-radius:var(--r-sm);padding:14px 16px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.hist-data{font-size:13px;color:var(--txt-sub)}
-.hist-id{font-size:11px;color:var(--txt-dim);margin-top:3px;font-family:monospace}
+.hist-data{font-size:13px;color:var(--txt)}
+.hist-id{font-size:11px;color:var(--txt-sub);margin-top:3px;font-family:monospace}
 .hist-kwh{font-family:var(--f-display);font-weight:700;color:var(--k-green);font-size:20px;text-align:center;letter-spacing:.02em}
-.hist-dur{font-size:12px;color:var(--txt-sub);text-align:center;margin-top:2px}
+.hist-dur{font-size:12px;color:var(--txt);text-align:center;margin-top:2px}
 .hist-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
 .hist-badge.ok{background:var(--k-green-dim);color:var(--k-green);border:1px solid rgba(59,205,192,.2)}
 .hist-badge.prog{background:rgba(255,200,0,.1);color:#ffc800;border:1px solid rgba(255,200,0,.2)}
@@ -510,11 +510,22 @@ function carregarListaUsuarios(){
     .then(function(res){
       if(!res||res.erro){lista.innerHTML='<div class="hist-vazio">Erro ao carregar.</div>';return;}
       if(!Array.isArray(res)||!res.length){lista.innerHTML='<div class="hist-vazio">Nenhum usuário cadastrado.</div>';return;}
+      // Ordenar: Admin sem apto ("Admin") primeiro, depois por apartamento
+      res.sort(function(a, b) {
+        var aAdmin = String(a.apartamento).toUpperCase() === 'ADMIN';
+        var bAdmin = String(b.apartamento).toUpperCase() === 'ADMIN';
+        if (aAdmin && !bAdmin) return -1;
+        if (!aAdmin && bAdmin) return 1;
+        // Ordenar numericamente por apartamento
+        var aNum = parseInt(String(a.apartamento).replace(/\D/g,'')) || 0;
+        var bNum = parseInt(String(b.apartamento).replace(/\D/g,'')) || 0;
+        return aNum - bNum;
+      });
       lista.innerHTML=res.map(function(u){
         return '<div class="hist-item">'
-          +'<div><div class="hist-data">Apt '+u.apartamento+'</div><div class="hist-id">'+u.id+' · '+u.email+'</div></div>'
-          +'<div><div class="hist-kwh" style="font-size:14px;font-weight:600;text-align:right">'+u.nome+'</div>'
-          +'<div class="hist-dur" style="color:'+(u.ativo?'var(--k-green)':'var(--txt-dim)')+'">'+( u.ativo?'Ativo':'Inativo')+(u.admin?' · ADM':'')+'</div></div>'
+          +'<div><div class="hist-data">Apt '+u.apartamento+'</div><div class="hist-id" style="color:var(--txt-sub)">'+u.id+' · '+u.email+'</div></div>'
+          +'<div style="text-align:right"><div style="font-size:14px;font-weight:600;color:var(--txt)">'+u.nome+'</div>'
+          +'<div style="font-size:12px;color:'+(u.ativo?'var(--k-green)':'var(--txt-dim)')+'">'+( u.ativo?'Ativo':'Inativo')+(u.admin?' · ADM':'')+'</div></div>'
           +'</div>';
       }).join('');
     })
