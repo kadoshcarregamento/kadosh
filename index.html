@@ -1,3 +1,5 @@
+//Trocar na linha 357 ou 358 no campo var GAS_URL: https://script.google.com/macros/s/AKfycbzrC7j3--iP1Zu24ZHL9-cB1dj5KJSv4iIB2VQ_KpIXNBo6Tr-U3m2MPzDxyR8N2A1q6Q/exec
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -259,7 +261,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <div class="info-linha"><span class="info-label">Vaga</span><span class="info-val" id="sess-vaga">–</span></div>
         <div class="info-linha"><span class="info-label">Início</span><span class="info-val" id="sess-inicio">–</span></div>
         <div class="info-linha"><span class="info-label">kWh inicial</span><span class="info-val" id="sess-kwh-ini">–</span></div>
-        <div class="info-linha"><span class="info-label">Sessão</span><span class="info-val sess-id-val" id="sess-id">–</span></div>
       </div>
     </div>
     <div class="controles">
@@ -457,9 +458,9 @@ function entrarDashboard() {
 function estadoLigado(s){
   document.getElementById('status-dot').className='status-dot ligado';
   document.getElementById('status-txt').textContent='⚡ Carregando';
-  document.getElementById('sess-vaga').textContent=s.vaga||'–';
+  document.getElementById('sess-vaga').textContent=(s.vaga||'–').replace('VAGA_','Vaga ');
   document.getElementById('sess-inicio').textContent=s.inicio||'–';
-  document.getElementById('sess-kwh-ini').textContent=fmtBR(s.kwhInicial,2)+' kWh';
+  document.getElementById('sess-kwh-ini').textContent=(s.kwhInicial||'–')+' kWh';
   document.getElementById('sess-id').textContent=s.submissionId||'–';
   document.getElementById('painel-sessao').classList.remove('oculto');
   document.getElementById('btn-iniciar').classList.add('oculto');
@@ -487,7 +488,9 @@ function carregarHistorico(){
         var status=String(s.status||''),cls=status==='CONCLUIDO'?'ok':'prog',txt=status==='CONCLUIDO'?'Concluído':'Em andamento';
         var consumo=(s.consumo!=null&&s.consumo!=='')?fmtBR(s.consumo,2)+' kWh':'–';
         var data=s.inicio?String(s.inicio).slice(0,16):'–';
-        return '<div class="hist-item"><div><div class="hist-data">'+data+'</div><div class="hist-id">'+String(s.sessaoId||'')+(s.vaga?' · '+s.vaga:'')+'</div></div><div><div class="hist-kwh">'+consumo+'</div></div><span class="hist-badge '+cls+'">'+txt+'</span></div>';
+        var quemAbriu = s.nomeAbriu ? 'Aberto por: '+s.nomeAbriu : '';
+        var quemEncerrou = s.nomeEncerrou ? ' · Encerrado por: '+s.nomeEncerrou : '';
+        return '<div class="hist-item"><div><div class="hist-data">'+data+'</div><div class="hist-id">'+(s.vaga?s.vaga+' · ':'')+quemAbriu+quemEncerrou+'</div></div><div><div class="hist-kwh">'+consumo+'</div></div><span class="hist-badge '+cls+'">'+txt+'</span></div>';
       }).join('');
     })
     .catch(function(){el.innerHTML='<div class="hist-vazio">Não foi possível carregar o histórico.</div>';});
@@ -560,7 +563,7 @@ function enviarLeituraInicial() {
 // ══ LEITURA FINAL ════════════════════════════════════════════
 function abrirTelaLeituraFinal() {
   document.getElementById('lf-vaga').textContent = (App.vagaId||'').replace('VAGA_','Vaga ');
-  document.getElementById('lf-kwh-ini').textContent = fmtBR(App.kwhInicial,2) + ' kWh';
+  document.getElementById('lf-kwh-ini').textContent = (App.kwhInicial||'–') + ' kWh';
   document.getElementById('lf-leitura').value = '';
   document.getElementById('lf-erro').classList.add('oculto');
   mostrarTela('tela-leitura-final');
@@ -577,10 +580,11 @@ function enviarLeituraFinal() {
   btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
 
   api('pararCarregamento', {
-    apartamento:  String(App.usuario.apartamento),
-    submissionId: String(App.submissionId),
-    vagaId:       App.vagaId,
-    leituraFinal: leitura
+    apartamento:    String(App.usuario.apartamento),
+    submissionId:   String(App.submissionId),
+    vagaId:         App.vagaId,
+    leituraFinal:   leitura,
+    nomeEncerrou:   String(App.usuario.nome)
   })
   .then(function(res) {
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
@@ -637,4 +641,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
