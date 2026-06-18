@@ -62,7 +62,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .hdr-dir{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .apto-badge{background:var(--k-green-dim);color:var(--k-green);font-size:16px;font-weight:600;padding:4px 12px;border-radius:20px;border:1px solid rgba(59,205,192,.2)}
 .btn-sair{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--txt-sub);border-radius:8px;padding:8px 14px;font-size:16px;cursor:pointer;font-family:var(--f-body);-webkit-appearance:none;min-height:36px;white-space:nowrap}
-#tela-dash,#tela-qr,#tela-adm{background:#0d0d0d}
+#tela-dash,#tela-qr,#tela-leitura-inicial,#tela-leitura-final{background:#0d0d0d}
 .dash-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(--sab) + 28px);display:flex;flex-direction:column;gap:14px}
 .perfil-card{flex-direction:row!important;align-items:center;gap:14px;padding:18px 20px}
 .avatar{width:50px;height:50px;border-radius:50%;flex-shrink:0;background:var(--k-green);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:26px;color:#0d0d0d;box-shadow:0 0 16px var(--k-green-glow)}
@@ -71,8 +71,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .perfil-sub{font-size:16px;color:var(--txt-sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .perfil-apto{font-size:16px;color:var(--k-green);font-weight:600;margin-top:2px}
 .btn-senha-ico{width:40px;height:40px;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none}
-.btn-adm-ico{width:40px;height:40px;flex-shrink:0;background:rgba(59,205,192,.1);border:1px solid rgba(59,205,192,.3);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;margin-left:4px}
-.btn-adm-ico:active{opacity:.7}
 .status-card{padding:20px;gap:0!important}
 .status-row{display:flex;align-items:center;gap:12px}
 .status-dot{width:12px;height:12px;border-radius:50%;background:var(--txt-dim);flex-shrink:0;transition:background .4s}
@@ -93,6 +91,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-iniciar:disabled,.btn-parar:disabled{opacity:.35}
 @keyframes entradaBtn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .resultado-card{text-align:center;gap:0!important;padding:28px 20px}
+.leitura-vaga-display{font-family:var(--f-display);font-size:24px;letter-spacing:.03em;color:var(--k-green);background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px}
+.helper-text-leitura{font-size:13px;color:var(--txt-sub);margin-top:6px;line-height:1.5}
 .result-check{font-size:48px;margin-bottom:8px}
 .result-titulo{font-family:var(--f-display);font-size:32px;letter-spacing:.04em;color:var(--k-green);margin-bottom:20px}
 .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
@@ -249,7 +249,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <div class="perfil-apto" id="perfil-apto"></div>
       </div>
       <button class="btn-senha-ico" onclick="mostrarTrocarSenha()">🔑</button>
-      <button class="btn-adm-ico oculto" id="btn-adm" onclick="mostrarTela('tela-adm')" title="Administração">⚙️</button>
     </div>
     <div class="card status-card">
       <div class="status-row">
@@ -265,7 +264,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     </div>
     <div class="controles">
       <button class="btn-iniciar" id="btn-iniciar" onclick="abrirScanner()">📷  Escanear Vaga</button>
-      <button class="btn-parar oculto" id="btn-parar" onclick="pararCarregamento()">■  Parar Carregamento</button>
+      <button class="btn-parar oculto" id="btn-parar" onclick="abrirTelaLeituraFinal()">■  Encerrar Carregamento</button>
     </div>
     <div class="card resultado-card oculto" id="resultado-card">
       <div class="result-check">✅</div>
@@ -289,41 +288,61 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </main>
 </div>
 
-<!-- ADM -->
-<div id="tela-adm" class="tela">
+<!-- LEITURA INICIAL -->
+<div id="tela-leitura-inicial" class="tela">
   <header class="app-header">
     <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Administração<span>Carros Elétricos · Kadosh</span></div>
+    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
-  <div class="adm-scroll">
-    <button class="btn-primary btn-inserir" onclick="abrirModalNovoUsuario()">➕&nbsp; Inserir Novo Usuário</button>
-    <div class="card adm-card">
-      <div class="hist-titulo">Usuários Cadastrados</div>
-      <div id="adm-lista"><div class="hist-vazio">Carregando...</div></div>
+  <div class="login-scroll">
+    <div class="card">
+      <div class="campo">
+        <label>Vaga</label>
+        <div class="leitura-vaga-display" id="li-vaga">–</div>
+      </div>
+      <div class="campo">
+        <label>Leitura inicial do relógio (kWh)</label>
+        <input type="text" id="li-leitura" placeholder="Ex: 66,6 ou 1.999,9" inputmode="decimal">
+        <div class="helper-text-leitura">Digite o valor exibido no medidor. Use vírgula para decimais.</div>
+      </div>
+      <div id="li-erro" class="msg-erro oculto"></div>
+      <button class="btn-primary" id="btn-li-enviar" onclick="enviarLeituraInicial()">
+        <span class="btn-txt">Enviar Leitura</span>
+        <span class="btn-load oculto">Aguarde...</span>
+      </button>
     </div>
   </div>
 </div>
 
-<!-- MODAL NOVO USUÁRIO -->
-<div id="modal-novo-usuario" class="modal-overlay oculto">
-  <div class="modal-box">
-    <div class="modal-titulo">Novo Usuário</div>
-    <div class="campo"><label>Nome completo</label>
-      <input type="text" id="nu-nome" placeholder="Nome do morador">
+<!-- LEITURA FINAL -->
+<div id="tela-leitura-final" class="tela">
+  <header class="app-header">
+    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
+  </header>
+  <div class="login-scroll">
+    <div class="card">
+      <div class="campo">
+        <label>Vaga</label>
+        <div class="leitura-vaga-display" id="lf-vaga">–</div>
+      </div>
+      <div class="campo">
+        <label>Leitura inicial registrada</label>
+        <div class="leitura-vaga-display" id="lf-kwh-ini">–</div>
+      </div>
+      <div class="campo">
+        <label>Leitura final do relógio (kWh)</label>
+        <input type="text" id="lf-leitura" placeholder="Ex: 70,2 ou 2.005,3" inputmode="decimal">
+        <div class="helper-text-leitura">Digite o valor exibido no medidor agora. Use vírgula para decimais.</div>
+      </div>
+      <div id="lf-erro" class="msg-erro oculto"></div>
+      <button class="btn-primary" id="btn-lf-enviar" onclick="enviarLeituraFinal()">
+        <span class="btn-txt">Encerrar Carregamento</span>
+        <span class="btn-load oculto">Aguarde...</span>
+      </button>
     </div>
-    <div class="campo"><label>Email</label>
-      <input type="email" id="nu-email" placeholder="email@exemplo.com" inputmode="email">
-    </div>
-    <div class="campo"><label>Apartamento</label>
-      <input type="text" id="nu-apto" placeholder="Ex: 1601">
-    </div>
-    <div id="nu-msg" class="oculto"></div>
-    <button class="btn-primary" id="btn-nu-salvar" onclick="cadastrarNovoUsuario()">
-      <span class="btn-txt">Cadastrar</span>
-      <span class="btn-load oculto">Aguarde...</span>
-    </button>
-    <button class="btn-link" onclick="fecharModalNovoUsuario()">Cancelar</button>
   </div>
 </div>
 
@@ -336,8 +355,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 </div>
 
 <script>
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbx2HDRw-PNOSWaLceETccGNo_d09PVe7XIB7R6lnJrNcCUyCBzMNZlHMs_Vy_cLceTpgQ/exec';
-var App = { usuario:null, sessaoId:null, vagaId:null, kwhInicial:null, inicio:null, carregando:false };
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzrC7j3--iP1Zu24ZHL9-cB1dj5KJSv4iIB2VQ_KpIXNBo6Tr-U3m2MPzDxyR8N2A1q6Q/exec';
+var App = { usuario:null, submissionId:null, vagaId:null, kwhInicial:null, inicio:null, carregando:false };
 var LS_KEY = 'ev_charge_creds';
 var _qrScanner = null, _qrProcessing = false, _cbCounter = 0;
 
@@ -381,7 +400,6 @@ function mostrarHintPWA() {
 function mostrarTela(id) {
   document.querySelectorAll('.tela').forEach(function(t){t.classList.remove('ativa');t.style.display='';});
   var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa'); window.scrollTo(0,0);
-  if(id==='tela-adm') carregarListaUsuarios();
 }
 function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg||'Aguarde...';document.getElementById('overlay').classList.remove('oculto');}
 function overlayHide(){document.getElementById('overlay').classList.add('oculto');}
@@ -389,6 +407,7 @@ function toggleSenha(id,btn){var i=document.getElementById(id);i.type=i.type==='
 function formatarDuracao(min){if(min==null||min==='')return'–';min=Number(min);if(isNaN(min))return'–';if(min<60)return min+' min';return Math.floor(min/60)+'h '+(min%60)+'min';}
 function fmtBR(num,casas){if(num==null||num==='')return'–';var n=Number(num);if(isNaN(n))return'–';var c=casas!==undefined?casas:4;try{return n.toLocaleString('pt-BR',{minimumFractionDigits:c,maximumFractionDigits:c});}catch(e){var p=n.toFixed(c).split('.');return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+(p[1]||'');}}
 
+// ══ LOGIN ════════════════════════════════════════════════════
 function efetuarLogin() {
   var bannerVis=!document.getElementById('banner-lembrado').classList.contains('oculto');
   var email=bannerVis?JSON.parse(localStorage.getItem(LS_KEY)||'{}').email||'':document.getElementById('login-email').value.trim();
@@ -409,8 +428,9 @@ function efetuarLogin() {
     .catch(function(err){btn.disabled=false;btn.querySelector('.btn-txt').classList.remove('oculto');btn.querySelector('.btn-load').classList.add('oculto');erroEl.textContent='Erro: '+(err?err.message:'tente novamente');erroEl.classList.remove('oculto');});
 }
 
-function fazerLogout(){pararScanner();App.usuario=App.sessaoId=App.vagaId=App.kwhInicial=App.inicio=null;App.carregando=false;document.getElementById('login-senha').value='';document.getElementById('login-erro').classList.add('oculto');carregarCredenciais();mostrarTela('tela-login');}
+function fazerLogout(){pararScanner();App.usuario=App.submissionId=App.vagaId=App.kwhInicial=App.inicio=null;App.carregando=false;document.getElementById('login-senha').value='';document.getElementById('login-erro').classList.add('oculto');carregarCredenciais();mostrarTela('tela-login');}
 
+// ══ DASHBOARD ════════════════════════════════════════════════
 function entrarDashboard() {
   var u=App.usuario;
   document.getElementById('hdr-apto').textContent='Apt '+u.apartamento;
@@ -418,38 +438,62 @@ function entrarDashboard() {
   document.getElementById('perfil-nome').textContent=u.nome;
   document.getElementById('perfil-email').textContent=u.email;
   document.getElementById('perfil-apto').textContent='🏠 Apartamento '+u.apartamento;
-  // Botão ADM — só para admins
-  var btnAdm=document.getElementById('btn-adm');
-  if(u.admin===true){btnAdm.classList.remove('oculto');}else{btnAdm.classList.add('oculto');}
   mostrarTela('tela-dash');
   document.getElementById('resultado-card').classList.add('oculto');
   estadoDesligado();
   overlayShow('Verificando sessão...');
-  api('verificarSessaoAtiva',{usuarioId:String(u.id)})
-    .then(function(res){overlayHide();if(res&&res.ativa){App.sessaoId=res.sessaoId;App.vagaId=res.vaga;App.kwhInicial=res.kwhInicial;App.inicio=res.inicio;estadoLigado(res);}carregarHistorico();})
+  api('verificarSessaoAtiva',{apartamento:String(u.apartamento)})
+    .then(function(res){
+      overlayHide();
+      if(res&&res.ativa){
+        App.submissionId=res.submissionId; App.vagaId=res.vaga; App.kwhInicial=res.kwhInicial; App.inicio=res.inicio;
+        estadoLigado(res);
+      }
+      carregarHistorico();
+    })
     .catch(function(){overlayHide();carregarHistorico();});
 }
 
-function estadoLigado(s){document.getElementById('status-dot').className='status-dot ligado';document.getElementById('status-txt').textContent='⚡ Carregando';document.getElementById('sess-vaga').textContent=s.vaga||'–';document.getElementById('sess-inicio').textContent=s.inicio||'–';document.getElementById('sess-kwh-ini').textContent=fmtBR(s.kwhInicial)+' kWh';document.getElementById('sess-id').textContent=s.sessaoId||'–';document.getElementById('painel-sessao').classList.remove('oculto');document.getElementById('btn-iniciar').classList.add('oculto');document.getElementById('btn-parar').classList.remove('oculto');document.getElementById('btn-parar').disabled=false;}
-function estadoDesligado(){document.getElementById('status-dot').className='status-dot';document.getElementById('status-txt').textContent='Pronto para carregar';document.getElementById('painel-sessao').classList.add('oculto');document.getElementById('btn-parar').classList.add('oculto');document.getElementById('btn-iniciar').classList.remove('oculto');document.getElementById('btn-iniciar').disabled=false;}
+function estadoLigado(s){
+  document.getElementById('status-dot').className='status-dot ligado';
+  document.getElementById('status-txt').textContent='⚡ Carregando';
+  document.getElementById('sess-vaga').textContent=s.vaga||'–';
+  document.getElementById('sess-inicio').textContent=s.inicio||'–';
+  document.getElementById('sess-kwh-ini').textContent=fmtBR(s.kwhInicial,2)+' kWh';
+  document.getElementById('sess-id').textContent=s.submissionId||'–';
+  document.getElementById('painel-sessao').classList.remove('oculto');
+  document.getElementById('btn-iniciar').classList.add('oculto');
+  document.getElementById('btn-parar').classList.remove('oculto');
+  document.getElementById('btn-parar').disabled=false;
+}
+function estadoDesligado(){
+  document.getElementById('status-dot').className='status-dot';
+  document.getElementById('status-txt').textContent='Pronto para carregar';
+  document.getElementById('painel-sessao').classList.add('oculto');
+  document.getElementById('btn-parar').classList.add('oculto');
+  document.getElementById('btn-iniciar').classList.remove('oculto');
+  document.getElementById('btn-iniciar').disabled=false;
+}
 
+// ══ HISTÓRICO ════════════════════════════════════════════════
 function carregarHistorico(){
   if(!App.usuario)return;
   var el=document.getElementById('hist-lista');
   el.innerHTML='<div class="hist-vazio">Carregando...</div>';
-  api('obterHistoricoUsuario',{usuarioId:String(App.usuario.id)})
+  api('obterHistoricoUsuario',{apartamento:String(App.usuario.apartamento)})
     .then(function(lista){
       if(!lista||!Array.isArray(lista)||lista.length===0){el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>';return;}
       el.innerHTML=lista.slice(0,3).map(function(s){
-        var status=String(s.status||''),cls=status==='CONCLUIDO'?'ok':'prog',txt=status==='CONCLUIDO'?'Concluído':status==='ENCERRADO_AUTO'?'Auto-enc.':'Em andamento';
-        var consumo=(s.consumo!=null&&s.consumo!=='')?fmtBR(s.consumo)+' kWh':'–';
-        var data=s.inicio?String(s.inicio).slice(0,16):'–',dur=(s.duracao!=null&&s.duracao!=='')?formatarDuracao(s.duracao):'';
-        return '<div class="hist-item"><div><div class="hist-data">'+data+'</div><div class="hist-id">'+String(s.sessaoId||'')+(s.vaga?' · '+s.vaga:'')+'</div></div><div><div class="hist-kwh">'+consumo+'</div><div class="hist-dur">'+dur+'</div></div><span class="hist-badge '+cls+'">'+txt+'</span></div>';
+        var status=String(s.status||''),cls=status==='CONCLUIDO'?'ok':'prog',txt=status==='CONCLUIDO'?'Concluído':'Em andamento';
+        var consumo=(s.consumo!=null&&s.consumo!=='')?fmtBR(s.consumo,2)+' kWh':'–';
+        var data=s.inicio?String(s.inicio).slice(0,16):'–';
+        return '<div class="hist-item"><div><div class="hist-data">'+data+'</div><div class="hist-id">'+String(s.sessaoId||'')+(s.vaga?' · '+s.vaga:'')+'</div></div><div><div class="hist-kwh">'+consumo+'</div></div><span class="hist-badge '+cls+'">'+txt+'</span></div>';
       }).join('');
     })
     .catch(function(){el.innerHTML='<div class="hist-vazio">Não foi possível carregar o histórico.</div>';});
 }
 
+// ══ SCANNER QR ═══════════════════════════════════════════════
 function abrirScanner(){if(!App.usuario)return;_qrProcessing=false;mostrarTela('tela-qr');document.getElementById('qr-erro').classList.add('oculto');document.getElementById('qr-status').textContent='Iniciando câmera...';setTimeout(iniciarScanner,200);}
 function fecharScanner(){pararScanner();mostrarTela('tela-dash');}
 function iniciarScanner(){
@@ -469,26 +513,105 @@ function processarQRCode(texto) {
     try{var url=new URL(texto);var param=url.searchParams.get('vaga');if(param){vagaId=param.trim().toUpperCase();}else{document.getElementById('qr-erro').textContent='QR inválido: "'+texto+'".';document.getElementById('qr-erro').classList.remove('oculto');document.getElementById('qr-status').textContent='Tente novamente';setTimeout(function(){_qrProcessing=false;iniciarScanner();},2500);return;}}catch(e){vagaId=texto.trim().toUpperCase();}
   }
   if(!/^VAGA_[A-Z0-9]{1,4}$/.test(vagaId)){document.getElementById('qr-erro').textContent='QR inválido: "'+texto+'". Escaneie o código da vaga.';document.getElementById('qr-erro').classList.remove('oculto');document.getElementById('qr-status').textContent='Tente novamente';setTimeout(function(){_qrProcessing=false;iniciarScanner();},2500);return;}
-  mostrarTela('tela-dash');overlayShow('Verificando vaga '+vagaId+'...');
-  api('verificarVaga',{vagaId:vagaId}).then(function(res){overlayHide();if(res.erro){alert('❌ '+res.erro);return;}if(res.ocupada){alert('🚫 '+res.mensagem);return;}iniciarCarregamento(vagaId);}).catch(function(err){overlayHide();alert('Falha: '+(err?err.message:'tente novamente'));});
+
+  // Abre a tela de leitura inicial com a vaga identificada
+  App.vagaId = vagaId;
+  document.getElementById('li-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
+  document.getElementById('li-leitura').value = '';
+  document.getElementById('li-erro').classList.add('oculto');
+  mostrarTela('tela-leitura-inicial');
 }
 
-function iniciarCarregamento(vagaId){
-  if(App.carregando||!App.usuario)return;App.carregando=true;overlayShow('Ligando disjuntor da '+vagaId+'...');document.getElementById('btn-iniciar').disabled=true;
-  api('iniciarCarregamento',{usuarioId:String(App.usuario.id),email:String(App.usuario.email),apartamento:String(App.usuario.apartamento),vagaId:vagaId})
-    .then(function(res){overlayHide();App.carregando=false;if(!res||res.erro){document.getElementById('btn-iniciar').disabled=false;alert('Erro: '+(res?res.erro:'Resposta vazia'));return;}App.sessaoId=res.sessaoId;App.vagaId=res.vaga;App.kwhInicial=res.kwh;App.inicio=res.inicio;estadoLigado({sessaoId:res.sessaoId,vaga:res.vaga,kwhInicial:res.kwh,inicio:res.inicio});document.getElementById('resultado-card').classList.add('oculto');if(res.sessaoAnteriorEmail)alert('ℹ️ Sessão de '+res.sessaoAnteriorEmail+' encerrada.');carregarHistorico();})
-    .catch(function(err){overlayHide();App.carregando=false;document.getElementById('btn-iniciar').disabled=false;alert('Falha: '+(err?err.message:'Erro'));});
-}
-function pararCarregamento(){
-  if(App.carregando||!App.usuario||!App.sessaoId||!App.vagaId)return;App.carregando=true;overlayShow('Desligando e registrando...');document.getElementById('btn-parar').disabled=true;
-  api('pararCarregamento',{usuarioId:String(App.usuario.id),email:String(App.usuario.email),nome:String(App.usuario.nome),sessaoId:String(App.sessaoId),vagaId:String(App.vagaId)})
-    .then(function(res){overlayHide();App.carregando=false;if(!res||res.erro){document.getElementById('btn-parar').disabled=false;alert('Erro: '+(res?res.erro:'Resposta vazia'));return;}App.sessaoId=App.vagaId=App.kwhInicial=App.inicio=null;estadoDesligado();mostrarResultado(res);carregarHistorico();})
-    .catch(function(err){overlayHide();App.carregando=false;document.getElementById('btn-parar').disabled=false;alert('Falha: '+(err?err.message:'Erro'));});
+// ══ LEITURA INICIAL ══════════════════════════════════════════
+function enviarLeituraInicial() {
+  var leitura = document.getElementById('li-leitura').value.trim();
+  var erroEl  = document.getElementById('li-erro');
+  var btn     = document.getElementById('btn-li-enviar');
+  erroEl.classList.add('oculto');
+
+  if (!leitura) { erroEl.textContent='Digite a leitura do medidor.'; erroEl.classList.remove('oculto'); return; }
+
+  btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
+
+  api('iniciarCarregamento', {
+    apartamento: String(App.usuario.apartamento),
+    nome:        String(App.usuario.nome),
+    email:       String(App.usuario.email),
+    vagaId:      App.vagaId,
+    leituraInicial: leitura
+  })
+  .then(function(res) {
+    btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
+    if (!res || res.erro) { erroEl.textContent = res ? res.erro : 'Erro ao enviar leitura.'; erroEl.classList.remove('oculto'); return; }
+    App.submissionId = res.submissionId;
+    App.kwhInicial   = res.kwhInicial;
+    App.inicio       = res.inicio;
+    estadoLigado({ vaga: res.vaga, inicio: res.inicio, kwhInicial: res.kwhInicial, submissionId: res.submissionId });
+    document.getElementById('resultado-card').classList.add('oculto');
+    mostrarTela('tela-dash');
+    carregarHistorico();
+  })
+  .catch(function(err) {
+    btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
+    erroEl.textContent = 'Falha: ' + (err ? err.message : 'tente novamente'); erroEl.classList.remove('oculto');
+  });
 }
 
-function mostrarResultado(res){document.getElementById('r-consumo').textContent=fmtBR(res.consumo)+' kWh';document.getElementById('r-duracao').textContent=formatarDuracao(res.duracao);document.getElementById('r-vaga').textContent=res.vaga||'–';document.getElementById('r-kwh-ini').textContent=fmtBR(res.kwhInicial)+' kWh';document.getElementById('r-kwh-fim').textContent=fmtBR(res.kwhFinal)+' kWh';document.getElementById('r-inicio').textContent=res.inicio||'–';document.getElementById('r-fim').textContent=res.fim||'–';var card=document.getElementById('resultado-card');card.classList.remove('oculto');setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'nearest'});},100);}
+// ══ LEITURA FINAL ════════════════════════════════════════════
+function abrirTelaLeituraFinal() {
+  document.getElementById('lf-vaga').textContent = (App.vagaId||'').replace('VAGA_','Vaga ');
+  document.getElementById('lf-kwh-ini').textContent = fmtBR(App.kwhInicial,2) + ' kWh';
+  document.getElementById('lf-leitura').value = '';
+  document.getElementById('lf-erro').classList.add('oculto');
+  mostrarTela('tela-leitura-final');
+}
+
+function enviarLeituraFinal() {
+  var leitura = document.getElementById('lf-leitura').value.trim();
+  var erroEl  = document.getElementById('lf-erro');
+  var btn     = document.getElementById('btn-lf-enviar');
+  erroEl.classList.add('oculto');
+
+  if (!leitura) { erroEl.textContent='Digite a leitura final do medidor.'; erroEl.classList.remove('oculto'); return; }
+
+  btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
+
+  api('pararCarregamento', {
+    apartamento:  String(App.usuario.apartamento),
+    submissionId: String(App.submissionId),
+    vagaId:       App.vagaId,
+    leituraFinal: leitura
+  })
+  .then(function(res) {
+    btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
+    if (!res || res.erro) { erroEl.textContent = res ? res.erro : 'Erro ao encerrar.'; erroEl.classList.remove('oculto'); return; }
+    App.submissionId = App.vagaId = App.kwhInicial = App.inicio = null;
+    estadoDesligado();
+    mostrarTela('tela-dash');
+    mostrarResultado(res);
+    carregarHistorico();
+  })
+  .catch(function(err) {
+    btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
+    erroEl.textContent = 'Falha: ' + (err ? err.message : 'tente novamente'); erroEl.classList.remove('oculto');
+  });
+}
+
+// ══ RESULTADO ════════════════════════════════════════════════
+function mostrarResultado(res){
+  document.getElementById('r-consumo').textContent=fmtBR(res.consumo,2)+' kWh';
+  document.getElementById('r-duracao').textContent=formatarDuracao(res.duracao);
+  document.getElementById('r-vaga').textContent=res.vaga||'–';
+  document.getElementById('r-kwh-ini').textContent=fmtBR(res.kwhInicial,2)+' kWh';
+  document.getElementById('r-kwh-fim').textContent=fmtBR(res.kwhFinal,2)+' kWh';
+  document.getElementById('r-inicio').textContent=res.inicio||'–';
+  document.getElementById('r-fim').textContent=res.fim||'–';
+  var card=document.getElementById('resultado-card');card.classList.remove('oculto');
+  setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
+}
 function fecharResultado(){document.getElementById('resultado-card').classList.add('oculto');}
 
+// ══ SENHA ════════════════════════════════════════════════════
 function mostrarTrocarSenha(){if(App.usuario)document.getElementById('s-email').value=App.usuario.email;mostrarTela('tela-senha');}
 function mudarSenha(){
   var email=document.getElementById('s-email').value.trim(),atual=document.getElementById('s-atual').value,nova=document.getElementById('s-nova').value,conf=document.getElementById('s-conf').value,msgEl=document.getElementById('s-msg');
@@ -502,57 +625,14 @@ function mudarSenha(){
     .catch(function(err){msgEl.className='msg-erro';msgEl.textContent='Erro: '+(err?err.message:'tente novamente');});
 }
 
-// ══ ADM ══════════════════════════════════════════════════════
-function carregarListaUsuarios(){
-  var lista=document.getElementById('adm-lista');if(!lista)return;
-  lista.innerHTML='<div class="hist-vazio">Carregando...</div>';
-  api('listarUsuarios',{})
-    .then(function(res){
-      if(!res||res.erro){lista.innerHTML='<div class="hist-vazio">Erro ao carregar.</div>';return;}
-      if(!Array.isArray(res)||!res.length){lista.innerHTML='<div class="hist-vazio">Nenhum usuário cadastrado.</div>';return;}
-      // Ordenar: Admin sem apto ("Admin") primeiro, depois por apartamento
-      res.sort(function(a, b) {
-        var aAdmin = String(a.apartamento).toUpperCase() === 'ADMIN';
-        var bAdmin = String(b.apartamento).toUpperCase() === 'ADMIN';
-        if (aAdmin && !bAdmin) return -1;
-        if (!aAdmin && bAdmin) return 1;
-        // Ordenar numericamente por apartamento
-        var aNum = parseInt(String(a.apartamento).replace(/\D/g,'')) || 0;
-        var bNum = parseInt(String(b.apartamento).replace(/\D/g,'')) || 0;
-        return aNum - bNum;
-      });
-      lista.innerHTML=res.map(function(u){
-        return '<div class="hist-item">'
-          +'<div><div class="hist-data">Apt '+u.apartamento+'</div><div class="hist-id" style="color:var(--txt-sub)">'+u.id+' · '+u.email+'</div></div>'
-          +'<div style="text-align:right"><div style="font-size:14px;font-weight:600;color:var(--txt)">'+u.nome+'</div>'
-          +'<div style="font-size:12px;color:'+(u.ativo?'var(--k-green)':'var(--txt-dim)')+'">'+( u.ativo?'Ativo':'Inativo')+(u.admin?' · ADM':'')+'</div></div>'
-          +'</div>';
-      }).join('');
-    })
-    .catch(function(){lista.innerHTML='<div class="hist-vazio">Falha ao carregar.</div>';});
-}
-function abrirModalNovoUsuario(){
-  document.getElementById('nu-nome').value='';document.getElementById('nu-email').value='';document.getElementById('nu-apto').value='';
-  var msg=document.getElementById('nu-msg');msg.textContent='';msg.className='oculto';
-  var btn=document.getElementById('btn-nu-salvar');btn.disabled=false;btn.querySelector('.btn-txt').classList.remove('oculto');btn.querySelector('.btn-load').classList.add('oculto');
-  document.getElementById('modal-novo-usuario').classList.remove('oculto');
-}
-function fecharModalNovoUsuario(){document.getElementById('modal-novo-usuario').classList.add('oculto');}
-function cadastrarNovoUsuario(){
-  var nome=document.getElementById('nu-nome').value.trim(),email=document.getElementById('nu-email').value.trim(),apto=document.getElementById('nu-apto').value.trim();
-  var msg=document.getElementById('nu-msg'),btn=document.getElementById('btn-nu-salvar');
-  if(!nome||!email||!apto){msg.textContent='Preencha todos os campos.';msg.className='msg-erro';return;}
-  btn.disabled=true;btn.querySelector('.btn-txt').classList.add('oculto');btn.querySelector('.btn-load').classList.remove('oculto');msg.className='oculto';
-  api('cadastrarUsuario',{nome:nome,email:email,apartamento:apto})
-    .then(function(res){
-      btn.disabled=false;btn.querySelector('.btn-txt').classList.remove('oculto');btn.querySelector('.btn-load').classList.add('oculto');
-      if(res&&res.erro){msg.textContent=res.erro;msg.className='msg-erro';return;}
-      fecharModalNovoUsuario();carregarListaUsuarios();
-    })
-    .catch(function(){btn.disabled=false;btn.querySelector('.btn-txt').classList.remove('oculto');btn.querySelector('.btn-load').classList.add('oculto');msg.textContent='Erro de conexão.';msg.className='msg-erro';});
-}
-
-document.addEventListener('keydown',function(e){if(e.key!=='Enter')return;var a=document.querySelector('.tela.ativa');if(!a)return;if(a.id==='tela-login')efetuarLogin();if(a.id==='tela-senha')mudarSenha();});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;
+  var a=document.querySelector('.tela.ativa'); if(!a)return;
+  if(a.id==='tela-login')efetuarLogin();
+  if(a.id==='tela-senha')mudarSenha();
+  if(a.id==='tela-leitura-inicial')enviarLeituraInicial();
+  if(a.id==='tela-leitura-final')enviarLeituraFinal();
+});
 </script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
