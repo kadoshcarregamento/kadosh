@@ -139,6 +139,19 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px}
 .modal-titulo{font-family:var(--f-display);font-size:28px;letter-spacing:.04em;color:var(--k-green);text-align:center}
 /* Overlay */
+.tela-status-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(--sab) + 28px);display:flex;flex-direction:column;gap:16px}
+.andar-titulo{font-family:var(--f-display);font-size:18px;letter-spacing:.06em;color:var(--txt-sub);text-transform:uppercase;margin-bottom:8px}
+.vagas-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vaga-card{background:var(--bg-card);border-radius:var(--r);border:1px solid var(--border);padding:18px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.vaga-card.livre{border-color:rgba(59,205,192,.4);background:rgba(59,205,192,.06)}
+.vaga-card.ocupado{border-color:rgba(255,77,77,.3);background:rgba(255,77,77,.05)}
+.vaga-icone{font-size:32px}
+.vaga-nome{font-family:var(--f-display);font-size:24px;letter-spacing:.04em;color:var(--txt)}
+.vaga-status{font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.vaga-card.livre .vaga-status{color:var(--k-green)}
+.vaga-card.ocupado .vaga-status{color:var(--red)}
+.btn-status-vagas{width:100%;padding:14px 20px;background:transparent;color:var(--k-green);border:1px solid rgba(59,205,192,.4);border-radius:var(--r-sm);font-family:var(--f-display);font-size:22px;letter-spacing:.04em;cursor:pointer;-webkit-appearance:none;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-status-vagas:active{opacity:.7}
 .overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px}
 .overlay-box{background:rgba(20,20,20,.95);border-radius:20px;border:1px solid var(--border);padding:32px 36px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 0 0 1px rgba(59,205,192,.1),0 32px 64px rgba(0,0,0,.5);min-width:200px}
 .spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(59,205,192,.15);border-top-color:var(--k-green);animation:giro .7s linear infinite}
@@ -184,6 +197,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       </button>
       <button class="btn-link" onclick="mostrarTela('tela-senha')">Alterar senha</button>
     </div>
+    <button class="btn-status-vagas" onclick="mostrarTela('tela-status')">🔌&nbsp; Status das Vagas</button>
     <p class="hint-pwa" id="hint-pwa"></p>
   </div>
 </div>
@@ -342,6 +356,19 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <span class="btn-load oculto">Aguarde...</span>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- STATUS VAGAS -->
+<div id="tela-status" class="tela">
+  <header class="app-header">
+    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Status das Vagas<span>Carros Elétricos · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-login')">← Voltar</button></div>
+  </header>
+  <div class="tela-status-scroll">
+    <div id="status-vagas-lista"><div class="hist-vazio">Carregando...</div></div>
+    <button class="btn-primary" onclick="carregarStatusVagas()" style="font-size:20px">🔄&nbsp; Atualizar</button>
   </div>
 </div>
 
@@ -626,6 +653,42 @@ function mudarSenha(){
     .catch(function(err){msgEl.className='msg-erro';msgEl.textContent='Erro: '+(err?err.message:'tente novamente');});
 }
 
+// ══ STATUS DAS VAGAS ═════════════════════════════════════════
+function carregarStatusVagas() {
+  var el = document.getElementById('status-vagas-lista');
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  api('getStatusVagas', {})
+    .then(function(vagas) {
+      if (!vagas || vagas.erro || !Array.isArray(vagas) || !vagas.length) {
+        el.innerHTML = '<div class="hist-vazio">Não foi possível carregar o status.</div>';
+        return;
+      }
+      // Agrupa por andar (level), ordena do maior para o menor
+      var andares = {};
+      vagas.forEach(function(v) {
+        var andar = String(Math.abs(v.level));
+        if (!andares[andar]) andares[andar] = [];
+        andares[andar].push(v);
+      });
+      var sortedAndares = Object.keys(andares).sort(function(a,b){ return parseInt(b)-parseInt(a); });
+      var html = '';
+      sortedAndares.forEach(function(andar) {
+        html += '<div class="andar-titulo">Andar ' + andar + '</div><div class="vagas-grid">';
+        andares[andar].forEach(function(v) {
+          var livre = String(v.status).toLowerCase() === 'livre';
+          html += '<div class="vaga-card ' + (livre ? 'livre' : 'ocupado') + '">'
+            + '<div class="vaga-icone">' + (livre ? '🟢' : '🔴') + '</div>'
+            + '<div class="vaga-nome">Vaga ' + v.id + '</div>'
+            + '<div class="vaga-status">' + (livre ? 'Livre' : 'Ocupado') + '</div>'
+            + '</div>';
+        });
+        html += '</div>';
+      });
+      el.innerHTML = html;
+    })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio">Falha ao carregar status.</div>'; });
+}
+
 document.addEventListener('keydown',function(e){
   if(e.key!=='Enter')return;
   var a=document.querySelector('.tela.ativa'); if(!a)return;
@@ -638,4 +701,5 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
 
