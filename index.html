@@ -425,6 +425,7 @@ function mostrarHintPWA() {
 function mostrarTela(id) {
   document.querySelectorAll('.tela').forEach(function(t){t.classList.remove('ativa');t.style.display='';});
   var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa'); window.scrollTo(0,0);
+  if(id==='tela-status') carregarStatusVagas();
 }
 function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg||'Aguarde...';document.getElementById('overlay').classList.remove('oculto');}
 function overlayHide(){document.getElementById('overlay').classList.add('oculto');}
@@ -701,4 +702,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
