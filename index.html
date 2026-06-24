@@ -75,10 +75,10 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .badges-card{background:var(--bg-card);border-radius:var(--r);border:1px solid var(--border);padding:10px 16px;display:flex;flex-direction:column;gap:6px}
 .badges-header{display:flex;justify-content:space-between;align-items:flex-start}
 .badges-titulo{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub)}
-.badges-atualizar{display:flex;flex-direction:column;align-items:center;gap:0;background:none;border:none;cursor:pointer;padding:0;-webkit-appearance:none}
+.badges-atualizar{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:0;-webkit-appearance:none}
 .badges-atualizar span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-sub)}
-.badges-atualizar .seta{font-size:16px;color:var(--txt-sub)}
-.badges-atualizar:active{opacity:.5}
+.badges-atualizar .seta-ico{width:36px;height:36px;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.badges-atualizar:active .seta-ico{opacity:.6}
 .badges-linha{display:flex;gap:6px}
 .vaga-badge{display:flex;align-items:center;gap:5px;background:var(--bg-input);border:1px solid var(--border);border-radius:20px;padding:5px 10px;font-size:13px;font-weight:600;color:var(--txt-sub)}
 .vaga-badge .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -280,7 +280,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div class="card badges-card" id="vagas-badges">
       <div class="badges-header">
         <div class="badges-titulo">Status Vagas</div>
-        <button class="badges-atualizar" onclick="carregarBadges()"><span>atualizar</span><span class="seta">↻</span></button>
+        <button type="button" class="badges-atualizar" onclick="event.stopPropagation();carregarBadges()"><span>atualizar</span><div class="seta-ico">↻</div></button>
       </div>
       <div class="badges-linha"><div class="vaga-badge"><div class="dot"></div>Carregando...</div></div>
     </div>
@@ -697,7 +697,7 @@ function carregarBadges() {
       }).join('');
       el.innerHTML =
         '<div class="badges-header"><div class="badges-titulo">Status Vagas</div>' +
-        '<button class="badges-atualizar" onclick="carregarBadges()"><span>atualizar</span><span class="seta">↻</span></button></div>' +
+        '<button type="button" class="badges-atualizar" onclick="event.stopPropagation();carregarBadges()"><span>atualizar</span><div class="seta-ico">↻</div></button></div>' +
         '<div class="badges-linha">' + linha1 + '</div>' +
         '<div class="badges-linha">' + linha2 + '</div>';
     })
