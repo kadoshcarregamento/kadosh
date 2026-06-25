@@ -156,6 +156,17 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .adm-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(--sab) + 28px);display:flex;flex-direction:column;gap:14px}
 .btn-inserir{margin:0;font-size:20px}
 .adm-card{padding:16px;gap:0!important}
+.btn-cobr-ico{width:40px;height:40px;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;color:var(--k-green);font-family:var(--f-body);margin-left:4px}
+.btn-cobr-ico:active{opacity:.7}
+.cobr-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(--sab) + 28px);display:flex;flex-direction:column;gap:14px}
+.cobr-table{width:100%;border-collapse:collapse}
+.cobr-table th{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub);padding:8px 10px;border-bottom:1px solid var(--border);text-align:left}
+.cobr-table th:last-child,.cobr-table td:last-child{text-align:right}
+.cobr-table th:nth-child(2),.cobr-table td:nth-child(2){text-align:right}
+.cobr-table td{font-size:14px;color:var(--txt);padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+.cobr-table td.mes{color:var(--txt-sub);font-size:13px}
+.cobr-table td.valor{color:var(--k-green);font-weight:700;font-size:15px}
+.cobr-table tr:last-child td{border-bottom:none}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
 .modal-overlay.oculto{display:none!important}
 .modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px}
@@ -283,6 +294,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <div class="perfil-apto" id="perfil-apto"></div>
       </div>
       <button class="btn-senha-ico" onclick="mostrarTrocarSenha()">🔑</button>
+      <button class="btn-cobr-ico" onclick="mostrarTela('tela-cobranca')" title="Histórico financeiro">$</button>
     </div>
     <div class="card badges-card" id="vagas-badges">
       <div class="badges-header">
@@ -399,6 +411,20 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </div>
 </div>
 
+<!-- COBRANÇA -->
+<div id="tela-cobranca" class="tela">
+  <header class="app-header">
+    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Histórico Financeiro<span>Carros Elétricos · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
+  </header>
+  <div class="cobr-scroll">
+    <div class="card" id="cobr-conteudo">
+      <div class="hist-vazio">Carregando...</div>
+    </div>
+  </div>
+</div>
+
 <!-- OVERLAY -->
 <div id="overlay" class="overlay oculto">
   <div class="overlay-box">
@@ -454,6 +480,7 @@ function mostrarTela(id) {
   document.querySelectorAll('.tela').forEach(function(t){t.classList.remove('ativa');t.style.display='';});
   var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa'); window.scrollTo(0,0);
   if(id==='tela-status') carregarStatusVagas();
+  if(id==='tela-cobranca') carregarCobranca();
 }
 function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg||'Aguarde...';document.getElementById('overlay').classList.remove('oculto');}
 function overlayHide(){document.getElementById('overlay').classList.add('oculto');}
@@ -736,6 +763,32 @@ function carregarBadges() {
     .catch(function() { el.innerHTML = '<div class="vaga-badge">Indisponível</div>'; });
 }
 
+// ══ COBRANÇA ═════════════════════════════════════════════════
+function carregarCobranca() {
+  var el = document.getElementById('cobr-conteudo');
+  if (!el || !App.usuario) return;
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  api('getCobranca', { apartamento: String(App.usuario.apartamento) })
+    .then(function(res) {
+      if (!res || res.erro) { el.innerHTML = '<div class="hist-vazio">Erro ao carregar.</div>'; return; }
+      if (!res.historico || !res.historico.length) { el.innerHTML = '<div class="hist-vazio">Nenhum registro encontrado.</div>'; return; }
+      var rows = res.historico.map(function(r) {
+        var consumo = r.consumo > 0 ? fmtBR(r.consumo, 2) + ' kWh' : '–';
+        var valor   = r.valor  > 0 ? 'R$ ' + fmtBR(r.valor, 2)    : '–';
+        return '<tr>'
+          + '<td class="mes">' + r.mes + '</td>'
+          + '<td>' + consumo + '</td>'
+          + '<td class="valor">' + valor + '</td>'
+          + '</tr>';
+      }).join('');
+      el.innerHTML = '<table class="cobr-table">'
+        + '<thead><tr><th>Mês</th><th>Consumo</th><th>Valor</th></tr></thead>'
+        + '<tbody>' + rows + '</tbody>'
+        + '</table>';
+    })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio">Falha ao carregar.</div>'; });
+}
+
 // ══ STATUS DAS VAGAS ═════════════════════════════════════════
 function carregarStatusVagas() {
   var el = document.getElementById('status-vagas-lista');
@@ -785,3 +838,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
