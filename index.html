@@ -271,7 +271,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
     <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir">
-      <span class="apto-badge" id="hdr-apto"></span>
       <button class="btn-sair" onclick="fazerLogout()">Sair</button>
     </div>
   </header>
@@ -488,7 +487,6 @@ function fazerLogout(){pararScanner();App.usuario=App.submissionId=App.vagaId=Ap
 // ══ DASHBOARD ════════════════════════════════════════════════
 function entrarDashboard() {
   var u=App.usuario;
-  document.getElementById('hdr-apto').textContent='Apt '+u.apartamento;
   document.getElementById('av-inicial').textContent=u.nome.charAt(0).toUpperCase();
   document.getElementById('perfil-nome').textContent=u.nome;
   document.getElementById('perfil-email').textContent=u.email;
