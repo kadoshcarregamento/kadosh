@@ -426,6 +426,10 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div class="card" id="cobr-conteudo">
       <div class="hist-vazio">Carregando...</div>
     </div>
+    <p style="font-size:13px;color:var(--txt-sub);line-height:1.7;padding:0 4px">
+      O consumo é medido até o dia 21 de cada mês, e a cobrança é feita no boleto do mês subsequente.
+      <br>Exemplo: O valor correspondente ao mês de Junho será cobrado no boleto de Julho.
+    </p>
   </div>
 </div>
 
@@ -786,7 +790,7 @@ function carregarCobranca() {
       }).join('');
       el.innerHTML =
         '<button type="button" class="btn-enviar-relatorio" onclick="enviarRelatorioEmail()">'
-        + '<span>Enviar relatório por e-mail</span>'
+        + '<span>Enviar relatório por email</span>'
         + '<div class="ico">📩</div>'
         + '</button>'
         + '<table class="cobr-table">'
