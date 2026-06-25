@@ -70,7 +70,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .perfil-nome{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
 .perfil-sub{font-size:16px;color:var(--txt-sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .perfil-apto{font-size:16px;color:var(--k-green);font-weight:600;margin-top:2px}
-.btn-senha-ico{width:40px;height:40px;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none}
+.btn-senha-ico{width:42px;height:42px;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none}
 .status-card{padding:12px 16px;gap:0!important}
 .badges-card{background:var(--bg-card);border-radius:var(--r);border:1px solid var(--border);padding:10px 16px;display:flex;flex-direction:column;gap:8px}
 .badges-header{display:flex;justify-content:space-between;align-items:center}
@@ -156,7 +156,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .adm-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(--sab) + 28px);display:flex;flex-direction:column;gap:14px}
 .btn-inserir{margin:0;font-size:20px}
 .adm-card{padding:16px;gap:0!important}
-.btn-cobr-ico{width:40px;height:40px;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;color:var(--k-green);font-family:var(--f-body);margin-left:4px}
+.btn-cobr-ico{width:42px;height:42px;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;color:var(--k-green);font-family:var(--f-body)}
 .btn-cobr-ico:active{opacity:.7}
 .cobr-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(--sab) + 28px);display:flex;flex-direction:column;gap:14px}
 .cobr-table{width:100%;border-collapse:collapse}
@@ -287,7 +287,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </header>
   <main class="dash-main">
     <div class="card perfil-card">
-      <div class="avatar" id="av-inicial"></div>
       <div class="perfil-info">
         <div class="perfil-nome" id="perfil-nome"></div>
         <div class="perfil-sub" id="perfil-email"></div>
@@ -516,7 +515,6 @@ function fazerLogout(){pararScanner();App.usuario=App.submissionId=App.vagaId=Ap
 // ══ DASHBOARD ════════════════════════════════════════════════
 function entrarDashboard() {
   var u=App.usuario;
-  document.getElementById('av-inicial').textContent=u.nome.charAt(0).toUpperCase();
   document.getElementById('perfil-nome').textContent=u.nome;
   document.getElementById('perfil-email').textContent=u.email;
   document.getElementById('perfil-apto').textContent='🏠 Apartamento '+u.apartamento;
