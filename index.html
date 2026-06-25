@@ -297,7 +297,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
         <button class="btn-senha-ico" onclick="mostrarTrocarSenha()">🔑</button>
-        <button class="btn-cobr-ico" onclick="mostrarTela('tela-cobranca')" title="Histórico financeiro">$</button>
+        <button class="btn-cobr-ico" onclick="mostrarTela('tela-cobranca')" title="Histórico financeiro">💲</button>
       </div>
     </div>
     <div class="card badges-card" id="vagas-badges">
@@ -786,7 +786,7 @@ function carregarCobranca() {
       }).join('');
       el.innerHTML =
         '<button type="button" class="btn-enviar-relatorio" onclick="enviarRelatorioEmail()">'
-        + '<span>Enviar relatório por email</span>'
+        + '<span>Enviar relatório por e-mail</span>'
         + '<div class="ico">📩</div>'
         + '</button>'
         + '<table class="cobr-table">'
