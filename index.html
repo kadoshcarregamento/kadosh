@@ -119,12 +119,16 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .result-email{font-size:13px;color:var(--txt-sub);margin:6px 0 14px}
 .hist-card{gap:0!important}
 .hist-titulo{font-family:var(--f-display);font-size:22px;letter-spacing:.04em;color:var(--txt);margin-bottom:14px}
-.hist-item{background:var(--bg-input);border-radius:var(--r-sm);padding:14px 16px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.hist-data{font-size:13px;color:var(--txt)}
-.hist-id{font-size:11px;color:var(--txt-sub);margin-top:3px;font-family:monospace}
-.hist-kwh{font-family:var(--f-display);font-weight:700;color:var(--k-green);font-size:20px;text-align:center;letter-spacing:.02em}
-.hist-dur{font-size:12px;color:var(--txt);text-align:center;margin-top:2px}
-.hist-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.hist-item{background:var(--bg-input);border-radius:var(--r-sm);padding:14px 16px;border:1px solid var(--border);display:flex;align-items:stretch;gap:10px;margin-bottom:8px}
+.hist-esq{flex:1;display:flex;flex-direction:column;gap:2px;justify-content:center}
+.hist-data{font-size:13px;color:var(--txt);font-weight:500}
+.hist-leitura{font-size:12px;color:var(--txt-sub)}
+.hist-meio{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:6px;min-width:48px}
+.hist-vaga-nome{font-family:var(--f-display);font-size:20px;color:var(--k-green);letter-spacing:.04em;text-align:center}
+.hist-dir{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:6px}
+.hist-kwh{font-family:var(--f-display);font-weight:700;color:var(--k-green);font-size:22px;text-align:right;letter-spacing:.02em;line-height:1}
+.hist-kwh-unit{font-family:var(--f-display);font-size:14px;color:var(--k-green);text-align:right;letter-spacing:.02em}
+.hist-badge{font-size:11px;font-weight:600;padding:5px 0;border-radius:20px;white-space:nowrap;width:100%;text-align:center}
 .hist-badge.ok{background:var(--k-green-dim);color:var(--k-green);border:1px solid rgba(59,205,192,.2)}
 .hist-badge.prog{background:rgba(255,200,0,.1);color:#ffc800;border:1px solid rgba(255,200,0,.2)}
 .hist-vazio{font-size:14px;color:var(--txt-dim);text-align:center;padding:28px 0}
@@ -535,11 +539,28 @@ function carregarHistorico(){
       if(!lista||!Array.isArray(lista)||lista.length===0){el.innerHTML='<div class="hist-vazio">Nenhuma sessão registrada ainda.</div>';return;}
       el.innerHTML=lista.slice(0,3).map(function(s){
         var status=String(s.status||''),cls=status==='CONCLUIDO'?'ok':'prog',txt=status==='CONCLUIDO'?'Concluído':'Em andamento';
-        var consumo=(s.consumo!=null&&s.consumo!=='')?fmtBR(s.consumo,2)+' kWh':'–';
-        var data=s.inicio?String(s.inicio).slice(0,16):'–';
-        var quemAbriu = s.nomeAbriu ? 'Aberto por: '+s.nomeAbriu : '';
-        var quemEncerrou = s.nomeEncerrou ? ' · Encerrado por: '+s.nomeEncerrou : '';
-        return '<div class="hist-item"><div><div class="hist-data">'+data+'</div><div class="hist-id">'+(s.vaga?s.vaga+' · ':'')+quemAbriu+quemEncerrou+'</div></div><div><div class="hist-kwh">'+consumo+'</div></div><span class="hist-badge '+cls+'">'+txt+'</span></div>';
+        var consumoNum = (s.consumo!=null&&s.consumo!=='') ? fmtBR(s.consumo,2) : '–';
+        var inicio = s.inicio ? String(s.inicio).slice(0,14) : '–';
+        var fim    = s.fim    ? String(s.fim).slice(0,14)    : '';
+        var vagaCod = (s.vaga||'').replace('VAGA_','');
+        var kwhIni = s.kwhInicial ? fmtBR(String(s.kwhInicial).replace(',','.'),2) : '–';
+        var kwhFim = s.kwhFinal  ? fmtBR(String(s.kwhFinal).replace(',','.'),2)  : '';
+        return '<div class="hist-item">'
+          +'<div class="hist-esq">'
+            +'<div class="hist-data">Início: '+inicio+'</div>'
+            +'<div class="hist-leitura">Leitura: '+kwhIni+' kWh</div>'
+            +(fim ? '<div class="hist-data">Fim: '+fim+'</div>' : '')
+            +(kwhFim ? '<div class="hist-leitura">Leitura: '+kwhFim+' kWh</div>' : '')
+          +'</div>'
+          +'<div class="hist-meio">'
+            +'<div class="hist-vaga-nome">'+vagaCod+'</div>'
+            +'<span class="hist-badge '+cls+'">'+txt+'</span>'
+          +'</div>'
+          +'<div class="hist-dir">'
+            +'<div class="hist-kwh">'+consumoNum+'</div>'
+            +'<div class="hist-kwh-unit">kWh</div>'
+          +'</div>'
+          +'</div>';
       }).join('');
     })
     .catch(function(){el.innerHTML='<div class="hist-vazio">Não foi possível carregar o histórico.</div>';});
@@ -758,4 +779,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
