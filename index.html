@@ -257,7 +257,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <div id="tela-qr" class="tela">
   <header class="app-header">
     <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
+    <div class="hdr-titulo">Sistema de Registro<span>Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="fecharScanner()">← Voltar</button></div>
   </header>
   <div class="qr-scroll">
@@ -473,8 +473,8 @@ function limparCredenciais() {
 }
 function mostrarHintPWA() {
   var h=document.getElementById('hint-pwa'),ua=navigator.userAgent;
-  if(window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches){h.textContent='✅ App instalado!';return;}
-  if(/iPhone|iPad|iPod/.test(ua))h.textContent='Para instalar: Compartilhar → "Adicionar à Tela de Início"';
+  if(window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches){h.textContent='App instalado!';return;}
+  if(/iPhone|iPad|iPod/.test(ua))h.textContent='Para instalar: Compartilhar → "Adicionar à tela de início"';
   else if(/Android/.test(ua))h.textContent='Para instalar: menu ⋮ → "Adicionar à tela inicial"';
 }
 function mostrarTela(id) {
