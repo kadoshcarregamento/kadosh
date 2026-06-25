@@ -480,7 +480,7 @@ function limparCredenciais() {
 }
 function mostrarHintPWA() {
   var h=document.getElementById('hint-pwa'),ua=navigator.userAgent;
-  if(window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches){h.textContent='✅ App instalado!';return;}
+  if(window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches){h.textContent='App instalado!';return;}
   if(/iPhone|iPad|iPod/.test(ua))h.textContent='Para instalar: Compartilhar → "Adicionar à Tela de Início"';
   else if(/Android/.test(ua))h.textContent='Para instalar: menu ⋮ → "Adicionar à tela inicial"';
 }
