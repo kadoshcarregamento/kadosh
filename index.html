@@ -440,9 +440,9 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div class="card" id="cobr-conteudo">
       <div class="hist-vazio">Carregando...</div>
     </div>
-    <p style="font-size:16px;color:var(--txt-sub);line-height:1.7;padding:0 4px">
+    <p style="font-size:15px;color:var(--txt-sub);line-height:1.7;padding:0 4px">
       O consumo é medido até o dia 20 de cada mês, e a cobrança é feita no boleto do mês subsequente.
-      <br>Exemplo: O consumo de 21 de Maio à 20 de Junho será cobrado no boleto que vence em Julho.
+      <br>Exemplo: O consumo entre 21 de Maio e 20 de Junho será cobrado no boleto que vence em Julho.
     </p>
   </div>
 </div>
@@ -464,7 +464,7 @@ var _qrScanner = null, _qrProcessing = false, _cbCounter = 0;
 function api(action, params) {
   return new Promise(function(resolve, reject) {
     var cbName = '_gasCb' + (++_cbCounter);
-    var timeout = setTimeout(function() { delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); reject(new Error('Timeout')); }, 30000);
+    var timeout = setTimeout(function() { delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); reject(new Error('Timeout')); }, 60000);
     window[cbName] = function(data) { clearTimeout(timeout); delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); resolve(data); };
     var url = GAS_URL + '?action=' + encodeURIComponent(action) + '&payload=' + encodeURIComponent(JSON.stringify(params||{})) + '&callback=' + cbName;
     var script = document.createElement('script');
@@ -819,7 +819,7 @@ function carregarCobranca() {
             + '<tr><td colspan="4" style="padding:0;border:none"><div id="det-' + idx + '" style="display:none;background:rgba(0,0,0,.2);padding:6px 12px 10px 20px">' + sessoesHtml + '</div></td></tr>';
       }).join('');
       el.innerHTML =
-        '<p style="font-size:16px;color:var(--txt-sub);margin-bottom:12px;line-height:1.6">Clique no mês para ver o detalhamento. Para enviar o relatório ao seu e-mail, selecione os meses e clique em ENVIAR SELECIONADOS.</p>'
+        '<p style="font-size:15px;color:var(--txt-sub);margin-bottom:12px;line-height:1.6">Clique no mês para ver o detalhamento. Para enviar o relatório ao seu e-mail, selecione os meses e clique em ENVIAR SELECIONADOS.</p>'
         + '<table class="cobr-table" style="margin-bottom:12px">'
         + '<thead><tr><th style="width:20px"></th><th>Mês</th><th>Consumo</th><th>Valor</th></tr></thead>'
         + '<tbody>' + rows + '</tbody></table>'
@@ -905,3 +905,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
