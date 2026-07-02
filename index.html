@@ -440,7 +440,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div class="card" id="cobr-conteudo">
       <div class="hist-vazio">Carregando...</div>
     </div>
-    <p style="font-size:15px;color:var(--txt-sub);line-height:1.7;padding:0 4px">
+    <p style="font-size:16px;color:var(--txt-sub);line-height:1.7;padding:0 4px">
       O consumo é medido até o dia 20 de cada mês, e a cobrança é feita no boleto do mês subsequente.
       <br>Exemplo: O consumo entre 21 de Maio e 20 de Junho será cobrado no boleto que vence em Julho.
     </p>
@@ -464,7 +464,7 @@ var _qrScanner = null, _qrProcessing = false, _cbCounter = 0;
 function api(action, params) {
   return new Promise(function(resolve, reject) {
     var cbName = '_gasCb' + (++_cbCounter);
-    var timeout = setTimeout(function() { delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); reject(new Error('Timeout')); }, 60000);
+    var timeout = setTimeout(function() { delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); reject(new Error('Timeout')); }, 90000);
     window[cbName] = function(data) { clearTimeout(timeout); delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); resolve(data); };
     var url = GAS_URL + '?action=' + encodeURIComponent(action) + '&payload=' + encodeURIComponent(JSON.stringify(params||{})) + '&callback=' + cbName;
     var script = document.createElement('script');
@@ -810,7 +810,7 @@ function carregarCobranca() {
         var sessoesHtml = '';
         if (detalheMes && detalheMes.sessoes.length) {
           sessoesHtml = detalheMes.sessoes.map(function(s) {
-            return '<div class="cobr-sessao"><span class="data">' + s.data + '</span><span class="vaga">' + s.vaga + '</span><span class="kwh">' + fmtBR(s.consumo, 2) + ' kWh</span></div>';
+            return '<div class="cobr-sessao"><span class="data">' + s.data + '</span><span class="kwh">' + fmtBR(s.consumo, 2) + ' kWh</span><span class="vaga">' + s.vaga + '</span></div>';
           }).join('');
         }
         return '<tr class="cobr-mes-row" data-det="det-' + idx + '" onclick="toggleDetalhe(this.dataset.det)">'
@@ -819,7 +819,7 @@ function carregarCobranca() {
             + '<tr><td colspan="4" style="padding:0;border:none"><div id="det-' + idx + '" style="display:none;background:rgba(0,0,0,.2);padding:6px 12px 10px 20px">' + sessoesHtml + '</div></td></tr>';
       }).join('');
       el.innerHTML =
-        '<p style="font-size:15px;color:var(--txt-sub);margin-bottom:12px;line-height:1.6">Clique no mês para ver o detalhamento. Para enviar o relatório ao seu e-mail, selecione os meses e clique em ENVIAR SELECIONADOS.</p>'
+        '<p style="font-size:16px;color:var(--txt-sub);margin-bottom:12px;line-height:1.6">Clique no mês para ver o detalhamento. Para enviar o relatório ao seu e-mail, selecione os meses e clique em ENVIAR SELECIONADOS.</p>'
         + '<table class="cobr-table" style="margin-bottom:12px">'
         + '<thead><tr><th style="width:20px"></th><th>Mês</th><th>Consumo</th><th>Valor</th></tr></thead>'
         + '<tbody>' + rows + '</tbody></table>'
@@ -847,11 +847,12 @@ function enviarRelatorioDetalhado() {
     mesesSelecionados: mesesSel, todosMeses: App._detalhesMensais || []
   }).then(function(res) {
     if (btn) { btn.disabled = false; btn.innerHTML = '📩 Enviar selecionados'; }
-    if (res && res.erro) { alert('Erro: ' + res.erro); return; }
+    if (!res) { alert('Resposta vazia do servidor.'); return; }
+    if (res.erro) { alert('Erro: ' + res.erro); return; }
     alert('✅ Relatório enviado para ' + App.usuario.email);
-  }).catch(function() {
+  }).catch(function(err) {
     if (btn) { btn.disabled = false; btn.innerHTML = '📩 Enviar selecionados'; }
-    alert('Falha ao enviar.');
+    alert('Erro técnico: ' + (err ? err.message : 'desconhecido'));
   });
 }
 
