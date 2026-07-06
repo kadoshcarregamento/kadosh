@@ -159,6 +159,19 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-cobr-ico{width:42px;height:42px;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;color:var(--k-green);font-family:var(--f-body)}
 .btn-cobr-ico:active{opacity:.7}
 .cobr-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(--sab) + 28px);display:flex;flex-direction:column;gap:14px}
+.tela-admin-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(var(--sab)+28px);display:flex;flex-direction:column;gap:12px}
+.admin-user-item{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.admin-user-item.inativo{opacity:.45}
+.admin-user-info{flex:1;min-width:0}
+.admin-user-nome{font-size:15px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-user-sub{font-size:12px;color:var(--txt-sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-user-apto{font-size:13px;font-weight:700;color:var(--k-green);min-width:36px;text-align:center;flex-shrink:0}
+.btn-remover{background:rgba(255,77,77,.1);border:1px solid rgba(255,77,77,.25);color:#ff8080;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;-webkit-appearance:none;white-space:nowrap;flex-shrink:0}
+.btn-remover:active{opacity:.7}
+.admin-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
+.admin-modal-overlay.oculto{display:none!important}
+.admin-modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto}
+.admin-modal-titulo{font-family:var(--f-display);font-size:26px;letter-spacing:.04em;color:var(--k-green);text-align:center}
 .cobr-table{width:100%;border-collapse:collapse}
 .cobr-table th{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub);padding:8px 10px;border-bottom:1px solid var(--border);text-align:left}
 .cobr-table th:last-child,.cobr-table td:last-child{text-align:right}
@@ -299,6 +312,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
     <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir">
+      <button class="btn-sair oculto" id="btn-admin-hdr" onclick="mostrarTela('tela-admin')" style="background:rgba(59,205,192,.1);border-color:rgba(59,205,192,.3);color:var(--k-green)">⚙️</button>
       <button class="btn-sair" onclick="fazerLogout()">Sair</button>
     </div>
   </header>
@@ -447,6 +461,46 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </div>
 </div>
 
+<!-- ADMIN -->
+<div id="tela-admin" class="tela">
+  <header class="app-header">
+    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Administração<span>Carros Elétricos · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
+  </header>
+  <div class="tela-admin-scroll">
+    <button class="btn-primary" onclick="abrirModalCadastro()" style="font-size:20px">➕ Cadastrar Novo Usuário</button>
+    <div id="admin-lista"><div class="hist-vazio">Carregando...</div></div>
+  </div>
+</div>
+
+<!-- MODAL CADASTRO -->
+<div id="modal-cadastro" class="admin-modal-overlay oculto">
+  <div class="admin-modal-box">
+    <div class="admin-modal-titulo">Novo Usuário</div>
+    <div class="campo"><label>Apartamento</label>
+      <select id="cad-apto" style="font-size:16px;font-family:var(--f-body);padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);outline:none;width:100%;-webkit-appearance:none">
+        <option value="">Selecione...</option>
+      </select>
+    </div>
+    <div class="campo"><label>Nome completo</label>
+      <input type="text" id="cad-nome" placeholder="Nome do morador">
+    </div>
+    <div class="campo"><label>Email</label>
+      <input type="email" id="cad-email" placeholder="email@exemplo.com" inputmode="email">
+    </div>
+    <div class="campo"><label>Confirmar email</label>
+      <input type="email" id="cad-email2" placeholder="Repita o email" inputmode="email">
+    </div>
+    <div id="cad-msg" class="oculto"></div>
+    <button class="btn-primary" id="btn-cad-salvar" onclick="cadastrarUsuario()" style="font-size:20px">
+      <span class="btn-txt">Cadastrar</span>
+      <span class="btn-load oculto">Aguarde...</span>
+    </button>
+    <button class="btn-link" onclick="fecharModalCadastro()">Cancelar</button>
+  </div>
+</div>
+
 <!-- OVERLAY -->
 <div id="overlay" class="overlay oculto">
   <div class="overlay-box">
@@ -503,6 +557,7 @@ function mostrarTela(id) {
   var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa'); window.scrollTo(0,0);
   if(id==='tela-status') carregarStatusVagas();
   if(id==='tela-cobranca') carregarCobranca();
+  if(id==='tela-admin') carregarListaAdmin();
 }
 function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg||'Aguarde...';document.getElementById('overlay').classList.remove('oculto');}
 function overlayHide(){document.getElementById('overlay').classList.add('oculto');}
@@ -543,6 +598,12 @@ function entrarDashboard() {
   document.getElementById('resultado-card').classList.add('oculto');
   estadoDesligado();
   carregarBadges();
+  // Botão admin
+  var btnAdmin = document.getElementById('btn-admin-hdr');
+  if (btnAdmin) {
+    if (u.perfil === 'Admin') btnAdmin.classList.remove('oculto');
+    else btnAdmin.classList.add('oculto');
+  }
   overlayShow('Verificando sessão...');
   api('verificarSessaoAtiva',{apartamento:String(u.apartamento)})
     .then(function(res){
@@ -751,6 +812,104 @@ function mudarSenha(){
   api('alterarSenha',{email:email,senhaAtual:atual,novaSenha:nova})
     .then(function(res){if(res.erro){msgEl.className='msg-erro';msgEl.textContent=res.erro;}else{msgEl.className='msg-ok';msgEl.textContent='✅ Senha alterada!';try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'null');if(r&&r.email===email){r.senha=nova;localStorage.setItem(LS_KEY,JSON.stringify(r));}}catch(e){}setTimeout(function(){mostrarTela('tela-login');msgEl.classList.add('oculto');['s-email','s-atual','s-nova','s-conf'].forEach(function(id){document.getElementById(id).value='';});},2000);}})
     .catch(function(err){msgEl.className='msg-erro';msgEl.textContent='Erro: '+(err?err.message:'tente novamente');});
+}
+
+// ══ ADMINISTRAÇÃO ════════════════════════════════════════════
+function carregarListaAdmin() {
+  var el = document.getElementById('admin-lista');
+  if (!el) return;
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  api('listarUsuariosAdmin', {})
+    .then(function(res) {
+      if (!res || res.erro) { el.innerHTML = '<div class="hist-vazio">Erro ao carregar.</div>'; return; }
+      if (!res.usuarios || !res.usuarios.length) { el.innerHTML = '<div class="hist-vazio">Nenhum usuário.</div>'; return; }
+      el.innerHTML = res.usuarios.map(function(u) {
+        var inativo = u.acesso === 'Inativo';
+        return '<div class="admin-user-item' + (inativo ? ' inativo' : '') + '">'
+          + '<div class="admin-user-apto">Apt ' + u.apartamento + '</div>'
+          + '<div class="admin-user-info">'
+            + '<div class="admin-user-nome">' + u.nome + '</div>'
+            + '<div class="admin-user-sub">' + u.email + ' · ' + u.perfil + (inativo ? ' · Inativo' : '') + '</div>'
+          + '</div>'
+          + (!inativo ? '<button class="btn-remover" onclick="confirmarRemocao('' + u.email.replace(/'/g,"\'") + '','' + u.nome.replace(/'/g,"\'") + '')">Remover</button>' : '')
+          + '</div>';
+      }).join('');
+    })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio">Falha ao carregar.</div>'; });
+}
+
+function abrirModalCadastro() {
+  document.getElementById('cad-apto').innerHTML = '<option value="">Carregando...</option>';
+  document.getElementById('cad-nome').value  = '';
+  document.getElementById('cad-email').value = '';
+  document.getElementById('cad-email2').value = '';
+  var msg = document.getElementById('cad-msg');
+  msg.textContent = ''; msg.className = 'oculto';
+  var btn = document.getElementById('btn-cad-salvar');
+  btn.disabled = false;
+  btn.querySelector('.btn-txt').classList.remove('oculto');
+  btn.querySelector('.btn-load').classList.add('oculto');
+  document.getElementById('modal-cadastro').classList.remove('oculto');
+
+  api('getApartamentos', {}).then(function(res) {
+    var sel = document.getElementById('cad-apto');
+    if (!res || res.erro || !res.apartamentos) { sel.innerHTML = '<option value="">Erro ao carregar</option>'; return; }
+    sel.innerHTML = '<option value="">Selecione...</option>' + res.apartamentos.map(function(a) {
+      return '<option value="' + a + '">' + a + '</option>';
+    }).join('');
+  });
+}
+
+function fecharModalCadastro() {
+  document.getElementById('modal-cadastro').classList.add('oculto');
+}
+
+function cadastrarUsuario() {
+  var apto   = document.getElementById('cad-apto').value.trim();
+  var nome   = document.getElementById('cad-nome').value.trim();
+  var email  = document.getElementById('cad-email').value.trim();
+  var email2 = document.getElementById('cad-email2').value.trim();
+  var msg    = document.getElementById('cad-msg');
+  var btn    = document.getElementById('btn-cad-salvar');
+
+  msg.className = 'oculto';
+  if (!apto)  { msg.textContent = 'Selecione o apartamento.'; msg.className = 'msg-erro'; return; }
+  if (!nome)  { msg.textContent = 'Informe o nome.'; msg.className = 'msg-erro'; return; }
+  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { msg.textContent = 'Email inválido.'; msg.className = 'msg-erro'; return; }
+  if (email !== email2) { msg.textContent = 'Os emails não coincidem.'; msg.className = 'msg-erro'; return; }
+
+  btn.disabled = true;
+  btn.querySelector('.btn-txt').classList.add('oculto');
+  btn.querySelector('.btn-load').classList.remove('oculto');
+
+  api('cadastrarUsuarioAdmin', { apartamento: apto, nome: nome, email: email })
+    .then(function(res) {
+      btn.disabled = false;
+      btn.querySelector('.btn-txt').classList.remove('oculto');
+      btn.querySelector('.btn-load').classList.add('oculto');
+      if (res && res.erro) { msg.textContent = res.erro; msg.className = 'msg-erro'; return; }
+      fecharModalCadastro();
+      carregarListaAdmin();
+      alert('✅ Usuário cadastrado! Email de boas-vindas enviado para ' + email);
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.querySelector('.btn-txt').classList.remove('oculto');
+      btn.querySelector('.btn-load').classList.add('oculto');
+      msg.textContent = 'Erro de conexão.'; msg.className = 'msg-erro';
+    });
+}
+
+function confirmarRemocao(email, nome) {
+  if (!confirm('Remover "' + nome + '"?
+
+O usuário perderá acesso ao sistema.')) return;
+  api('removerUsuarioAdmin', { email: email })
+    .then(function(res) {
+      if (res && res.erro) { alert('Erro: ' + res.erro); return; }
+      carregarListaAdmin();
+    })
+    .catch(function() { alert('Falha ao remover.'); });
 }
 
 // ══ BADGES DAS VAGAS (dashboard) ════════════════════════════
