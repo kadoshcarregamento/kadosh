@@ -901,9 +901,7 @@ function cadastrarUsuario() {
 }
 
 function confirmarRemocao(email, nome) {
-  if (!confirm('Remover "' + nome + '"?
-
-O usuário perderá acesso ao sistema.')) return;
+  if (!confirm('Remover ' + nome + '? O usuario perdera acesso ao sistema.')) return;
   api('removerUsuarioAdmin', { email: email })
     .then(function(res) {
       if (res && res.erro) { alert('Erro: ' + res.erro); return; }
