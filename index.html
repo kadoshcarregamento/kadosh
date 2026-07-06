@@ -831,7 +831,7 @@ function carregarListaAdmin() {
             + '<div class="admin-user-nome">' + u.nome + '</div>'
             + '<div class="admin-user-sub">' + u.email + ' · ' + u.perfil + (inativo ? ' · Inativo' : '') + '</div>'
           + '</div>'
-          + (!inativo ? '<button class="btn-remover" onclick="confirmarRemocao('' + u.email.replace(/'/g,"\'") + '','' + u.nome.replace(/'/g,"\'") + '')">Remover</button>' : '')
+          + (!inativo ? '<button class="btn-remover" data-email="' + u.email + '" data-nome="' + u.nome + '" onclick="confirmarRemocao(this.dataset.email,this.dataset.nome)">Remover</button>' : '')
           + '</div>';
       }).join('');
     })
