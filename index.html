@@ -171,6 +171,14 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .admin-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
 .admin-modal-overlay.oculto{display:none!important}
 .admin-modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto}
+.admin-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.admin-section-titulo{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub);margin-bottom:12px}
+.admin-preco-row{display:flex;align-items:center;gap:10px}
+.admin-preco-mes{font-size:16px;font-weight:600;color:var(--k-green);min-width:70px}
+.admin-preco-input{flex:1;font-size:16px;font-family:var(--f-body);padding:11px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);outline:none;-webkit-appearance:none}
+.admin-preco-input:focus{border-color:var(--border-focus)}
+.btn-gravar-preco{padding:11px 18px;background:var(--k-green);color:#0d0d0d;border:none;border-radius:var(--r-sm);font-family:var(--f-display);font-size:20px;cursor:pointer;-webkit-appearance:none;white-space:nowrap}
+.btn-gravar-preco:active{opacity:.8}
 .admin-modal-titulo{font-family:var(--f-display);font-size:26px;letter-spacing:.04em;color:var(--k-green);text-align:center}
 .cobr-table{width:100%;border-collapse:collapse}
 .cobr-table th{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub);padding:8px 10px;border-bottom:1px solid var(--border);text-align:left}
@@ -469,6 +477,22 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
   <div class="tela-admin-scroll">
+    <!-- R$/kWh -->
+    <div class="admin-section">
+      <div class="admin-section-titulo">Inserir R$/kWh do Mês</div>
+      <div id="admin-preco-wrap">
+        <div class="hist-vazio" style="padding:8px 0">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Relatório mensal -->
+    <div class="admin-section">
+      <div class="admin-section-titulo">Relatório Financeiro por Email</div>
+      <p style="font-size:13px;color:var(--txt-sub);margin-bottom:12px">Selecione os meses e clique em ENVIAR.</p>
+      <div id="admin-meses-rel"><div class="hist-vazio" style="padding:8px 0">Carregando...</div></div>
+      <button type="button" class="btn-primary" id="btn-enviar-rel-admin" onclick="enviarRelatorioAdmin()" style="font-size:18px;margin-top:12px">📩 Enviar relatório</button>
+    </div>
+
     <button class="btn-primary" onclick="abrirModalCadastro()" style="font-size:20px">➕ Cadastrar Novo Usuário</button>
     <div id="admin-lista"><div class="hist-vazio">Carregando...</div></div>
   </div>
@@ -574,7 +598,7 @@ function mostrarTela(id) {
   var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa'); window.scrollTo(0,0);
   if(id==='tela-status') carregarStatusVagas();
   if(id==='tela-cobranca') carregarCobranca();
-  if(id==='tela-admin') carregarListaAdmin();
+  if(id==='tela-admin') { carregarListaAdmin(); carregarPrecoAdmin(); carregarMesesRelAdmin(); }
 }
 function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg||'Aguarde...';document.getElementById('overlay').classList.remove('oculto');}
 function overlayHide(){document.getElementById('overlay').classList.add('oculto');}
@@ -829,6 +853,77 @@ function mudarSenha(){
   api('alterarSenha',{email:email,senhaAtual:atual,novaSenha:nova})
     .then(function(res){if(res.erro){msgEl.className='msg-erro';msgEl.textContent=res.erro;}else{msgEl.className='msg-ok';msgEl.textContent='✅ Senha alterada!';try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'null');if(r&&r.email===email){r.senha=nova;localStorage.setItem(LS_KEY,JSON.stringify(r));}}catch(e){}setTimeout(function(){mostrarTela('tela-login');msgEl.classList.add('oculto');['s-email','s-atual','s-nova','s-conf'].forEach(function(id){document.getElementById(id).value='';});},2000);}})
     .catch(function(err){msgEl.className='msg-erro';msgEl.textContent='Erro: '+(err?err.message:'tente novamente');});
+}
+
+// ══ ADMIN FINANCEIRO ═════════════════════════════════════════
+function carregarPrecoAdmin() {
+  var el = document.getElementById('admin-preco-wrap');
+  if (!el) return;
+  api('getMesParaInsercao', {})
+    .then(function(res) {
+      if (!res || res.erro) { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">' + (res ? res.erro : 'Erro') + '</div>'; return; }
+      var precoAtual = res.precoAtual ? String(res.precoAtual).replace('.', ',') : '';
+      el.innerHTML =
+        '<div class="admin-preco-row">' +
+          '<div class="admin-preco-mes">' + res.mes + '</div>' +
+          '<input type="text" class="admin-preco-input" id="input-preco-kwh" placeholder="Ex: 1,13" value="' + precoAtual + '" inputmode="decimal">' +
+          '<button class="btn-gravar-preco" data-col="' + res.coluna + '" onclick="gravarPrecoKwh(this)">Salvar</button>' +
+        '</div>' +
+        (res.precoAtual ? '<p style="font-size:12px;color:var(--txt-sub);margin-top:6px">Valor atual: R$ ' + precoAtual + '/kWh</p>' : '');
+    })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Falha ao carregar.</div>'; });
+}
+
+function gravarPrecoKwh(btn) {
+  var val = document.getElementById('input-preco-kwh').value.trim().replace(',', '.');
+  var num = parseFloat(val);
+  if (isNaN(num) || num <= 0) { alert('Informe um valor válido. Ex: 1,13'); return; }
+  var coluna = parseInt(btn.dataset.col);
+  btn.disabled = true; btn.textContent = '...';
+  api('gravarPrecoKwh', { coluna: coluna, preco: num })
+    .then(function(res) {
+      btn.disabled = false; btn.textContent = 'Salvar';
+      if (res && res.erro) { alert('Erro: ' + res.erro); return; }
+      alert('R$/kWh salvo com sucesso!');
+      carregarPrecoAdmin();
+    })
+    .catch(function() { btn.disabled = false; btn.textContent = 'Salvar'; alert('Falha ao salvar.'); });
+}
+
+function carregarMesesRelAdmin() {
+  var el = document.getElementById('admin-meses-rel');
+  if (!el) return;
+  api('getMesesDisponiveis', {})
+    .then(function(res) {
+      if (!res || res.erro || !res.meses || !res.meses.length) { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Nenhum mês disponível.</div>'; return; }
+      el.innerHTML = res.meses.map(function(m, i) {
+        return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:15px;color:var(--txt);cursor:pointer">' +
+          '<input type="checkbox" class="admin-mes-check" value="' + m.mes + '" style="width:18px;height:18px;accent-color:var(--k-green)">' +
+          m.mes + '</label>';
+      }).join('');
+    })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Falha ao carregar.</div>'; });
+}
+
+function enviarRelatorioAdmin() {
+  var checks = document.querySelectorAll('.admin-mes-check:checked');
+  if (!checks.length) { alert('Selecione pelo menos um mês.'); return; }
+  var meses = [];
+  for (var i = 0; i < checks.length; i++) meses.push(checks[i].value);
+  var btn = document.getElementById('btn-enviar-rel-admin');
+  btn.disabled = true; btn.innerHTML = 'Enviando...';
+  api('enviarRelatorioAdmin', {
+    email: String(App.usuario.email),
+    nome:  String(App.usuario.nome),
+    mesesSelecionados: meses
+  }).then(function(res) {
+    btn.disabled = false; btn.innerHTML = '📩 Enviar relatório';
+    if (res && res.erro) { alert('Erro: ' + res.erro); return; }
+    alert('Relatorio enviado para ' + App.usuario.email);
+  }).catch(function(err) {
+    btn.disabled = false; btn.innerHTML = '📩 Enviar relatório';
+    alert('Erro: ' + (err ? err.message : 'desconhecido'));
+  });
 }
 
 // ══ ADMINISTRAÇÃO ════════════════════════════════════════════
@@ -1101,3 +1196,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
