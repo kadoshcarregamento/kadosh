@@ -393,10 +393,15 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <label>Vaga</label>
         <div class="leitura-vaga-display" id="li-vaga">–</div>
       </div>
+      <div class="campo" id="li-sugestao-wrap" style="display:none">
+        <label>Última leitura registrada</label>
+        <div class="leitura-vaga-display" id="li-sugestao" style="font-size:18px;cursor:pointer;border:1px solid rgba(59,205,192,.4)">–</div>
+        <div class="helper-text-leitura">Toque no valor acima para confirmar, ou digite abaixo se diferente.</div>
+      </div>
       <div class="campo">
-        <label>Leitura inicial do relógio (kWh)</label>
-        <input type="text" id="li-leitura" placeholder="Ex: 66,6 ou 1.999,9" inputmode="decimal">
-        <div class="helper-text-leitura">Digite o valor exibido no medidor. Use vírgula para decimais.</div>
+        <label>Leitura atual do relógio (kWh)</label>
+        <input type="text" id="li-leitura" placeholder="Digite apenas números" inputmode="numeric" oninput="mascaraLeitura(this)">
+        <div class="helper-text-leitura">Digite apenas números — a vírgula é inserida automaticamente antes do último dígito.</div>
       </div>
       <div id="li-erro" class="msg-erro oculto"></div>
       <button class="btn-primary" id="btn-li-enviar" onclick="enviarLeituraInicial()">
@@ -426,8 +431,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       </div>
       <div class="campo">
         <label>Leitura final do relógio (kWh)</label>
-        <input type="text" id="lf-leitura" placeholder="Ex: 70,2 ou 2.005,3" inputmode="decimal">
-        <div class="helper-text-leitura">Digite o valor exibido no medidor agora. Use vírgula para decimais.</div>
+        <input type="text" id="lf-leitura" placeholder="Digite apenas números" inputmode="numeric" oninput="mascaraLeitura(this)">
+        <div class="helper-text-leitura">Digite apenas números — a vírgula é inserida automaticamente antes do último dígito.</div>
       </div>
       <div id="lf-erro" class="msg-erro oculto"></div>
       <button class="btn-primary" id="btn-lf-enviar" onclick="enviarLeituraFinal()">
@@ -750,7 +755,44 @@ function processarQRCode(texto) {
   document.getElementById('li-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
   document.getElementById('li-leitura').value = '';
   document.getElementById('li-erro').classList.add('oculto');
+  document.getElementById('li-sugestao-wrap').style.display = 'none';
   mostrarTela('tela-leitura-inicial');
+  // Buscar última leitura da vaga
+  var vagaCodigo = vagaId.replace('VAGA_','');
+  api('getUltimaLeitura', { vagaCodigo: vagaCodigo })
+    .then(function(res) {
+      if (res && res.leitura) {
+        var wrap = document.getElementById('li-sugestao-wrap');
+        var el   = document.getElementById('li-sugestao');
+        el.textContent = res.leitura + ' kWh';
+        wrap.style.display = 'block';
+        // Ao clicar na sugestão, preenche o campo com os dígitos
+        el.onclick = function() {
+          var digitos = res.leitura.replace(/\D/g,'');
+          var input = document.getElementById('li-leitura');
+          input.value = res.leitura;
+          input.focus();
+        };
+      }
+    });
+}
+
+// ══ MÁSCARA DE LEITURA ═══════════════════════════════════════
+function mascaraLeitura(input) {
+  // Remove tudo que não for dígito
+  var digitos = input.value.replace(/\D/g, '');
+  if (!digitos) { input.value = ''; return; }
+  // Último dígito = decimal
+  var inteiros = digitos.slice(0, -1) || '0';
+  var decimal  = digitos.slice(-1);
+  // Formatar inteiros com ponto de milhar
+  var intFormatado = parseInt(inteiros, 10).toLocaleString('pt-BR');
+  input.value = intFormatado + ',' + decimal;
+}
+
+function leituraParaNumero(valor) {
+  // Converte "2.061,8" para 2061.8
+  return parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
 }
 
 // ══ LEITURA INICIAL ══════════════════════════════════════════
