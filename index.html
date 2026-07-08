@@ -108,6 +108,15 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .resultado-card{text-align:center;gap:0!important;padding:28px 20px}
 .leitura-vaga-display{font-family:var(--f-display);font-size:24px;letter-spacing:.03em;color:var(--k-green);background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px}
 .helper-text-leitura{font-size:13px;color:var(--txt-sub);margin-top:6px;line-height:1.5}
+.li-buscando{font-size:18px;color:var(--k-green);text-align:center;padding:20px 0;line-height:1.6;font-weight:600}
+.li-confirmacao{display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0}
+.li-valor-sugerido{font-family:var(--f-display);font-size:42px;color:var(--k-green);letter-spacing:.02em;text-align:center}
+.li-pergunta{font-size:18px;color:var(--txt);font-weight:600;text-align:center}
+.li-botoes-conf{display:flex;gap:12px;width:100%}
+.btn-sim{flex:1;padding:16px;background:rgba(59,205,192,.15);border:2px solid var(--k-green);border-radius:var(--r-sm);color:var(--k-green);font-family:var(--f-display);font-size:26px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-nao{flex:1;padding:16px;background:rgba(255,77,77,.1);border:2px solid var(--red);border-radius:var(--r-sm);color:var(--red);font-family:var(--f-display);font-size:26px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-sim:active{opacity:.7}
+.btn-nao:active{opacity:.7}
 .result-check{font-size:48px;margin-bottom:8px}
 .result-titulo{font-family:var(--f-display);font-size:32px;letter-spacing:.04em;color:var(--k-green);margin-bottom:20px}
 .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
@@ -393,21 +402,39 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <label>Vaga</label>
         <div class="leitura-vaga-display" id="li-vaga">–</div>
       </div>
-      <div class="campo" id="li-sugestao-wrap" style="display:none">
-        <label>Última leitura registrada</label>
-        <div class="leitura-vaga-display" id="li-sugestao" style="font-size:18px;cursor:pointer;border:1px solid rgba(59,205,192,.4)">–</div>
-        <div class="helper-text-leitura">Toque no valor acima para confirmar, ou digite abaixo se diferente.</div>
+
+      <!-- Estado: buscando -->
+      <div id="li-estado-buscando" class="li-buscando">
+        Buscando última leitura do relógio...<br>
+        Confira se o valor está correto.
       </div>
-      <div class="campo">
-        <label>Leitura atual do relógio (kWh)</label>
-        <input type="text" id="li-leitura" placeholder="Digite apenas números" inputmode="numeric" oninput="mascaraLeitura(this)">
-        <div class="helper-text-leitura">Digite apenas números — a vírgula é inserida automaticamente antes do último dígito.</div>
+
+      <!-- Estado: confirmação -->
+      <div id="li-estado-confirmacao" class="li-confirmacao" style="display:none">
+        <div class="li-valor-sugerido" id="li-sugestao">–</div>
+        <div class="li-pergunta">A leitura acima está correta?</div>
+        <div class="li-botoes-conf">
+          <button class="btn-sim" onclick="confirmarLeituraInicial(true)">✓ SIM</button>
+          <button class="btn-nao" onclick="confirmarLeituraInicial(false)">✗ NÃO</button>
+        </div>
       </div>
-      <div id="li-erro" class="msg-erro oculto"></div>
-      <button class="btn-primary" id="btn-li-enviar" onclick="enviarLeituraInicial()">
-        <span class="btn-txt">Enviar Leitura</span>
-        <span class="btn-load oculto">Aguarde...</span>
-      </button>
+
+      <!-- Estado: digitação manual -->
+      <div id="li-estado-manual" style="display:none">
+        <div class="campo">
+          <label>Digite a leitura correta (kWh)</label>
+          <input type="text" id="li-leitura" placeholder="Digite apenas números" inputmode="numeric" oninput="mascaraLeitura(this)">
+          <div class="helper-text-leitura">A vírgula é inserida automaticamente antes do último dígito.</div>
+        </div>
+        <div id="li-erro" class="msg-erro oculto" style="margin-top:8px"></div>
+        <button class="btn-primary" id="btn-li-enviar" onclick="enviarLeituraInicial()" style="margin-top:12px">
+          <span class="btn-txt">Enviar Leitura</span>
+          <span class="btn-load oculto">Aguarde...</span>
+        </button>
+      </div>
+
+      <!-- Erro geral -->
+      <div id="li-erro-geral" class="msg-erro oculto"></div>
     </div>
   </div>
 </div>
@@ -752,28 +779,29 @@ function processarQRCode(texto) {
 
   // Abre a tela de leitura inicial com a vaga identificada
   App.vagaId = vagaId;
+  App._leituraSugerida = null;
   document.getElementById('li-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
-  document.getElementById('li-leitura').value = '';
-  document.getElementById('li-erro').classList.add('oculto');
-  document.getElementById('li-sugestao-wrap').style.display = 'none';
+  document.getElementById('li-estado-buscando').style.display = 'block';
+  document.getElementById('li-estado-confirmacao').style.display = 'none';
+  document.getElementById('li-estado-manual').style.display = 'none';
+  document.getElementById('li-erro-geral').classList.add('oculto');
   mostrarTela('tela-leitura-inicial');
-  // Buscar última leitura da vaga
   var vagaCodigo = vagaId.replace('VAGA_','');
   api('getUltimaLeitura', { vagaCodigo: vagaCodigo })
     .then(function(res) {
+      document.getElementById('li-estado-buscando').style.display = 'none';
       if (res && res.leitura) {
-        var wrap = document.getElementById('li-sugestao-wrap');
-        var el   = document.getElementById('li-sugestao');
-        el.textContent = res.leitura + ' kWh';
-        wrap.style.display = 'block';
-        // Ao clicar na sugestão, preenche o campo com os dígitos
-        el.onclick = function() {
-          var digitos = res.leitura.replace(/\D/g,'');
-          var input = document.getElementById('li-leitura');
-          input.value = res.leitura;
-          input.focus();
-        };
+        App._leituraSugerida = res.leitura;
+        document.getElementById('li-sugestao').textContent = res.leitura + ' kWh';
+        document.getElementById('li-estado-confirmacao').style.display = 'flex';
+      } else {
+        // Sem leitura anterior — vai direto para digitação
+        document.getElementById('li-estado-manual').style.display = 'block';
       }
+    })
+    .catch(function() {
+      document.getElementById('li-estado-buscando').style.display = 'none';
+      document.getElementById('li-estado-manual').style.display = 'block';
     });
 }
 
@@ -796,6 +824,19 @@ function leituraParaNumero(valor) {
 }
 
 // ══ LEITURA INICIAL ══════════════════════════════════════════
+function confirmarLeituraInicial(sim) {
+  if (sim) {
+    // Usa a leitura sugerida direto
+    _enviarLeituraInicialComValor(App._leituraSugerida);
+  } else {
+    // Abre campo manual
+    document.getElementById('li-estado-confirmacao').style.display = 'none';
+    document.getElementById('li-estado-manual').style.display = 'block';
+    document.getElementById('li-leitura').value = '';
+    document.getElementById('li-leitura').focus();
+  }
+}
+
 function enviarLeituraInicial() {
   var leitura = document.getElementById('li-leitura').value.trim();
   var erroEl  = document.getElementById('li-erro');
@@ -803,8 +844,14 @@ function enviarLeituraInicial() {
   erroEl.classList.add('oculto');
 
   if (!leitura) { erroEl.textContent='Digite a leitura do medidor.'; erroEl.classList.remove('oculto'); return; }
+  _enviarLeituraInicialComValor(leitura);
+}
 
-  btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
+function _enviarLeituraInicialComValor(leitura) {
+  var erroEl = document.getElementById('li-erro-geral');
+  var btn    = document.getElementById('btn-li-enviar');
+  if (erroEl) erroEl.classList.add('oculto');
+  if (btn) { btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto'); }
 
   api('iniciarCarregamento', {
     apartamento: String(App.usuario.apartamento),
