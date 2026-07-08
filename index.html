@@ -117,6 +117,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-nao{flex:1;padding:16px;background:rgba(255,77,77,.1);border:2px solid var(--red);border-radius:var(--r-sm);color:var(--red);font-family:var(--f-display);font-size:26px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-sim:active{opacity:.7}
 .btn-nao:active{opacity:.7}
+.btn-sim:disabled,.btn-nao:disabled{opacity:.4;cursor:not-allowed}
 .result-check{font-size:48px;margin-bottom:8px}
 .result-titulo{font-family:var(--f-display);font-size:32px;letter-spacing:.04em;color:var(--k-green);margin-bottom:20px}
 .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
@@ -417,6 +418,12 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
           <button class="btn-sim" onclick="confirmarLeituraInicial(true)">✓ SIM</button>
           <button class="btn-nao" onclick="confirmarLeituraInicial(false)">✗ NÃO</button>
         </div>
+      </div>
+
+      <!-- Estado: enviando (feedback imediato após clicar SIM) -->
+      <div id="li-estado-enviando" class="li-buscando" style="display:none">
+        Enviando leitura...<br>
+        Aguarde um momento.
       </div>
 
       <!-- Estado: digitação manual -->
@@ -783,6 +790,7 @@ function processarQRCode(texto) {
   document.getElementById('li-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
   document.getElementById('li-estado-buscando').style.display = 'block';
   document.getElementById('li-estado-confirmacao').style.display = 'none';
+  document.getElementById('li-estado-enviando').style.display = 'none';
   document.getElementById('li-estado-manual').style.display = 'none';
   document.getElementById('li-erro-geral').classList.add('oculto');
   mostrarTela('tela-leitura-inicial');
@@ -826,7 +834,15 @@ function leituraParaNumero(valor) {
 // ══ LEITURA INICIAL ══════════════════════════════════════════
 function confirmarLeituraInicial(sim) {
   if (sim) {
-    // Usa a leitura sugerida direto
+    // Feedback imediato: trava os botões e mostra "Enviando..." antes de chamar a API,
+    // pra evitar que a pessoa clique várias vezes achando que não funcionou.
+    var simBtn = document.querySelector('#li-estado-confirmacao .btn-sim');
+    var naoBtn = document.querySelector('#li-estado-confirmacao .btn-nao');
+    if (simBtn) simBtn.disabled = true;
+    if (naoBtn) naoBtn.disabled = true;
+    document.getElementById('li-estado-confirmacao').style.display = 'none';
+    document.getElementById('li-estado-enviando').style.display = 'block';
+
     _enviarLeituraInicialComValor(App._leituraSugerida);
   } else {
     // Abre campo manual
@@ -853,6 +869,20 @@ function _enviarLeituraInicialComValor(leitura) {
   if (erroEl) erroEl.classList.add('oculto');
   if (btn) { btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto'); }
 
+  function voltarParaConfirmacaoComErro(msg) {
+    document.getElementById('li-estado-enviando').style.display = 'none';
+    erroEl.textContent = msg;
+    erroEl.classList.remove('oculto');
+    // Se o erro veio do fluxo de confirmação (SIM), volta pra ele e reabilita os botões
+    if (App._leituraSugerida && document.getElementById('li-estado-manual').style.display !== 'block') {
+      document.getElementById('li-estado-confirmacao').style.display = 'flex';
+      var simBtn = document.querySelector('#li-estado-confirmacao .btn-sim');
+      var naoBtn = document.querySelector('#li-estado-confirmacao .btn-nao');
+      if (simBtn) simBtn.disabled = false;
+      if (naoBtn) naoBtn.disabled = false;
+    }
+  }
+
   api('iniciarCarregamento', {
     apartamento: String(App.usuario.apartamento),
     nome:        String(App.usuario.nome),
@@ -862,7 +892,8 @@ function _enviarLeituraInicialComValor(leitura) {
   })
   .then(function(res) {
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-    if (!res || res.erro) { erroEl.textContent = res ? res.erro : 'Erro ao enviar leitura.'; erroEl.classList.remove('oculto'); return; }
+    if (!res || res.erro) { voltarParaConfirmacaoComErro(res ? res.erro : 'Erro ao enviar leitura.'); return; }
+    document.getElementById('li-estado-enviando').style.display = 'none';
     App.submissionId = res.submissionId;
     App.kwhInicial   = res.kwhInicial;
     App.inicio       = res.inicio;
@@ -873,7 +904,7 @@ function _enviarLeituraInicialComValor(leitura) {
   })
   .catch(function(err) {
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-    erroEl.textContent = 'Falha: ' + (err ? err.message : 'tente novamente'); erroEl.classList.remove('oculto');
+    voltarParaConfirmacaoComErro('Falha: ' + (err ? err.message : 'tente novamente'));
   });
 }
 
