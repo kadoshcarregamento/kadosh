@@ -117,7 +117,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-nao{flex:1;padding:16px;background:rgba(255,77,77,.1);border:2px solid var(--red);border-radius:var(--r-sm);color:var(--red);font-family:var(--f-display);font-size:26px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-sim:active{opacity:.7}
 .btn-nao:active{opacity:.7}
-.btn-sim:disabled,.btn-nao:disabled{opacity:.4;cursor:not-allowed}
 .result-check{font-size:48px;margin-bottom:8px}
 .result-titulo{font-family:var(--f-display);font-size:32px;letter-spacing:.04em;color:var(--k-green);margin-bottom:20px}
 .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
@@ -239,6 +238,45 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 @keyframes giro{to{transform:rotate(360deg)}}
 .overlay-msg{font-family:var(--f-body);font-weight:600;color:var(--txt-sub);font-size:15px}
 .oculto{display:none!important}
+
+/* ── PLACA MERCOSUL ── */
+.placa-mercosul{background:#fff;border:3px solid #111;border-radius:8px;overflow:hidden;display:inline-flex;flex-direction:column;min-width:110px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.placa-topo{background:#1a3a8f;color:#fff;font-size:11px;font-weight:800;letter-spacing:.15em;text-align:center;padding:3px 6px;display:flex;align-items:center;justify-content:space-between}
+.placa-topo .brasil{flex:1;text-align:center;font-size:10px;letter-spacing:.2em}
+.placa-topo .flag{font-size:12px}
+.placa-numero{font-family:'Courier New',monospace;font-size:22px;font-weight:900;color:#111;text-align:center;padding:4px 8px 5px;letter-spacing:.08em;line-height:1}
+.placa-mercosul-sm{transform:scale(.75);transform-origin:center;margin:-8px 0}
+
+/* ── TELA CARROS ── */
+.carro-item{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;gap:12px}
+.carro-item.inativo{opacity:.4}
+.carro-info{flex:1;min-width:0}
+.carro-nome{font-size:15px;font-weight:600;color:var(--txt)}
+.carro-placa-txt{font-size:12px;color:var(--txt-sub);margin-top:2px}
+.btn-desativar-carro{background:rgba(255,77,77,.1);border:1px solid rgba(255,77,77,.25);color:#ff8080;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;-webkit-appearance:none;white-space:nowrap;flex-shrink:0}
+
+/* ── MODAL CARRO ── */
+.marca-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:260px;overflow-y:auto}
+.marca-btn{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;text-align:center;-webkit-appearance:none}
+.marca-btn:active,.marca-btn.sel{background:rgba(59,205,192,.15);border-color:var(--k-green);color:var(--k-green)}
+.modelo-grid{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto}
+.modelo-btn{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-size:14px;color:var(--txt);cursor:pointer;text-align:left;-webkit-appearance:none}
+.modelo-btn:active,.modelo-btn.sel{background:rgba(59,205,192,.15);border-color:var(--k-green);color:var(--k-green)}
+.busca-input{width:100%;font-size:15px;font-family:var(--f-body);padding:10px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);outline:none;box-sizing:border-box;-webkit-appearance:none}
+.placa-input-wrap{background:#fff;border:3px solid #111;border-radius:8px;overflow:hidden;width:100%}
+.placa-input-topo{background:#1a3a8f;color:#fff;font-size:10px;font-weight:800;letter-spacing:.2em;text-align:center;padding:4px;display:flex;align-items:center;justify-content:space-between;padding:3px 8px}
+.placa-input-field{font-family:'Courier New',monospace;font-size:28px;font-weight:900;color:#111;text-align:center;padding:6px 8px;width:100%;border:none;outline:none;box-sizing:border-box;letter-spacing:.12em;background:#fff;-webkit-appearance:none}
+
+/* ── SESSÕES MÚLTIPLAS ── */
+.sessoes-lista{display:flex;flex-direction:column;gap:10px}
+.sessao-card{background:var(--bg-input);border:1px solid rgba(59,205,192,.2);border-radius:var(--r-sm);padding:14px}
+.sessao-card-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.sessao-card-info{display:flex;flex-direction:column;gap:3px;flex:1}
+.sessao-card-vaga{font-size:12px;color:var(--txt-sub);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.sessao-card-inicio{font-size:12px;color:var(--txt-sub)}
+.sessao-card-kwh{font-size:13px;color:var(--txt);font-weight:600}
+.btn-encerrar-sessao{background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;-webkit-appearance:none;white-space:nowrap;flex-shrink:0}
+.btn-encerrar-sessao:active{opacity:.8}
 </style>
 </head>
 <body>
@@ -344,6 +382,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
         <button class="btn-senha-ico" onclick="mostrarTrocarSenha()">🔑</button>
         <button class="btn-cobr-ico" onclick="mostrarTela('tela-cobranca')" title="Histórico financeiro">$</button>
+        <button class="btn-cobr-ico" onclick="mostrarTela('tela-carros')" title="Meus carros">🚗</button>
       </div>
     </div>
     <div class="card badges-card" id="vagas-badges">
@@ -365,8 +404,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       </div>
     </div>
     <div class="controles">
-      <button class="btn-iniciar" id="btn-iniciar" onclick="abrirScanner()">📷  Escanear Vaga</button>
-      <button class="btn-parar oculto" id="btn-parar" onclick="abrirTelaLeituraFinal()">■  Encerrar Carregamento</button>
+      <button class="btn-iniciar" id="btn-iniciar" onclick="iniciarNovoCarregamento()">📷  Escanear Vaga</button>
     </div>
     <div class="card resultado-card oculto" id="resultado-card">
       <div class="result-check">✅</div>
@@ -418,12 +456,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
           <button class="btn-sim" onclick="confirmarLeituraInicial(true)">✓ SIM</button>
           <button class="btn-nao" onclick="confirmarLeituraInicial(false)">✗ NÃO</button>
         </div>
-      </div>
-
-      <!-- Estado: enviando (feedback imediato após clicar SIM) -->
-      <div id="li-estado-enviando" class="li-buscando" style="display:none">
-        Enviando leitura...<br>
-        Aguarde um momento.
       </div>
 
       <!-- Estado: digitação manual -->
@@ -583,6 +615,72 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </div>
 </div>
 
+<!-- CARROS -->
+<div id="tela-carros" class="tela">
+  <header class="app-header">
+    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Meus Carros<span>Carros Elétricos · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
+  </header>
+  <div class="tela-admin-scroll">
+    <button class="btn-primary" onclick="abrirModalCadastroCarro()" style="font-size:20px">🚗 Cadastrar Novo Carro</button>
+    <div id="carros-lista"><div class="hist-vazio">Carregando...</div></div>
+  </div>
+</div>
+
+<!-- MODAL CADASTRO CARRO -->
+<div id="modal-carro" class="admin-modal-overlay oculto">
+  <div class="admin-modal-box">
+    <div class="admin-modal-titulo">Novo Carro</div>
+
+    <!-- Passo 1: Marca -->
+    <div id="carro-passo-marca">
+      <div style="font-size:13px;color:var(--txt-sub);margin-bottom:8px">Selecione a marca</div>
+      <input type="text" class="busca-input" id="busca-marca" placeholder="Buscar marca..." oninput="filtrarMarcas(this.value)">
+      <div class="marca-grid" id="marca-grid" style="margin-top:8px"></div>
+    </div>
+
+    <!-- Passo 2: Modelo -->
+    <div id="carro-passo-modelo" style="display:none">
+      <div style="font-size:13px;color:var(--txt-sub);margin-bottom:8px">Marca: <b id="marca-sel-txt" style="color:var(--k-green)"></b></div>
+      <input type="text" class="busca-input" id="busca-modelo" placeholder="Buscar modelo..." oninput="filtrarModelos(this.value)">
+      <div class="modelo-grid" id="modelo-grid" style="margin-top:8px"></div>
+      <button class="btn-link" onclick="voltarMarca()" style="margin-top:8px">← Trocar marca</button>
+    </div>
+
+    <!-- Passo 3: Placa -->
+    <div id="carro-passo-placa" style="display:none">
+      <div style="font-size:13px;color:var(--txt-sub);margin-bottom:8px">Modelo: <b id="modelo-sel-txt" style="color:var(--k-green)"></b></div>
+      <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:10px">Digite a placa do veículo:</div>
+      <div class="placa-input-wrap">
+        <div class="placa-input-topo">
+          <span style="font-size:9px">MERCOSUL</span>
+          <span style="font-size:10px;letter-spacing:.2em;font-weight:800">BRASIL</span>
+          <span>🇧🇷</span>
+        </div>
+        <input type="text" class="placa-input-field" id="carro-placa" placeholder="ABC1D23" maxlength="7" oninput="formatarPlaca(this)">
+      </div>
+      <div id="carro-msg" class="msg-erro oculto" style="margin-top:8px"></div>
+      <button class="btn-primary" id="btn-salvar-carro" onclick="salvarCarro()" style="font-size:20px;margin-top:12px">
+        <span class="btn-txt">Cadastrar</span>
+        <span class="btn-load oculto">Aguarde...</span>
+      </button>
+      <button class="btn-link" onclick="voltarModelo()">← Trocar modelo</button>
+    </div>
+
+    <button class="btn-link" onclick="fecharModalCarro()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL ESCOLHER CARRO PARA CARREGAR -->
+<div id="modal-escolher-carro" class="admin-modal-overlay oculto">
+  <div class="admin-modal-box">
+    <div class="admin-modal-titulo" style="font-size:20px">Qual carro vai carregar?</div>
+    <div id="lista-carros-modal"></div>
+    <button class="btn-link" onclick="document.getElementById('modal-escolher-carro').classList.add('oculto')">Cancelar</button>
+  </div>
+</div>
+
 <!-- OVERLAY -->
 <div id="overlay" class="overlay oculto">
   <div class="overlay-box">
@@ -640,6 +738,7 @@ function mostrarTela(id) {
   if(id==='tela-status') carregarStatusVagas();
   if(id==='tela-cobranca') carregarCobranca();
   if(id==='tela-admin') { carregarListaAdmin(); carregarPrecoAdmin(); carregarMesesRelAdmin(); }
+  if(id==='tela-carros') carregarCarros();
 }
 function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg||'Aguarde...';document.getElementById('overlay').classList.remove('oculto');}
 function overlayHide(){document.getElementById('overlay').classList.add('oculto');}
@@ -680,6 +779,14 @@ function entrarDashboard() {
   document.getElementById('resultado-card').classList.add('oculto');
   estadoDesligado();
   carregarBadges();
+  // Buscar total de carros ativos do apto
+  App._totalCarros = 1; // default
+  api('listarCarrosApartamento', { apartamento: String(u.apartamento) })
+    .then(function(res) {
+      var ativos = (res && res.carros) ? res.carros.filter(function(c){ return c.status === 'Ativo'; }) : [];
+      App._totalCarros = Math.max(ativos.length, 1); // mínimo 1
+      atualizarBotaoIniciar();
+    });
   // Botão admin
   var btnAdmin = document.getElementById('btn-admin-hdr');
   if (btnAdmin) {
@@ -690,9 +797,16 @@ function entrarDashboard() {
   api('verificarSessaoAtiva',{apartamento:String(u.apartamento)})
     .then(function(res){
       overlayHide();
-      if(res&&res.ativa){
-        App.submissionId=res.submissionId; App.vagaId=res.vaga; App.kwhInicial=res.kwhInicial; App.inicio=res.inicio;
-        estadoLigado(res);
+      App._sessoes = (res && res.sessoes) ? res.sessoes : [];
+      renderSessoesAtivas(App._sessoes);
+      // Botão iniciar: some se 2 sessões abertas
+      var btnIni = document.getElementById('btn-iniciar');
+      if (btnIni) btnIni.style.display = (App._sessoes.length >= 2) ? 'none' : '';
+      // Status
+      if (App._sessoes.length > 0) {
+        document.getElementById('status-dot').className='status-dot ligado';
+        document.getElementById('status-txt').textContent='⚡ Carregando';
+        document.getElementById('vagas-badges').classList.add('oculto');
       }
       carregarHistorico();
     })
@@ -790,7 +904,6 @@ function processarQRCode(texto) {
   document.getElementById('li-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
   document.getElementById('li-estado-buscando').style.display = 'block';
   document.getElementById('li-estado-confirmacao').style.display = 'none';
-  document.getElementById('li-estado-enviando').style.display = 'none';
   document.getElementById('li-estado-manual').style.display = 'none';
   document.getElementById('li-erro-geral').classList.add('oculto');
   mostrarTela('tela-leitura-inicial');
@@ -834,15 +947,7 @@ function leituraParaNumero(valor) {
 // ══ LEITURA INICIAL ══════════════════════════════════════════
 function confirmarLeituraInicial(sim) {
   if (sim) {
-    // Feedback imediato: trava os botões e mostra "Enviando..." antes de chamar a API,
-    // pra evitar que a pessoa clique várias vezes achando que não funcionou.
-    var simBtn = document.querySelector('#li-estado-confirmacao .btn-sim');
-    var naoBtn = document.querySelector('#li-estado-confirmacao .btn-nao');
-    if (simBtn) simBtn.disabled = true;
-    if (naoBtn) naoBtn.disabled = true;
-    document.getElementById('li-estado-confirmacao').style.display = 'none';
-    document.getElementById('li-estado-enviando').style.display = 'block';
-
+    // Usa a leitura sugerida direto
     _enviarLeituraInicialComValor(App._leituraSugerida);
   } else {
     // Abre campo manual
@@ -869,42 +974,38 @@ function _enviarLeituraInicialComValor(leitura) {
   if (erroEl) erroEl.classList.add('oculto');
   if (btn) { btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto'); }
 
-  function voltarParaConfirmacaoComErro(msg) {
-    document.getElementById('li-estado-enviando').style.display = 'none';
-    erroEl.textContent = msg;
-    erroEl.classList.remove('oculto');
-    // Se o erro veio do fluxo de confirmação (SIM), volta pra ele e reabilita os botões
-    if (App._leituraSugerida && document.getElementById('li-estado-manual').style.display !== 'block') {
-      document.getElementById('li-estado-confirmacao').style.display = 'flex';
-      var simBtn = document.querySelector('#li-estado-confirmacao .btn-sim');
-      var naoBtn = document.querySelector('#li-estado-confirmacao .btn-nao');
-      if (simBtn) simBtn.disabled = false;
-      if (naoBtn) naoBtn.disabled = false;
-    }
-  }
-
   api('iniciarCarregamento', {
     apartamento: String(App.usuario.apartamento),
     nome:        String(App.usuario.nome),
     email:       String(App.usuario.email),
     vagaId:      App.vagaId,
-    leituraInicial: leitura
+    leituraInicial: leitura,
+    placa:       App._placaSelecionada || ''
   })
   .then(function(res) {
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-    if (!res || res.erro) { voltarParaConfirmacaoComErro(res ? res.erro : 'Erro ao enviar leitura.'); return; }
-    document.getElementById('li-estado-enviando').style.display = 'none';
-    App.submissionId = res.submissionId;
-    App.kwhInicial   = res.kwhInicial;
-    App.inicio       = res.inicio;
-    estadoLigado({ vaga: res.vaga, inicio: res.inicio, kwhInicial: res.kwhInicial, submissionId: res.submissionId });
+    if (!res || res.erro) { erroEl.textContent = res ? res.erro : 'Erro ao enviar leitura.'; erroEl.classList.remove('oculto'); return; }
+    // Adicionar sessão ao array local
+    if (!App._sessoes) App._sessoes = [];
+    App._sessoes.push({
+      submissionId: res.submissionId,
+      vaga:         res.vaga,
+      kwhInicial:   res.kwhInicial,
+      inicio:       res.inicio,
+      placa:        App._placaSelecionada || ''
+    });
+    renderSessoesAtivas(App._sessoes);
+    document.getElementById('status-dot').className='status-dot ligado';
+    document.getElementById('status-txt').textContent='⚡ Carregando';
+    document.getElementById('vagas-badges').classList.add('oculto');
+    atualizarBotaoIniciar();
     document.getElementById('resultado-card').classList.add('oculto');
     mostrarTela('tela-dash');
     carregarHistorico();
   })
   .catch(function(err) {
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-    voltarParaConfirmacaoComErro('Falha: ' + (err ? err.message : 'tente novamente'));
+    erroEl.textContent = 'Falha: ' + (err ? err.message : 'tente novamente'); erroEl.classList.remove('oculto');
   });
 }
 
@@ -937,8 +1038,18 @@ function enviarLeituraFinal() {
   .then(function(res) {
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
     if (!res || res.erro) { erroEl.textContent = res ? res.erro : 'Erro ao encerrar.'; erroEl.classList.remove('oculto'); return; }
+    // Remover sessão encerrada do array local
+    if (App._sessoes) {
+      App._sessoes = App._sessoes.filter(function(s){ return s.submissionId !== App.submissionId; });
+    }
     App.submissionId = App.vagaId = App.kwhInicial = App.inicio = null;
-    estadoDesligado();
+    renderSessoesAtivas(App._sessoes || []);
+    if (!App._sessoes || App._sessoes.length === 0) {
+      document.getElementById('status-dot').className='status-dot';
+      document.getElementById('status-txt').textContent='Pronto para carregar';
+      document.getElementById('vagas-badges').classList.remove('oculto');
+    }
+    atualizarBotaoIniciar();
     mostrarTela('tela-dash');
     mostrarResultado(res);
     carregarHistorico();
@@ -1315,6 +1426,242 @@ function carregarStatusVagas() {
     .catch(function() { el.innerHTML = '<div class="hist-vazio">Falha ao carregar status.</div>'; });
 }
 
+
+// ══ BOTÃO INICIAR ════════════════════════════════════════════
+function atualizarBotaoIniciar() {
+  var btnIni = document.getElementById('btn-iniciar');
+  if (!btnIni) return;
+  var sessoes = App._sessoes ? App._sessoes.length : 0;
+  var limite  = App._totalCarros || 1;
+  btnIni.style.display = (sessoes >= limite) ? 'none' : '';
+}
+
+// ══ CARROS ════════════════════════════════════════════════════
+var _marcasModelos = {};
+var _marcaSel = '';
+var _modeloSel = '';
+
+function carregarCarros() {
+  var el = document.getElementById('carros-lista');
+  if (!el || !App.usuario) return;
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  api('listarCarrosApartamento', { apartamento: String(App.usuario.apartamento) })
+    .then(function(res) {
+      if (!res || res.erro || !res.carros) { el.innerHTML = '<div class="hist-vazio">Erro ao carregar.</div>'; return; }
+      if (!res.carros.length) { el.innerHTML = '<div class="hist-vazio">Nenhum carro cadastrado.</div>'; return; }
+      el.innerHTML = res.carros.map(function(c) {
+        var inativo = c.status === 'Inativo';
+        return '<div class="carro-item' + (inativo ? ' inativo' : '') + '">'
+          + renderPlacaSmall(c.placa)
+          + '<div class="carro-info">'
+            + '<div class="carro-nome">' + c.marca + ' ' + c.modelo + '</div>'
+            + '<div class="carro-placa-txt">' + c.placa + '</div>'
+          + '</div>'
+          + (!inativo ? '<button class="btn-desativar-carro" data-placa="' + c.placa + '" onclick="desativarCarro(this.dataset.placa)">Desativar</button>' : '<span style="font-size:11px;color:var(--txt-dim)">Inativo</span>')
+          + '</div>';
+      }).join('');
+    })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio">Falha ao carregar.</div>'; });
+}
+
+function renderPlacaSmall(placa) {
+  return '<div class="placa-mercosul placa-mercosul-sm">'
+    + '<div class="placa-topo"><span style="font-size:7px">MERCOSUL</span><span class="brasil" style="font-size:8px">BRASIL</span><span class="flag">🇧🇷</span></div>'
+    + '<div class="placa-numero">' + (placa || '–') + '</div>'
+    + '</div>';
+}
+
+function renderPlacaCard(placa) {
+  return '<div class="placa-mercosul" style="min-width:130px">'
+    + '<div class="placa-topo"><span style="font-size:8px">MERCOSUL</span><span class="brasil">BRASIL</span><span class="flag">🇧🇷</span></div>'
+    + '<div class="placa-numero" style="font-size:26px;padding:6px 10px">' + (placa || '–') + '</div>'
+    + '</div>';
+}
+
+function desativarCarro(placa) {
+  if (!confirm('Desativar o carro ' + placa + '?')) return;
+  api('desativarCarro', { apartamento: String(App.usuario.apartamento), placa: placa })
+    .then(function(res) {
+      if (res && res.erro) { alert('Erro: ' + res.erro); return; }
+      carregarCarros();
+    });
+}
+
+function abrirModalCadastroCarro() {
+  _marcaSel = ''; _modeloSel = '';
+  document.getElementById('carro-passo-marca').style.display = 'block';
+  document.getElementById('carro-passo-modelo').style.display = 'none';
+  document.getElementById('carro-passo-placa').style.display = 'none';
+  document.getElementById('carro-placa').value = '';
+  document.getElementById('carro-msg').classList.add('oculto');
+  document.getElementById('busca-marca').value = '';
+  document.getElementById('modal-carro').classList.remove('oculto');
+
+  if (Object.keys(_marcasModelos).length) {
+    renderMarcas('');
+  } else {
+    api('getMarcasModelos', {}).then(function(res) {
+      if (res && res.marcas) { _marcasModelos = res.marcas; renderMarcas(''); }
+    });
+  }
+}
+
+function fecharModalCarro() {
+  document.getElementById('modal-carro').classList.add('oculto');
+}
+
+function renderMarcas(filtro) {
+  var marcas = Object.keys(_marcasModelos).filter(function(m) {
+    return !filtro || m.toLowerCase().indexOf(filtro.toLowerCase()) !== -1;
+  });
+  document.getElementById('marca-grid').innerHTML = marcas.map(function(m) {
+    return '<button class="marca-btn" data-marca="' + m + '" onclick="selecionarMarca(this.dataset.marca)">' + m + '</button>';
+  }).join('');
+}
+
+function filtrarMarcas(val) { renderMarcas(val); }
+
+function selecionarMarca(marca) {
+  _marcaSel = marca;
+  document.getElementById('marca-sel-txt').textContent = marca;
+  document.getElementById('carro-passo-marca').style.display = 'none';
+  document.getElementById('carro-passo-modelo').style.display = 'block';
+  document.getElementById('busca-modelo').value = '';
+  renderModelos('');
+}
+
+function renderModelos(filtro) {
+  var modelos = (_marcasModelos[_marcaSel] || []).filter(function(m) {
+    return !filtro || m.toLowerCase().indexOf(filtro.toLowerCase()) !== -1;
+  });
+  document.getElementById('modelo-grid').innerHTML = modelos.map(function(m) {
+    return '<button class="modelo-btn" data-modelo="' + m + '" onclick="selecionarModelo(this.dataset.modelo)">' + m + '</button>';
+  }).join('');
+}
+
+function filtrarModelos(val) { renderModelos(val); }
+
+function selecionarModelo(modelo) {
+  _modeloSel = modelo;
+  document.getElementById('modelo-sel-txt').textContent = modelo;
+  document.getElementById('carro-passo-modelo').style.display = 'none';
+  document.getElementById('carro-passo-placa').style.display = 'block';
+  document.getElementById('carro-placa').focus();
+}
+
+function voltarMarca() {
+  document.getElementById('carro-passo-modelo').style.display = 'none';
+  document.getElementById('carro-passo-marca').style.display = 'block';
+}
+
+function voltarModelo() {
+  document.getElementById('carro-passo-placa').style.display = 'none';
+  document.getElementById('carro-passo-modelo').style.display = 'block';
+}
+
+function formatarPlaca(input) {
+  var val = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+  input.value = val;
+}
+
+function salvarCarro() {
+  var placa = document.getElementById('carro-placa').value.trim().toUpperCase();
+  var msg   = document.getElementById('carro-msg');
+  var btn   = document.getElementById('btn-salvar-carro');
+  msg.classList.add('oculto');
+  if (placa.length !== 7) { msg.textContent = 'Placa deve ter 7 caracteres (ex: ABC1D23).'; msg.className = 'msg-erro'; return; }
+  btn.disabled = true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
+  api('cadastrarCarro', { apartamento: String(App.usuario.apartamento), marca: _marcaSel, modelo: _modeloSel, placa: placa })
+    .then(function(res) {
+      btn.disabled = false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
+      if (res && res.erro) { msg.textContent = res.erro; msg.className = 'msg-erro'; return; }
+      fecharModalCarro();
+      carregarCarros();
+      alert('Carro cadastrado!');
+    })
+    .catch(function() {
+      btn.disabled = false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
+      msg.textContent = 'Erro de conexão.'; msg.className = 'msg-erro';
+    });
+}
+
+// ══ MÚLTIPLAS SESSÕES ═════════════════════════════════════════
+function iniciarNovoCarregamento() {
+  if (!App.usuario) return;
+  // Verificar se já tem 2 sessões abertas
+  if (App._sessoes && App._sessoes.length >= 2) {
+    alert('Máximo de 2 carregamentos simultâneos atingido. Encerre um antes de iniciar outro.');
+    return;
+  }
+  // Buscar carros ativos do apartamento
+  api('listarCarrosApartamento', { apartamento: String(App.usuario.apartamento) })
+    .then(function(res) {
+      var carrosAtivos = (res && res.carros) ? res.carros.filter(function(c){ return c.status === 'Ativo'; }) : [];
+      if (carrosAtivos.length === 0) {
+        // Sem carro cadastrado — vai direto para scanner sem placa
+        App._placaSelecionada = '';
+        abrirScanner();
+      } else if (carrosAtivos.length === 1) {
+        // Apenas 1 carro — seleciona automaticamente
+        App._placaSelecionada = carrosAtivos[0].placa;
+        abrirScanner();
+      } else {
+        // Múltiplos carros — mostra modal de seleção
+        var el = document.getElementById('lista-carros-modal');
+        el.innerHTML = carrosAtivos.map(function(c) {
+          return '<div style="margin-bottom:10px;cursor:pointer" data-placa="' + c.placa + '" onclick="selecionarCarroParaCarregar(this.dataset.placa)">'
+            + '<div style="display:flex;align-items:center;gap:12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px">'
+              + renderPlacaCard(c.placa)
+              + '<div><div style="font-size:15px;font-weight:600;color:var(--txt)">' + c.marca + ' ' + c.modelo + '</div></div>'
+            + '</div>'
+          + '</div>';
+        }).join('');
+        document.getElementById('modal-escolher-carro').classList.remove('oculto');
+      }
+    });
+}
+
+function selecionarCarroParaCarregar(placa) {
+  document.getElementById('modal-escolher-carro').classList.add('oculto');
+  App._placaSelecionada = placa;
+  abrirScanner();
+}
+
+function renderSessoesAtivas(sessoes) {
+  var el = document.getElementById('painel-sessoes');
+  if (!sessoes || !sessoes.length) {
+    el.classList.add('oculto');
+    return;
+  }
+  el.classList.remove('oculto');
+  el.innerHTML = sessoes.map(function(s) {
+    return '<div class="sessao-card">'
+      + '<div class="sessao-card-header">'
+        + '<div class="sessao-card-info">'
+          + '<div class="sessao-card-vaga">⚡ ' + (s.vaga||'').replace('VAGA_','Vaga ') + '</div>'
+          + '<div class="sessao-card-inicio">Início: ' + (s.inicio||'–') + '</div>'
+          + '<div class="sessao-card-kwh">Leitura: ' + (s.kwhInicial||'–') + ' kWh</div>'
+        + '</div>'
+        + (s.placa ? renderPlacaCard(s.placa) : '')
+      + '</div>'
+      + '<button class="btn-encerrar-sessao" data-sub="' + s.submissionId + '" data-vaga="' + s.vaga + '" onclick="abrirLeituraFinal(this.dataset.sub, this.dataset.vaga)">■ Encerrar</button>'
+      + '</div>';
+  }).join('');
+}
+
+function abrirLeituraFinal(submissionId, vagaId) {
+  App.submissionId = submissionId;
+  App.vagaId       = vagaId;
+  // Buscar kwhInicial da sessão
+  var sessao = (App._sessoes || []).filter(function(s){ return s.submissionId === submissionId; })[0];
+  App.kwhInicial = sessao ? sessao.kwhInicial : '–';
+  document.getElementById('lf-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
+  document.getElementById('lf-kwh-ini').textContent = (App.kwhInicial||'–') + ' kWh';
+  document.getElementById('lf-leitura').value = '';
+  document.getElementById('lf-erro').classList.add('oculto');
+  mostrarTela('tela-leitura-final');
+}
+
 document.addEventListener('keydown',function(e){
   if(e.key!=='Enter')return;
   var a=document.querySelector('.tela.ativa'); if(!a)return;
@@ -1327,4 +1674,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
