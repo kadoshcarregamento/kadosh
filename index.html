@@ -799,9 +799,9 @@ function entrarDashboard() {
       overlayHide();
       App._sessoes = (res && res.sessoes) ? res.sessoes : [];
       renderSessoesAtivas(App._sessoes);
-      // Botão iniciar: some se 2 sessões abertas
+      // Botão iniciar: atualiza baseado no total de carros
       var btnIni = document.getElementById('btn-iniciar');
-      if (btnIni) btnIni.style.display = (App._sessoes.length >= 2) ? 'none' : '';
+      atualizarBotaoIniciar();
       // Status
       if (App._sessoes.length > 0) {
         document.getElementById('status-dot').className='status-dot ligado';
@@ -1674,3 +1674,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
