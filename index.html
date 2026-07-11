@@ -404,7 +404,9 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       </div>
     </div>
     <div class="controles">
+      <div id="painel-sessoes" class="sessoes-lista oculto"></div>
       <button class="btn-iniciar" id="btn-iniciar" onclick="iniciarNovoCarregamento()">📷  Escanear Vaga</button>
+      <button class="btn-parar oculto" id="btn-parar" style="display:none">■  Encerrar</button>
     </div>
     <div class="card resultado-card oculto" id="resultado-card">
       <div class="result-check">✅</div>
@@ -822,16 +824,13 @@ function estadoLigado(s){
   document.getElementById('sess-inicio').textContent=s.inicio||'–';
   document.getElementById('sess-kwh-ini').textContent=(s.kwhInicial||'–')+' kWh';
   document.getElementById('painel-sessao').classList.remove('oculto');
-  document.getElementById('btn-iniciar').classList.add('oculto');
-  document.getElementById('btn-parar').classList.remove('oculto');
-  document.getElementById('btn-parar').disabled=false;
+  // btn-parar legacy -- sessões múltiplas usam renderSessoesAtivas
 }
 function estadoDesligado(){
   document.getElementById('status-dot').className='status-dot';
   document.getElementById('vagas-badges').classList.remove('oculto');
   document.getElementById('status-txt').textContent='Pronto para carregar';
   document.getElementById('painel-sessao').classList.add('oculto');
-  document.getElementById('btn-parar').classList.add('oculto');
   document.getElementById('btn-iniciar').classList.remove('oculto');
   document.getElementById('btn-iniciar').disabled=false;
 }
