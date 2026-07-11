@@ -779,12 +779,13 @@ function entrarDashboard() {
   document.getElementById('resultado-card').classList.add('oculto');
   estadoDesligado();
   carregarBadges();
-  // Buscar total de carros ativos do apto
-  App._totalCarros = 1; // default
+  // Buscar e cachear carros ativos do apto
+  App._totalCarros = 1;
+  App._carrosAtivos = [];
   api('listarCarrosApartamento', { apartamento: String(u.apartamento) })
     .then(function(res) {
-      var ativos = (res && res.carros) ? res.carros.filter(function(c){ return c.status === 'Ativo'; }) : [];
-      App._totalCarros = Math.max(ativos.length, 1); // mínimo 1
+      App._carrosAtivos = (res && res.carros) ? res.carros.filter(function(c){ return c.status === 'Ativo'; }) : [];
+      App._totalCarros  = Math.max(App._carrosAtivos.length, 1);
       atualizarBotaoIniciar();
     });
   // Botão admin
