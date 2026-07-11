@@ -100,10 +100,10 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .sess-id-val{font-size:11px!important;color:var(--txt-dim)!important;font-weight:500!important}
 .controles{display:flex;flex-direction:column;gap:12px}
 .btn-iniciar,.btn-parar{width:100%;min-height:48px;padding:12px 20px;border:none;border-radius:var(--r-sm);font-family:var(--f-display);font-size:22px;letter-spacing:.04em;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s,opacity .15s}
-.btn-iniciar{background:var(--k-green);color:#0d0d0d;box-shadow:0 4px 20px var(--k-green-glow);font-size:20px}
+.btn-iniciar{background:var(--k-green);color:#0d0d0d;box-shadow:0 4px 20px var(--k-green-glow);font-size:20px;transition:background .15s,transform .12s,opacity .15s}
 .btn-parar{background:var(--red);color:#fff;box-shadow:0 4px 20px var(--red-glow);animation:entradaBtn .3s ease both}
-.btn-iniciar:active,.btn-parar:active{transform:scale(.97);opacity:.9}
-.btn-iniciar:disabled,.btn-parar:disabled{opacity:.35}
+.btn-iniciar:active,.btn-parar:active{transform:scale(.97);opacity:.7;background:#2aa898}
+.btn-iniciar:disabled,.btn-parar:disabled{opacity:.5;background:#2aa898}
 @keyframes entradaBtn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .resultado-card{text-align:center;gap:0!important;padding:28px 20px}
 .leitura-vaga-display{font-family:var(--f-display);font-size:24px;letter-spacing:.03em;color:var(--k-green);background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px}
@@ -179,7 +179,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-remover:active{opacity:.7}
 .admin-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
 .admin-modal-overlay.oculto{display:none!important}
-.admin-modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto}
+.admin-modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;overflow-x:hidden;box-sizing:border-box}
 .admin-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
 .admin-section-titulo{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub);margin-bottom:12px}
 .admin-preco-row{display:flex;align-items:center;gap:8px}
@@ -1523,9 +1523,9 @@ function renderPlacaSmall(placa) {
 }
 
 function renderPlacaCard(placa) {
-  return '<div class="placa-mercosul" style="min-width:130px">'
+  return '<div class="placa-mercosul" style="min-width:120px;max-width:150px;width:auto">'
     + '<div class="placa-topo"><span style="font-size:8px">MERCOSUL</span><span class="brasil">BRASIL</span><span class="flag">🇧🇷</span></div>'
-    + '<div class="placa-numero" style="font-size:26px;padding:6px 10px">' + (placa || '–') + '</div>'
+    + '<div class="placa-numero" style="font-size:22px;padding:5px 8px;letter-spacing:.06em">' + (placa || '–') + '</div>'
     + '</div>';
 }
 
@@ -1736,4 +1736,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
