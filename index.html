@@ -750,10 +750,18 @@ function parseLeituraJS(val) {
   if (val == null || val === '') return NaN;
   if (typeof val === 'number') return val;
   var s = String(val).trim();
-  // Formato pt-BR: "3.955,7" -> 3955.7
-  if (s.indexOf(',') !== -1) return parseFloat(s.replace(/\./g,'').replace(',','.'));
-  // Formato EN: "3955.7" -> 3955.7
-  return parseFloat(s.replace(/[^0-9.]/g,''));
+  // Se tem vírgula: formato pt-BR "3.955,7" -> remove pontos, troca vírgula por ponto
+  if (s.indexOf(',') !== -1) {
+    return parseFloat(s.replace(/\./g, '').replace(',', '.'));
+  }
+  // Se tem ponto e mais de 3 dígitos após o ponto: provavelmente EN "3955.7"
+  var dotIdx = s.lastIndexOf('.');
+  if (dotIdx !== -1 && s.length - dotIdx - 1 <= 2) {
+    // "3955.7" ou "3955.70" — ponto decimal EN
+    return parseFloat(s);
+  }
+  // Sem separador decimal: número inteiro "3955"
+  return parseFloat(s.replace(/[^0-9]/g, ''));
 }
 function fmtBR(num,casas){
   var n = (typeof num === 'string') ? parseLeituraJS(num) : Number(num);
@@ -893,7 +901,12 @@ function carregarHistorico(){
 }
 
 // ══ SCANNER QR ═══════════════════════════════════════════════
-function abrirScanner(){if(!App.usuario)return;_qrProcessing=false;mostrarTela('tela-qr');document.getElementById('qr-erro').classList.add('oculto');document.getElementById('qr-status').textContent='Iniciando câmera...';setTimeout(iniciarScanner,200);}
+function abrirScanner(){
+  if(!App.usuario)return;
+  // Restaurar botão iniciar
+  var btnIni = document.getElementById('btn-iniciar');
+  if (btnIni) { btnIni.disabled = false; btnIni.innerHTML = '📷  Escanear Vaga'; }
+  _qrProcessing=false;mostrarTela('tela-qr');document.getElementById('qr-erro').classList.add('oculto');document.getElementById('qr-status').textContent='Iniciando câmera...';setTimeout(iniciarScanner,200);}
 function fecharScanner(){pararScanner();mostrarTela('tela-dash');}
 function iniciarScanner(){
   if(typeof Html5Qrcode==='undefined'){setTimeout(iniciarScanner,400);return;}
@@ -921,6 +934,9 @@ function processarQRCode(texto) {
   document.getElementById('li-estado-confirmacao').style.display = 'none';
   document.getElementById('li-estado-manual').style.display = 'none';
   document.getElementById('li-erro-geral').classList.add('oculto');
+  // Resetar botão SIM para próxima sessão
+  var btnSimReset = document.querySelector('.btn-sim');
+  if (btnSimReset) { btnSimReset.disabled = false; btnSimReset.textContent = '✓ SIM'; }
   mostrarTela('tela-leitura-inicial');
   var vagaCodigo = vagaId.replace('VAGA_','');
   api('getUltimaLeitura', { vagaCodigo: vagaCodigo })
