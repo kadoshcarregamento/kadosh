@@ -405,7 +405,10 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     </div>
     <div class="controles">
       <div id="painel-sessoes" class="sessoes-lista oculto"></div>
-      <button class="btn-iniciar" id="btn-iniciar" onclick="iniciarNovoCarregamento()">📷  Escanear Vaga</button>
+      <button class="btn-iniciar" id="btn-iniciar" onclick="iniciarNovoCarregamento()">
+        <span class="btn-txt">📷  Escanear Vaga</span>
+        <span class="btn-load oculto">Aguarde...</span>
+      </button>
       <button class="btn-parar oculto" id="btn-parar" style="display:none">■  Encerrar</button>
     </div>
     <div class="card resultado-card oculto" id="resultado-card">
@@ -905,7 +908,11 @@ function abrirScanner(){
   if(!App.usuario)return;
   // Restaurar botão iniciar
   var btnIni = document.getElementById('btn-iniciar');
-  if (btnIni) { btnIni.disabled = false; btnIni.innerHTML = '📷  Escanear Vaga'; }
+  if (btnIni) {
+    btnIni.disabled = false;
+    btnIni.querySelector('.btn-txt').classList.remove('oculto');
+    btnIni.querySelector('.btn-load').classList.add('oculto');
+  }
   _qrProcessing=false;mostrarTela('tela-qr');document.getElementById('qr-erro').classList.add('oculto');document.getElementById('qr-status').textContent='Iniciando câmera...';setTimeout(iniciarScanner,200);}
 function fecharScanner(){pararScanner();mostrarTela('tela-dash');}
 function iniciarScanner(){
@@ -1472,6 +1479,12 @@ function atualizarBotaoIniciar() {
   var sessoes = App._sessoes ? App._sessoes.length : 0;
   var limite  = App._totalCarros || 1;
   btnIni.style.display = (sessoes >= limite) ? 'none' : '';
+  // Sempre restaurar estado ao atualizar
+  btnIni.disabled = false;
+  var txt = btnIni.querySelector('.btn-txt');
+  var load = btnIni.querySelector('.btn-load');
+  if (txt) txt.classList.remove('oculto');
+  if (load) load.classList.add('oculto');
 }
 
 // ══ CARROS ════════════════════════════════════════════════════
@@ -1689,7 +1702,7 @@ function renderSessoesAtivas(sessoes) {
         + '</div>'
         + (s.placa ? '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">'
             + renderPlacaCard(s.placa)
-            + (modelo ? '<div style="font-size:11px;color:var(--txt-sub);text-align:center;max-width:130px;line-height:1.3">' + modelo + '</div>' : '')
+            + (modelo ? '<div style="font-size:14px;color:var(--txt-sub);text-align:center;max-width:140px;line-height:1.3;margin-top:2px">' + modelo + '</div>' : '')
           + '</div>' : '')
       + '</div>'
       + '<button class="btn-encerrar-sessao" data-sub="' + s.submissionId + '" data-vaga="' + s.vaga + '" onclick="abrirLeituraFinal(this.dataset.sub, this.dataset.vaga)">■ Encerrar</button>'
@@ -1723,3 +1736,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
