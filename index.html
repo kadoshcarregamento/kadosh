@@ -976,7 +976,6 @@ function _enviarLeituraInicialComValor(leitura) {
   var btn    = document.getElementById('btn-li-enviar');
   if (erroEl) erroEl.classList.add('oculto');
   if (btn) { btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto'); }
-  overlayShow('Enviando leitura...');
 
   api('iniciarCarregamento', {
     apartamento: String(App.usuario.apartamento),
@@ -1002,6 +1001,7 @@ function _enviarLeituraInicialComValor(leitura) {
     document.getElementById('status-dot').className='status-dot ligado';
     document.getElementById('status-txt').textContent='⚡ Carregando';
     document.getElementById('vagas-badges').classList.add('oculto');
+    overlayHide();
     atualizarBotaoIniciar();
     document.getElementById('resultado-card').classList.add('oculto');
     mostrarTela('tela-dash');
@@ -1016,7 +1016,8 @@ function _enviarLeituraInicialComValor(leitura) {
 // ══ LEITURA FINAL ════════════════════════════════════════════
 function abrirTelaLeituraFinal() {
   document.getElementById('lf-vaga').textContent = (App.vagaId||'').replace('VAGA_','Vaga ');
-  document.getElementById('lf-kwh-ini').textContent = (App.kwhInicial||'–') + ' kWh';
+  var kwhIniNum = parseFloat(String(App.kwhInicial||'').replace(',','.'));
+  document.getElementById('lf-kwh-ini').textContent = (!isNaN(kwhIniNum) ? kwhIniNum.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) : (App.kwhInicial||'–')) + ' kWh';
   document.getElementById('lf-leitura').value = '';
   document.getElementById('lf-erro').classList.add('oculto');
   mostrarTela('tela-leitura-final');
@@ -1660,7 +1661,8 @@ function abrirLeituraFinal(submissionId, vagaId) {
   var sessao = (App._sessoes || []).filter(function(s){ return s.submissionId === submissionId; })[0];
   App.kwhInicial = sessao ? sessao.kwhInicial : '–';
   document.getElementById('lf-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
-  document.getElementById('lf-kwh-ini').textContent = (App.kwhInicial||'–') + ' kWh';
+  var kwhIniNum = parseFloat(String(App.kwhInicial||'').replace(',','.'));
+  document.getElementById('lf-kwh-ini').textContent = (!isNaN(kwhIniNum) ? kwhIniNum.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) : (App.kwhInicial||'–')) + ' kWh';
   document.getElementById('lf-leitura').value = '';
   document.getElementById('lf-erro').classList.add('oculto');
   mostrarTela('tela-leitura-final');
@@ -1678,4 +1680,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
