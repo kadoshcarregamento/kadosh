@@ -100,9 +100,9 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .sess-id-val{font-size:11px!important;color:var(--txt-dim)!important;font-weight:500!important}
 .controles{display:flex;flex-direction:column;gap:12px}
 .btn-iniciar,.btn-parar{width:100%;min-height:48px;padding:12px 20px;border:none;border-radius:var(--r-sm);font-family:var(--f-display);font-size:22px;letter-spacing:.04em;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s,opacity .15s}
-.btn-iniciar{background:var(--k-green);color:#0d0d0d;box-shadow:0 4px 20px var(--k-green-glow);font-size:20px;transition:background .15s,transform .12s,opacity .15s}
+.btn-iniciar{background:var(--k-green);color:#0d0d0d;box-shadow:0 4px 20px var(--k-green-glow);font-size:20px;transition:background .15s,transform .12s,opacity .15s;-webkit-tap-highlight-color:rgba(0,0,0,.3)}
 .btn-parar{background:var(--red);color:#fff;box-shadow:0 4px 20px var(--red-glow);animation:entradaBtn .3s ease both}
-.btn-iniciar:active,.btn-parar:active{transform:scale(.97);opacity:.7;background:#2aa898}
+.btn-iniciar:active,.btn-parar:active{transform:scale(.97);opacity:.6;background:#2aa898;-webkit-transform:scale(.97)}
 .btn-iniciar:disabled,.btn-parar:disabled{opacity:.5;background:#2aa898}
 @keyframes entradaBtn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .resultado-card{text-align:center;gap:0!important;padding:28px 20px}
@@ -405,7 +405,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     </div>
     <div class="controles">
       <div id="painel-sessoes" class="sessoes-lista oculto"></div>
-      <button class="btn-iniciar" id="btn-iniciar" onclick="iniciarNovoCarregamento()">
+      <button class="btn-primary" id="btn-iniciar" onclick="iniciarNovoCarregamento()">
         <span class="btn-txt">📷  Escanear Vaga</span>
         <span class="btn-load oculto">Aguarde...</span>
       </button>
@@ -713,7 +713,18 @@ function api(action, params) {
   });
 }
 
-window.addEventListener('load', function() { mostrarTela('tela-login'); carregarCredenciais(); mostrarHintPWA(); });
+window.addEventListener('load', function() {
+  mostrarTela('tela-login'); carregarCredenciais(); mostrarHintPWA();
+  // Feedback tátil imediato no iOS para btn-iniciar
+  document.addEventListener('touchstart', function(e) {
+    var btn = e.target.closest('#btn-iniciar');
+    if (btn) { btn.style.opacity = '0.6'; btn.style.background = '#2aa898'; }
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    var btn = e.target.closest('#btn-iniciar');
+    if (btn) { setTimeout(function(){ btn.style.opacity = ''; btn.style.background = ''; }, 300); }
+  }, { passive: true });
+});
 
 function salvarCredenciais(email, senha) { try { localStorage.setItem(LS_KEY, JSON.stringify({email:email,senha:senha,nome:App.usuario?App.usuario.nome:''})); } catch(e) {} }
 function carregarCredenciais() {
@@ -846,19 +857,21 @@ function estadoLigado(s){
   document.getElementById('status-dot').className='status-dot ligado';
   document.getElementById('vagas-badges').classList.add('oculto');
   document.getElementById('status-txt').textContent='⚡ Carregando';
-  document.getElementById('sess-vaga').textContent=(s.vaga||'–').replace('VAGA_','Vaga ');
-  document.getElementById('sess-inicio').textContent=s.inicio||'–';
-  document.getElementById('sess-kwh-ini').textContent=(s.kwhInicial||'–')+' kWh';
-  document.getElementById('painel-sessao').classList.remove('oculto');
-  // btn-parar legacy -- sessões múltiplas usam renderSessoesAtivas
+  // painel de sessões múltiplas — renderSessoesAtivas cuida da exibição
 }
 function estadoDesligado(){
   document.getElementById('status-dot').className='status-dot';
   document.getElementById('vagas-badges').classList.remove('oculto');
   document.getElementById('status-txt').textContent='Pronto para carregar';
-  document.getElementById('painel-sessao').classList.add('oculto');
-  document.getElementById('btn-iniciar').classList.remove('oculto');
-  document.getElementById('btn-iniciar').disabled=false;
+  var btnIni = document.getElementById('btn-iniciar');
+  if (btnIni) {
+    btnIni.classList.remove('oculto');
+    btnIni.disabled = false;
+    var txt = btnIni.querySelector('.btn-txt');
+    var load = btnIni.querySelector('.btn-load');
+    if (txt) txt.classList.remove('oculto');
+    if (load) load.classList.add('oculto');
+  }
 }
 
 // ══ HISTÓRICO ════════════════════════════════════════════════
@@ -1056,8 +1069,8 @@ function _enviarLeituraInicialComValor(leitura) {
 // ══ LEITURA FINAL ════════════════════════════════════════════
 function abrirTelaLeituraFinal() {
   document.getElementById('lf-vaga').textContent = (App.vagaId||'').replace('VAGA_','Vaga ');
-  var kwhIniNum = parseFloat(String(App.kwhInicial||'').replace(',','.'));
-  document.getElementById('lf-kwh-ini').textContent = (!isNaN(kwhIniNum) ? kwhIniNum.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) : (App.kwhInicial||'–')) + ' kWh';
+  var kwhIniNum = parseLeituraJS(App.kwhInicial);
+  document.getElementById('lf-kwh-ini').textContent = fmtBR(kwhIniNum, 1) + ' kWh';
   document.getElementById('lf-leitura').value = '';
   document.getElementById('lf-erro').classList.add('oculto');
   mostrarTela('tela-leitura-final');
@@ -1717,8 +1730,8 @@ function abrirLeituraFinal(submissionId, vagaId) {
   var sessao = (App._sessoes || []).filter(function(s){ return s.submissionId === submissionId; })[0];
   App.kwhInicial = sessao ? sessao.kwhInicial : '–';
   document.getElementById('lf-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
-  var kwhIniNum = parseFloat(String(App.kwhInicial||'').replace(',','.'));
-  document.getElementById('lf-kwh-ini').textContent = (!isNaN(kwhIniNum) ? kwhIniNum.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) : (App.kwhInicial||'–')) + ' kWh';
+  var kwhIniNum = parseLeituraJS(App.kwhInicial);
+  document.getElementById('lf-kwh-ini').textContent = fmtBR(kwhIniNum, 1) + ' kWh';
   document.getElementById('lf-leitura').value = '';
   document.getElementById('lf-erro').classList.add('oculto');
   mostrarTela('tela-leitura-final');
