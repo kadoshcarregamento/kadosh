@@ -746,7 +746,22 @@ function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg
 function overlayHide(){document.getElementById('overlay').classList.add('oculto');}
 function toggleSenha(id,btn){var i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
 function formatarDuracao(min){if(min==null||min==='')return'–';min=Number(min);if(isNaN(min))return'–';if(min<60)return min+' min';return Math.floor(min/60)+'h '+(min%60)+'min';}
-function fmtBR(num,casas){if(num==null||num==='')return'–';var n=Number(num);if(isNaN(n))return'–';var c=casas!==undefined?casas:4;try{return n.toLocaleString('pt-BR',{minimumFractionDigits:c,maximumFractionDigits:c});}catch(e){var p=n.toFixed(c).split('.');return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+(p[1]||'');}}
+function parseLeituraJS(val) {
+  if (val == null || val === '') return NaN;
+  if (typeof val === 'number') return val;
+  var s = String(val).trim();
+  // Formato pt-BR: "3.955,7" -> 3955.7
+  if (s.indexOf(',') !== -1) return parseFloat(s.replace(/\./g,'').replace(',','.'));
+  // Formato EN: "3955.7" -> 3955.7
+  return parseFloat(s.replace(/[^0-9.]/g,''));
+}
+function fmtBR(num,casas){
+  var n = (typeof num === 'string') ? parseLeituraJS(num) : Number(num);
+  if(num==null||num===''||isNaN(n))return'–';
+  var c=casas!==undefined?casas:1;
+  try{return n.toLocaleString('pt-BR',{minimumFractionDigits:c,maximumFractionDigits:c});}
+  catch(e){var p=n.toFixed(c).split('.');return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+(p[1]||'');}
+}
 
 // ══ LOGIN ════════════════════════════════════════════════════
 function efetuarLogin() {
@@ -849,8 +864,8 @@ function carregarHistorico(){
         var inicio = s.inicio ? String(s.inicio).slice(0,16) : '–';
         var fim    = s.fim    ? String(s.fim).slice(0,16)    : '';
         var vagaCod = (s.vaga||'').replace('VAGA_','');
-        var kwhIni = s.kwhInicial ? fmtBR(String(s.kwhInicial).replace(',','.'),2) : '–';
-        var kwhFim = s.kwhFinal  ? fmtBR(String(s.kwhFinal).replace(',','.'),2)  : '';
+        var kwhIni = fmtBR(s.kwhInicial,1);
+        var kwhFim = s.kwhFinal ? fmtBR(s.kwhFinal,1) : '';
         return '<div class="hist-item">'
           +'<div class="hist-esq">'
             +'<div class="hist-data">Início: '+inicio+'</div>'
@@ -990,12 +1005,14 @@ function _enviarLeituraInicialComValor(leitura) {
     if (!res || res.erro) { erroEl.textContent = res ? res.erro : 'Erro ao enviar leitura.'; erroEl.classList.remove('oculto'); return; }
     // Adicionar sessão ao array local
     if (!App._sessoes) App._sessoes = [];
+    var carroSel = (App._carrosAtivos || []).filter(function(c){ return c.placa === App._placaSelecionada; })[0];
     App._sessoes.push({
       submissionId: res.submissionId,
       vaga:         res.vaga,
       kwhInicial:   res.kwhInicial,
       inicio:       res.inicio,
-      placa:        App._placaSelecionada || ''
+      placa:        App._placaSelecionada || '',
+      modelo:       carroSel ? carroSel.marca + ' ' + carroSel.modelo : ''
     });
     renderSessoesAtivas(App._sessoes);
     document.getElementById('status-dot').className='status-dot ligado';
@@ -1632,6 +1649,12 @@ function selecionarCarroParaCarregar(placa) {
   abrirScanner();
 }
 
+function getModeloCarro(placa) {
+  if (!placa || !App._carrosAtivos) return '';
+  var carro = App._carrosAtivos.filter(function(c){ return c.placa === placa; })[0];
+  return carro ? carro.marca + ' ' + carro.modelo : '';
+}
+
 function renderSessoesAtivas(sessoes) {
   var el = document.getElementById('painel-sessoes');
   if (!sessoes || !sessoes.length) {
@@ -1640,14 +1663,18 @@ function renderSessoesAtivas(sessoes) {
   }
   el.classList.remove('oculto');
   el.innerHTML = sessoes.map(function(s) {
+    var modelo = s.modelo || getModeloCarro(s.placa);
     return '<div class="sessao-card">'
       + '<div class="sessao-card-header">'
         + '<div class="sessao-card-info">'
           + '<div class="sessao-card-vaga">⚡ ' + (s.vaga||'').replace('VAGA_','Vaga ') + '</div>'
           + '<div class="sessao-card-inicio">Início: ' + (s.inicio||'–') + '</div>'
-          + '<div class="sessao-card-kwh">Leitura: ' + (s.kwhInicial||'–') + ' kWh</div>'
+          + '<div class="sessao-card-kwh">Leitura: ' + fmtBR(s.kwhInicial,1) + ' kWh</div>'
         + '</div>'
-        + (s.placa ? renderPlacaCard(s.placa) : '')
+        + (s.placa ? '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">'
+            + renderPlacaCard(s.placa)
+            + (modelo ? '<div style="font-size:11px;color:var(--txt-sub);text-align:center;max-width:130px;line-height:1.3">' + modelo + '</div>' : '')
+          + '</div>' : '')
       + '</div>'
       + '<button class="btn-encerrar-sessao" data-sub="' + s.submissionId + '" data-vaga="' + s.vaga + '" onclick="abrirLeituraFinal(this.dataset.sub, this.dataset.vaga)">■ Encerrar</button>'
       + '</div>';
