@@ -947,7 +947,10 @@ function leituraParaNumero(valor) {
 // ══ LEITURA INICIAL ══════════════════════════════════════════
 function confirmarLeituraInicial(sim) {
   if (sim) {
-    // Usa a leitura sugerida direto
+    // Mostrar feedback visual enquanto envia
+    var btnSim = document.querySelector('.btn-sim');
+    if (btnSim) { btnSim.disabled = true; btnSim.textContent = 'Enviando...'; }
+    overlayShow('Enviando leitura...');
     _enviarLeituraInicialComValor(App._leituraSugerida);
   } else {
     // Abre campo manual
@@ -973,6 +976,7 @@ function _enviarLeituraInicialComValor(leitura) {
   var btn    = document.getElementById('btn-li-enviar');
   if (erroEl) erroEl.classList.add('oculto');
   if (btn) { btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto'); }
+  overlayShow('Enviando leitura...');
 
   api('iniciarCarregamento', {
     apartamento: String(App.usuario.apartamento),
