@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Kadosh EV">
+  <meta name="apple-mobile-web-app-title" content="Kadosh EV" id="meta-app-title">
   <meta name="theme-color" content="#0d0d0d">
-  <title>Kadosh EV</title>
+  <title>Kadosh EV</title><!-- título atualizado por APP_CONFIG.TITULO_APP -->
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png">
   <link rel="icon" href="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -285,7 +285,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <div id="tela-login" class="tela ativa">
   <div class="login-scroll">
     <div class="logo-block">
-      <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="logo-img" alt="Kadosh EV">
+      <img id="app-logo-img" src="" class="logo-img" alt="Kadosh EV">
     </div>
     <div class="card">
       <div id="banner-lembrado" class="banner-lembrado oculto">
@@ -324,7 +324,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <div id="tela-senha" class="tela">
   <div class="login-scroll">
     <div class="logo-block">
-      <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="logo-img" alt="Kadosh EV">
+      <img id="app-logo-img" src="" class="logo-img" alt="Kadosh EV">
       <p class="logo-sub">Alterar Senha</p>
     </div>
     <div class="card">
@@ -342,8 +342,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <!-- SCANNER QR -->
 <div id="tela-qr" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo"><span class="hdr-titulo-nome">Sistema de registro</span><span class="hdr-titulo-sub">Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="fecharScanner()">← Voltar</button></div>
   </header>
   <div class="qr-scroll">
@@ -365,8 +365,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <!-- DASHBOARD -->
 <div id="tela-dash" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo"><span class="hdr-titulo-nome">Sistema de registro</span><span class="hdr-titulo-sub">Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir">
       <button class="btn-sair oculto" id="btn-admin-hdr" onclick="mostrarTela('tela-admin')" style="background:rgba(59,205,192,.1);border-color:rgba(59,205,192,.3);color:var(--k-green)">⚙️</button>
       <button class="btn-sair" onclick="fazerLogout()">Sair</button>
@@ -436,8 +436,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <!-- LEITURA INICIAL -->
 <div id="tela-leitura-inicial" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo"><span class="hdr-titulo-nome">Sistema de registro</span><span class="hdr-titulo-sub">Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
   <div class="login-scroll">
@@ -486,8 +486,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <!-- LEITURA FINAL -->
 <div id="tela-leitura-final" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Sistema de registro<span>Carros Elétricos · Kadosh</span></div>
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo"><span class="hdr-titulo-nome">Sistema de registro</span><span class="hdr-titulo-sub">Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
   <div class="login-scroll">
@@ -517,8 +517,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <!-- STATUS VAGAS -->
 <div id="tela-status" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Status das Vagas<span>Carros Elétricos · Kadosh</span></div>
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Status das Vagas<span class="hdr-titulo-sub">Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-login')">← Voltar</button></div>
   </header>
   <div class="tela-status-scroll">
@@ -530,8 +530,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <!-- COBRANÇA -->
 <div id="tela-cobranca" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Histórico Financeiro<span>Carros Elétricos · Kadosh</span></div>
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Histórico Financeiro<span class="hdr-titulo-sub">Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
   <div class="cobr-scroll">
@@ -548,8 +548,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <!-- ADMIN -->
 <div id="tela-admin" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Administração<span>Carros Elétricos · Kadosh</span></div>
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Administração<span class="hdr-titulo-sub">Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
   <div class="tela-admin-scroll">
@@ -623,8 +623,8 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <!-- CARROS -->
 <div id="tela-carros" class="tela">
   <header class="app-header">
-    <img src="https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png" class="hdr-logo-img" alt="Kadosh">
-    <div class="hdr-titulo">Meus Carros<span>Carros Elétricos · Kadosh</span></div>
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Meus Carros<span class="hdr-titulo-sub">Carros Elétricos · Kadosh</span></div>
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
   <div class="tela-admin-scroll">
@@ -686,6 +686,42 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </div>
 </div>
 
+<!-- MODAL ESQUECI SENHA -->
+<div id="modal-esqueceu-senha" class="admin-modal-overlay oculto">
+  <div class="admin-modal-box">
+    <div class="admin-modal-titulo" style="font-size:20px">Redefinir Senha</div>
+    <p style="font-size:14px;color:var(--txt-sub);text-align:center;margin:0">Informe seus dados para redefinir a senha.</p>
+    <div class="campo">
+      <label>Email</label>
+      <input type="email" id="esq-email" placeholder="seu@email.com" inputmode="email">
+    </div>
+    <div class="campo">
+      <label>Apartamento</label>
+      <input type="text" id="esq-apto" placeholder="Ex: 1601" inputmode="numeric">
+    </div>
+    <div class="campo">
+      <label>Nova senha</label>
+      <div class="senha-wrap">
+        <input type="password" id="esq-senha" placeholder="Mínimo 6 caracteres">
+        <button class="toggle-senha" onclick="toggleSenha('esq-senha',this)" type="button">👁</button>
+      </div>
+    </div>
+    <div class="campo">
+      <label>Confirmar nova senha</label>
+      <div class="senha-wrap">
+        <input type="password" id="esq-senha2" placeholder="Repita a senha">
+        <button class="toggle-senha" onclick="toggleSenha('esq-senha2',this)" type="button">👁</button>
+      </div>
+    </div>
+    <div id="esq-msg" class="oculto"></div>
+    <button type="button" class="btn-primary" id="btn-esq-salvar" onclick="redefinirSenha()" style="font-size:20px">
+      <span class="btn-txt">Redefinir Senha</span>
+      <span class="btn-load oculto">Aguarde...</span>
+    </button>
+    <button class="btn-link" onclick="fecharModalEsqueceuSenha()">Cancelar</button>
+  </div>
+</div>
+
 <!-- OVERLAY -->
 <div id="overlay" class="overlay oculto">
   <div class="overlay-box">
@@ -695,7 +731,40 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 </div>
 
 <script>
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbzrC7j3--iP1Zu24ZHL9-cB1dj5KJSv4iIB2VQ_KpIXNBo6Tr-U3m2MPzDxyR8N2A1q6Q/exec';
+// =============================================================================
+//  ██████╗ ██████╗ ███╗   ██╗███████╗██╗ ██████╗
+// ██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝
+// ██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗
+// ██║     ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║
+// ╚██████╗╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝
+//  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝
+//
+//  CONFIGURAÇÃO DO CONDOMÍNIO — edite apenas este bloco para personalizar
+// =============================================================================
+var APP_CONFIG = {
+
+  // ── BACKEND ───────────────────────────────────────────────────────────────
+  // URL do deploy do Google Apps Script
+  // Obtenha em: GAS → Implantar → Gerenciar implantações → URL da Web
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbzrC7j3--iP1Zu24ZHL9-cB1dj5KJSv4iIB2VQ_KpIXNBo6Tr-U3m2MPzDxyR8N2A1q6Q/exec',
+
+  // ── IDENTIDADE DO CONDOMÍNIO ──────────────────────────────────────────────
+  // Nome completo (aparece nos cabeçalhos das telas)
+  NOME_COMPLETO: 'Kadosh Carros Elétricos',
+
+  // Nome curto (aparece no subtítulo dos cabeçalhos)
+  NOME_CURTO: 'Carros Elétricos · Kadosh',
+
+  // Título do app (aba do navegador e ícone PWA)
+  TITULO_APP: 'Kadosh EV',
+
+  // URL do logo (pode ser URL pública de imagem)
+  LOGO_URL: 'https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png',
+
+  // ── FIM DA CONFIGURAÇÃO ───────────────────────────────────────────────────
+};
+// Atalho para compatibilidade com código existente
+var GAS_URL = APP_CONFIG.GAS_URL;
 var App = { usuario:null, submissionId:null, vagaId:null, kwhInicial:null, inicio:null, carregando:false };
 var LS_KEY = 'ev_charge_creds';
 var _qrScanner = null, _qrProcessing = false, _cbCounter = 0;
@@ -714,6 +783,11 @@ function api(action, params) {
 }
 
 window.addEventListener('load', function() {
+  // Injetar configurações no DOM
+  document.title = APP_CONFIG.TITULO_APP;
+  document.querySelectorAll('#app-logo-img').forEach(function(img){ img.src = APP_CONFIG.LOGO_URL; img.alt = APP_CONFIG.TITULO_APP; });
+  document.querySelectorAll('.hdr-titulo-nome').forEach(function(el){ el.textContent = APP_CONFIG.NOME_COMPLETO; });
+  document.querySelectorAll('.hdr-titulo-sub').forEach(function(el){ el.textContent = APP_CONFIG.NOME_CURTO; });
   mostrarTela('tela-login'); carregarCredenciais(); mostrarHintPWA();
   // Feedback tátil imediato no iOS para btn-iniciar
   document.addEventListener('touchstart', function(e) {
@@ -1340,6 +1414,57 @@ function reativarUsuario(email) {
       carregarListaAdmin();
     })
     .catch(function() { alert('Falha. Tente novamente.'); });
+}
+
+// ══ ESQUECI SENHA ════════════════════════════════════════════
+function abrirModalEsqueceuSenha() {
+  ['esq-email','esq-apto','esq-senha','esq-senha2'].forEach(function(id){ document.getElementById(id).value=''; });
+  var msg = document.getElementById('esq-msg');
+  msg.textContent=''; msg.className='oculto';
+  var btn = document.getElementById('btn-esq-salvar');
+  btn.disabled=false;
+  btn.querySelector('.btn-txt').classList.remove('oculto');
+  btn.querySelector('.btn-load').classList.add('oculto');
+  document.getElementById('modal-esqueceu-senha').classList.remove('oculto');
+}
+
+function fecharModalEsqueceuSenha() {
+  document.getElementById('modal-esqueceu-senha').classList.add('oculto');
+}
+
+function redefinirSenha() {
+  var email  = document.getElementById('esq-email').value.trim();
+  var apto   = document.getElementById('esq-apto').value.trim();
+  var senha  = document.getElementById('esq-senha').value;
+  var senha2 = document.getElementById('esq-senha2').value;
+  var msg    = document.getElementById('esq-msg');
+  var btn    = document.getElementById('btn-esq-salvar');
+
+  msg.className = 'oculto';
+  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { msg.textContent='Email inválido.'; msg.className='msg-erro'; return; }
+  if (!apto)   { msg.textContent='Informe o apartamento.'; msg.className='msg-erro'; return; }
+  if (!senha || senha.length < 6) { msg.textContent='Senha deve ter no mínimo 6 caracteres.'; msg.className='msg-erro'; return; }
+  if (senha !== senha2) { msg.textContent='As senhas não coincidem.'; msg.className='msg-erro'; return; }
+
+  btn.disabled=true;
+  btn.querySelector('.btn-txt').classList.add('oculto');
+  btn.querySelector('.btn-load').classList.remove('oculto');
+
+  api('esqueceuSenha', { email: email, apartamento: apto, novaSenha: senha })
+    .then(function(res) {
+      btn.disabled=false;
+      btn.querySelector('.btn-txt').classList.remove('oculto');
+      btn.querySelector('.btn-load').classList.add('oculto');
+      if (res && res.erro) { msg.textContent=res.erro; msg.className='msg-erro'; return; }
+      msg.textContent='✅ Senha redefinida! Verifique seu email.'; msg.className='msg-ok';
+      setTimeout(fecharModalEsqueceuSenha, 2500);
+    })
+    .catch(function() {
+      btn.disabled=false;
+      btn.querySelector('.btn-txt').classList.remove('oculto');
+      btn.querySelector('.btn-load').classList.add('oculto');
+      msg.textContent='Erro de conexão. Tente novamente.'; msg.className='msg-erro';
+    });
 }
 
 // ══ BADGES DAS VAGAS (dashboard) ════════════════════════════
