@@ -5,7 +5,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey:            "AIzaSyPlaceholder",  // não usado para push, mas obrigatório
+  apiKey:            "AIzaSyDpKNDpFJW8LzJBWEoarjGsuIzLq1WTKNM",
   authDomain:        "kadosh-ev.firebaseapp.com",
   projectId:         "kadosh-ev",
   storageBucket:     "kadosh-ev.appspot.com",
@@ -38,3 +38,4 @@ self.addEventListener('notificationclick', function(event) {
     : 'https://kadoshcarregamento.github.io/kadosh/';
   event.waitUntil(clients.openWindow(url));
 });
+
