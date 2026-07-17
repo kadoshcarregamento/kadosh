@@ -214,6 +214,13 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-enviar-relatorio{width:100%;padding:12px 16px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);font-family:var(--f-body);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;-webkit-appearance:none;margin-bottom:12px}
 .btn-enviar-relatorio:active{opacity:.7}
 .btn-enviar-relatorio .ico{width:36px;height:36px;background:var(--k-green-dim);border:1px solid rgba(59,205,192,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sino-btn{position:relative;background:none;border:none;font-size:24px;cursor:pointer;padding:8px;-webkit-appearance:none;color:var(--txt-sub)}
+.sino-badge{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.notif-item{padding:12px 0;border-bottom:1px solid var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-titulo{font-size:14px;font-weight:600;color:var(--txt)}
+.notif-corpo{font-size:13px;color:var(--txt-sub);margin-top:2px}
+.notif-ts{font-size:11px;color:var(--txt-dim);margin-top:4px}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
 .modal-overlay.oculto{display:none!important}
 .modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px}
@@ -278,6 +285,9 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-encerrar-sessao{background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;-webkit-appearance:none;white-space:nowrap;flex-shrink:0}
 .btn-encerrar-sessao:active{opacity:.8}
 </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 </head>
 <body>
 
@@ -313,7 +323,12 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <span class="btn-txt">Entrar</span>
         <span class="btn-load oculto">Aguarde...</span>
       </button>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
       <button class="btn-link" onclick="abrirModalEsqueceuSenha()">Esqueci minha senha</button>
+      <button class="sino-btn" id="btn-sino" onclick="abrirModalNotificacoes()" title="Notificações">
+        🔔<span class="sino-badge oculto" id="sino-badge">0</span>
+      </button>
+    </div>
     </div>
     <button class="btn-status-vagas" onclick="mostrarTela('tela-status')">🔌&nbsp; Status das Vagas</button>
     <p class="hint-pwa" id="hint-pwa"></p>
@@ -722,6 +737,15 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </div>
 </div>
 
+<!-- MODAL NOTIFICAÇÕES -->
+<div id="modal-notificacoes" class="admin-modal-overlay oculto">
+  <div class="admin-modal-box">
+    <div class="admin-modal-titulo" style="font-size:20px">🔔 Notificações</div>
+    <div id="notif-lista"><div class="hist-vazio">Carregando...</div></div>
+    <button class="btn-link" onclick="document.getElementById('modal-notificacoes').classList.add('oculto')">Fechar</button>
+  </div>
+</div>
+
 <!-- OVERLAY -->
 <div id="overlay" class="overlay oculto">
   <div class="overlay-box">
@@ -761,6 +785,20 @@ var APP_CONFIG = {
   // URL do logo (pode ser URL pública de imagem)
   LOGO_URL: 'https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png',
 
+  // ── FIREBASE PUSH NOTIFICATIONS ──────────────────────────────────────────
+  // VAPID Key: Firebase Console → Configurações → Cloud Messaging → Certificados push da Web
+  VAPID_KEY: 'BFDstUaOaJgrwNy7rxBh6Q3PSGEV3lR4Az1nV8XTFB9Zc1Qq9eTfHUxS7QcAIN4moEm5UECKIPXEasDaoWm2YFs',
+
+  // Firebase config (aba Geral → Seus apps → SDK setup)
+  FIREBASE_CONFIG: {
+    apiKey:            "placeholder",
+    authDomain:        "kadosh-ev.firebaseapp.com",
+    projectId:         "kadosh-ev",
+    storageBucket:     "kadosh-ev.appspot.com",
+    messagingSenderId: "761018197901",
+    appId:             "1:761018197901:web:406e9d3e8ca17500087fc4"
+  },
+
   // ── FIM DA CONFIGURAÇÃO ───────────────────────────────────────────────────
 };
 // Atalho para compatibilidade com código existente
@@ -789,6 +827,8 @@ window.addEventListener('load', function() {
   document.querySelectorAll('.hdr-titulo-nome').forEach(function(el){ el.textContent = APP_CONFIG.NOME_COMPLETO; });
   document.querySelectorAll('.hdr-titulo-sub').forEach(function(el){ el.textContent = APP_CONFIG.NOME_CURTO; });
   mostrarTela('tela-login'); carregarCredenciais(); mostrarHintPWA();
+  registrarServiceWorker();
+  carregarNotificacoes();
   // Feedback tátil imediato no iOS para btn-iniciar
   document.addEventListener('touchstart', function(e) {
     var btn = e.target.closest('#btn-iniciar');
@@ -873,6 +913,7 @@ function efetuarLogin() {
       btn.disabled=false;btn.querySelector('.btn-txt').classList.remove('oculto');btn.querySelector('.btn-load').classList.add('oculto');
       if(res.erro){erroEl.textContent=res.erro;erroEl.classList.remove('oculto');return;}
       App.usuario=res;
+      setTimeout(solicitarPermissaoPush, 1000); // solicitar push após login
       if(lembrar){salvarCredenciais(email,senha);try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'{}');r.nome=res.nome;localStorage.setItem(LS_KEY,JSON.stringify(r));}catch(e){}}
       else{try{localStorage.removeItem(LS_KEY);}catch(e){}}
       entrarDashboard();
@@ -1465,6 +1506,95 @@ function redefinirSenha() {
       btn.querySelector('.btn-load').classList.add('oculto');
       msg.textContent='Erro de conexão. Tente novamente.'; msg.className='msg-erro';
     });
+}
+
+// ══ PUSH NOTIFICATIONS ═══════════════════════════════════════
+var _messaging = null;
+
+function inicializarFirebase() {
+  try {
+    appId:             "1:761018197901:web:406e9d3e8ca17500087fc4"
+    firebase.initializeApp(APP_CONFIG.FIREBASE_CONFIG);
+    _messaging = firebase.messaging();
+    Logger.log && Logger.log('Firebase inicializado');
+  } catch(e) {
+    console.log('Firebase já inicializado ou erro:', e);
+    try { _messaging = firebase.messaging(); } catch(e2) {}
+  }
+}
+
+function solicitarPermissaoPush() {
+  if (!_messaging || !App.usuario) return;
+  Notification.requestPermission().then(function(permission) {
+    if (permission !== 'granted') { console.log('Push negado'); return; }
+    _messaging.getToken({ vapidKey: APP_CONFIG.VAPID_KEY }).then(function(token) {
+      if (!token) return;
+      console.log('Token FCM obtido');
+      api('salvarPushToken', { email: App.usuario.email, token: token })
+        .then(function(res) { console.log('Token salvo:', res); })
+        .catch(function(e) { console.log('Erro ao salvar token:', e); });
+    }).catch(function(e) { console.log('Erro getToken:', e); });
+  });
+}
+
+function registrarServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('/kadosh/sw.js').then(function(reg) {
+    console.log('SW registrado:', reg.scope);
+    inicializarFirebase();
+  }).catch(function(e) { console.log('Erro SW:', e); });
+}
+
+// Notificações em foreground (app aberto)
+function configurarPushForeground() {
+  if (!_messaging) return;
+  _messaging.onMessage(function(payload) {
+    var notif = payload.notification || {};
+    var titulo = notif.title || '⚡ Kadosh EV';
+    var corpo  = notif.body  || '';
+    // Mostrar alerta visual no app
+    mostrarAlertaVaga(titulo, corpo);
+    // Atualizar badge do sino
+    carregarNotificacoes();
+  });
+}
+
+function mostrarAlertaVaga(titulo, corpo) {
+  var div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1e2d3d;border:1px solid var(--k-green);border-radius:12px;padding:14px 20px;z-index:999;max-width:320px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.5)';
+  div.innerHTML = '<div style="font-size:16px;font-weight:700;color:var(--k-green)">' + titulo + '</div><div style="font-size:13px;color:var(--txt-sub);margin-top:4px">' + corpo + '</div>';
+  document.body.appendChild(div);
+  setTimeout(function(){ div.remove(); }, 5000);
+  // Atualizar badges de vagas
+  carregarBadges();
+}
+
+function carregarNotificacoes() {
+  api('getNotificacoes', {})
+    .then(function(res) {
+      var lista = (res && res.notificacoes) ? res.notificacoes : [];
+      var badge = document.getElementById('sino-badge');
+      if (badge) {
+        if (lista.length > 0) { badge.textContent = lista.length > 9 ? '9+' : lista.length; badge.classList.remove('oculto'); }
+        else badge.classList.add('oculto');
+      }
+      var el = document.getElementById('notif-lista');
+      if (!el) return;
+      if (!lista.length) { el.innerHTML = '<div class="hist-vazio">Nenhuma notificação recente.</div>'; return; }
+      el.innerHTML = lista.map(function(n) {
+        return '<div class="notif-item">'
+          + '<div class="notif-titulo">' + n.titulo + '</div>'
+          + '<div class="notif-corpo">' + n.corpo + '</div>'
+          + '<div class="notif-ts">' + n.ts + '</div>'
+          + '</div>';
+      }).join('');
+    })
+    .catch(function(){});
+}
+
+function abrirModalNotificacoes() {
+  document.getElementById('modal-notificacoes').classList.remove('oculto');
+  carregarNotificacoes();
 }
 
 // ══ BADGES DAS VAGAS (dashboard) ════════════════════════════
