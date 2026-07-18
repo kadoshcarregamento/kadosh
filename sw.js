@@ -26,7 +26,10 @@ messaging.onBackgroundMessage(function(payload) {
     badge: notif.badge || '/Logo_kadosh512.png',
     data:  payload.data || {},
     vibrate: [200, 100, 200],
+    badge:  '/kadosh/Logo_kadosh512.png',
   };
+  // Atualizar badge do ícone
+  if ('setAppBadge' in self) self.setAppBadge(1).catch(function(){});
   return self.registration.showNotification(titulo, opcoes);
 });
 
@@ -38,4 +41,5 @@ self.addEventListener('notificationclick', function(event) {
     : 'https://kadoshcarregamento.github.io/kadosh/';
   event.waitUntil(clients.openWindow(url));
 });
+
 
