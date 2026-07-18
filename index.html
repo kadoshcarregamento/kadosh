@@ -1587,6 +1587,11 @@ function carregarNotificacoes() {
         if (lista.length > 0) { badge.textContent = lista.length > 9 ? '9+' : lista.length; badge.classList.remove('oculto'); }
         else badge.classList.add('oculto');
       }
+      // Badge no ícone do app
+      if ('setAppBadge' in navigator) {
+        if (lista.length > 0) navigator.setAppBadge(lista.length).catch(function(){});
+        else navigator.clearAppBadge().catch(function(){});
+      }
       var el = document.getElementById('notif-lista');
       if (!el) return;
       if (!lista.length) { el.innerHTML = '<div class="hist-vazio">Nenhuma notificação recente.</div>'; return; }
