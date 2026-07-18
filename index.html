@@ -1524,16 +1524,25 @@ function inicializarFirebase() {
 }
 
 function solicitarPermissaoPush() {
-  if (!_messaging || !App.usuario) return;
+  console.log('[Push] solicitarPermissaoPush chamado');
+  console.log('[Push] _messaging:', !!_messaging, 'usuario:', !!(App && App.usuario));
+  if (!_messaging || !App.usuario) { console.log('[Push] abortado — sem messaging ou usuario'); return; }
   Notification.requestPermission().then(function(permission) {
-    if (permission !== 'granted') { console.log('Push negado'); return; }
-    _messaging.getToken({ vapidKey: APP_CONFIG.VAPID_KEY }).then(function(token) {
-      if (!token) return;
-      console.log('Token FCM obtido');
-      api('salvarPushToken', { email: App.usuario.email, token: token })
-        .then(function(res) { console.log('Token salvo:', res); })
-        .catch(function(e) { console.log('Erro ao salvar token:', e); });
-    }).catch(function(e) { console.log('Erro getToken:', e); });
+    console.log('[Push] permissao:', permission);
+    if (permission !== 'granted') { console.log('[Push] negado'); return; }
+    console.log('[Push] solicitando token com VAPID:', APP_CONFIG.VAPID_KEY ? APP_CONFIG.VAPID_KEY.slice(0,10)+'...' : 'VAZIO');
+    navigator.serviceWorker.ready.then(function(reg) {
+      console.log('[Push] SW ready:', reg.scope);
+      _messaging.getToken({ vapidKey: APP_CONFIG.VAPID_KEY, serviceWorkerRegistration: reg })
+        .then(function(token) {
+          if (!token) { console.log('[Push] token vazio!'); return; }
+          console.log('[Push] token obtido:', token.slice(0,20)+'...');
+          api('salvarPushToken', { email: App.usuario.email, token: token })
+            .then(function(res) { console.log('[Push] token salvo:', JSON.stringify(res)); })
+            .catch(function(e) { console.log('[Push] erro ao salvar:', e); });
+        })
+        .catch(function(e) { console.log('[Push] erro getToken:', e.message, e); });
+    });
   });
 }
 
