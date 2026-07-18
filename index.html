@@ -1516,7 +1516,7 @@ function inicializarFirebase() {
     appId:             "1:761018197901:web:406e9d3e8ca17500087fc4"
     firebase.initializeApp(APP_CONFIG.FIREBASE_CONFIG);
     _messaging = firebase.messaging();
-    Logger.log && Logger.log('Firebase inicializado');
+    console.log('Firebase inicializado');
   } catch(e) {
     console.log('Firebase já inicializado ou erro:', e);
     try { _messaging = firebase.messaging(); } catch(e2) {}
