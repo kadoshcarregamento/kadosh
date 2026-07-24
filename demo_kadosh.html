@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Condomínio A — Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500;600&family=Space+Mono:wght@700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --green: #3BCDC0;
+    --green-glow: rgba(59,205,192,.4);
+    --bg: #0d0d0d;
+    --card: #1a1a1a;
+    --card2: #222;
+    --border: #2a2a2a;
+    --txt: #f0f0f0;
+    --sub: #7a7a7a;
+    --red: #ff4d4d;
+  }
+
+  body {
+    background: #050505;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ── STAGE ── */
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 40%, rgba(59,205,192,.06) 0%, transparent 60%);
+  }
+
+  /* ── PHONE ── */
+  .phone-wrap {
+    position: relative;
+    width: 320px;
+    height: 650px;
+    filter: drop-shadow(0 40px 80px rgba(0,0,0,.8));
+  }
+
+  .phone {
+    width: 100%;
+    height: 100%;
+    background: #111;
+    border-radius: 44px;
+    border: 2px solid #2a2a2a;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.06),
+      0 0 0 8px #0a0a0a,
+      0 0 0 10px #1a1a1a;
+  }
+
+  /* notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 28px;
+    background: #0a0a0a;
+    border-radius: 0 0 18px 18px;
+    z-index: 100;
+  }
+
+  /* screen */
+  .screen {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── SCENES ── */
+  .scene {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity .5s ease;
+    padding: 36px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+  .scene.active { opacity: 1; }
+
+  /* ── COMMON COMPONENTS ── */
+  .hdr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hdr-logo {
+    width: 32px; height: 32px;
+    background: var(--green);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .hdr-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; color: var(--txt); font-weight: 600; }
+  .hdr-sub   { font-size: 9px; color: var(--green); letter-spacing: .06em; text-transform: uppercase; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .label { font-size: 9px; color: var(--sub); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+  .value { font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: var(--txt); font-weight: 600; }
+  .value-green { color: var(--green); }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--green);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px var(--green-glow);
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(59,205,192,.3);
+    color: var(--green);
+    box-shadow: none;
+  }
+
+  .input-wrap {
+    background: #1e1e1e;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+  }
+  .input-label { font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 3px; }
+  .input-val   { font-size: 14px; color: var(--txt); }
+  .input-cursor::after { content: '|'; color: var(--green); animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ── SCENE 1: LOGIN ── */
+  .logo-big {
+    width: 72px; height: 72px;
+    background: var(--green);
+    border-radius: 18px;
+    margin: 10px auto 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 8px 32px var(--green-glow);
+  }
+  .logo-name { text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 20px; color: var(--green); font-weight: 700; letter-spacing: .04em; }
+  .logo-sub  { text-align: center; font-size: 10px; color: var(--sub); margin-bottom: 6px; }
+
+  /* ── SCENE 2: QR ── */
+  .qr-frame {
+    width: 160px; height: 160px;
+    margin: 10px auto;
+    border: 2px solid var(--green);
+    border-radius: 14px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .qr-scan {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: var(--green);
+    box-shadow: 0 0 12px var(--green-glow);
+    animation: scan 2s ease-in-out infinite;
+  }
+  @keyframes scan { 0%{top:0} 100%{top:100%} }
+  .qr-corner {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--green);
+    border-style: solid;
+  }
+  .qr-corner.tl { top:-1px; left:-1px; border-width:3px 0 0 3px; border-radius: 4px 0 0 0; }
+  .qr-corner.tr { top:-1px; right:-1px; border-width:3px 3px 0 0; border-radius: 0 4px 0 0; }
+  .qr-corner.bl { bottom:-1px; left:-1px; border-width:0 0 3px 3px; border-radius: 0 0 0 4px; }
+  .qr-corner.br { bottom:-1px; right:-1px; border-width:0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+  /* ── SCENE 3: LEITURA ── */
+  .leitura-big {
+    font-family: 'Space Mono', monospace;
+    font-size: 38px;
+    color: var(--green);
+    text-align: center;
+    margin: 8px 0;
+    text-shadow: 0 0 20px var(--green-glow);
+  }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-sim { flex:1; padding:13px; background:rgba(59,205,192,.15); border:2px solid var(--green); color:var(--green); border-radius:10px; font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; text-align:center; }
+  .btn-nao { flex:1; padding:13px; background:rgba(255,77,77,.1); border:2px solid var(--red); color:var(--red); border-radius:10px; font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; text-align:center; }
+
+  /* ── SCENE 4: DASHBOARD ── */
+  .status-dot { width:10px; height:10px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green-glow); display:inline-block; margin-right:6px; }
+  .status-txt { font-family:'Space Grotesk',sans-serif; font-size:18px; color:var(--txt); font-weight:700; }
+  .badges-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .badge { background:#1e1e1e; border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:11px; color:var(--sub); display:flex; align-items:center; gap:4px; }
+  .badge .dot { width:7px; height:7px; border-radius:50%; }
+  .dot-green { background:var(--green); box-shadow:0 0 5px var(--green-glow); }
+  .dot-red   { background:var(--red); }
+
+  /* ── SCENE 5: ENCERRAR ── */
+  .placa {
+    background:#fff; border:2px solid #111; border-radius:8px;
+    overflow:hidden; width:130px; margin:0 auto;
+  }
+  .placa-topo { background:#1a3a8f; color:#fff; font-size:9px; font-weight:800; letter-spacing:.15em; text-align:center; padding:3px 6px; display:flex; justify-content:space-between; align-items:center; }
+  .placa-num  { font-family:'Space Mono',monospace; font-size:22px; font-weight:900; color:#111; text-align:center; padding:4px 8px; }
+
+  /* ── SCENE 6: RESULTADO ── */
+  .consumo-big { font-family:'Space Mono',monospace; font-size:42px; color:var(--green); text-align:center; text-shadow:0 0 20px var(--green-glow); }
+  .consumo-unit { font-size:13px; color:var(--sub); text-align:center; margin-top:-4px; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .info-cell { background:#1e1e1e; border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center; }
+  .info-cell .lbl { font-size:9px; color:var(--sub); text-transform:uppercase; letter-spacing:.08em; }
+  .info-cell .val { font-family:'Space Grotesk',sans-serif; font-size:14px; color:var(--green); font-weight:700; margin-top:3px; }
+
+  /* ── SCENE 7: FINANCEIRO ── */
+  .fin-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; }
+  .fin-mes  { color:var(--sub); }
+  .fin-kwh  { color:var(--txt); }
+  .fin-val  { color:var(--green); font-weight:700; font-family:'Space Grotesk',sans-serif; }
+
+  /* ── SCENE 8: PUSH ── */
+  .push-notif {
+    background: #1e2d3d;
+    border: 1px solid var(--green);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideDown .5s ease;
+  }
+  @keyframes slideDown { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .push-icon { font-size: 28px; }
+  .push-title { font-size: 13px; font-weight: 700; color: var(--green); }
+  .push-body  { font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+  /* ── PROFILE ── */
+  .profile-card { display:flex; align-items:center; gap:10px; }
+  .avatar { width:40px; height:40px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700; color:#0d0d0d; flex-shrink:0; }
+  .profile-name { font-size:14px; font-weight:700; color:var(--txt); }
+  .profile-sub  { font-size:11px; color:var(--sub); }
+  .profile-apto { font-size:11px; color:var(--green); }
+
+  /* ── VAGA STATUS SCREEN ── */
+  .vaga-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .vaga-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; }
+  .vaga-card.livre  { border-color:rgba(59,205,192,.3); background:rgba(59,205,192,.06); }
+  .vaga-card.ocupado{ border-color:rgba(255,77,77,.3);  background:rgba(255,77,77,.05); }
+  .vaga-ico  { font-size:22px; margin-bottom:4px; }
+  .vaga-nome { font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:var(--txt); }
+  .vaga-st   { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-top:3px; }
+  .vaga-card.livre  .vaga-st { color:var(--green); }
+  .vaga-card.ocupado .vaga-st { color:var(--red); }
+
+  /* ── CAPTION BAR ── */
+  .caption-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,.95));
+    padding: 20px 16px 14px;
+    z-index: 50;
+  }
+  .caption-scene { font-size: 9px; color: var(--green); letter-spacing: .15em; text-transform: uppercase; margin-bottom: 3px; }
+  .caption-text  { font-size: 12px; color: #ddd; line-height: 1.5; }
+
+  /* ── CONTROLS ── */
+  .controls {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 200;
+  }
+  .ctrl-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(59,205,192,.15);
+    border: 1px solid rgba(59,205,192,.3);
+    color: var(--green);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items:center; justify-content:center;
+    transition: background .2s;
+  }
+  .ctrl-btn:hover { background: rgba(59,205,192,.3); }
+
+  .progress-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(255,255,255,.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    transition: width .3s ease;
+    box-shadow: 0 0 8px var(--green-glow);
+  }
+
+  .scene-counter {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    color: var(--sub);
+    min-width: 40px;
+    text-align: center;
+  }
+
+  /* ── SCENE TITLE OVERLAY ── */
+  .scene-intro {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s;
+  }
+  .scene-intro.show { opacity: 1; }
+  .scene-intro-num  { font-family:'Space Mono',monospace; font-size:11px; color:var(--green); letter-spacing:.2em; margin-bottom:8px; }
+  .scene-intro-name { font-family:'Space Grotesk',sans-serif; font-size:18px; color:#fff; font-weight:700; text-align:center; padding:0 20px; }
+
+  /* ── BOTÃO FIXO QUERO CONHECER ── */
+  .btn-conhecer-fixed {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: var(--green);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 24px;
+    padding: 10px 18px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px var(--green-glow);
+    z-index: 250;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform .2s;
+  }
+  .btn-conhecer-fixed:hover { transform: scale(1.05); }
+
+  /* ── TELA FINAL ── */
+  .final-screen {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 280;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .6s ease;
+    padding: 24px;
+  }
+  .final-screen.show { opacity: 1; pointer-events: all; }
+  .final-logo { width: 70px; height: 70px; background: var(--green); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 8px 32px var(--green-glow); margin-bottom: 16px; }
+  .final-title { font-family: 'Space Grotesk', sans-serif; font-size: 20px; color: #fff; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .final-sub   { font-size: 13px; color: var(--sub); text-align: center; margin-bottom: 28px; line-height: 1.6; }
+  .btn-conhecer-big {
+    padding: 16px 36px;
+    background: var(--green);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 28px var(--green-glow);
+    margin-bottom: 14px;
+    width: 100%;
+    max-width: 280px;
+  }
+  .btn-repetir {
+    padding: 10px 24px;
+    background: transparent;
+    color: var(--sub);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn-repetir:hover { border-color: var(--green); color: var(--green); }
+
+  /* ── TITLE SCREEN ── */
+  .title-screen {
+    position: fixed;
+    inset: 0;
+    background: #050505;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    transition: opacity .8s ease;
+  }
+  .title-screen.hidden { opacity: 0; pointer-events: none; }
+  .title-logo { width: 80px; height: 80px; background: var(--green); border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 42px; box-shadow: 0 12px 40px var(--green-glow); margin-bottom: 20px; }
+  .title-name { font-family:'Space Grotesk',sans-serif; font-size: 32px; color: var(--green); font-weight: 700; letter-spacing: .04em; }
+  .title-sub  { font-size: 14px; color: var(--sub); margin-top: 6px; margin-bottom: 32px; }
+  .title-btn  { padding: 14px 32px; background: var(--green); color: #0d0d0d; border: none; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 24px var(--green-glow); }
+  .title-btn:hover { transform: translateY(-1px); }
+
+  /* ── NOTIFICATION BADGE ── */
+  .sino-wrap { position:relative; display:inline-flex; }
+  .sino-num  { position:absolute; top:-4px; right:-4px; background:var(--red); color:#fff; font-size:8px; font-weight:700; border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; }
+
+  /* animated typing */
+  .typing { overflow:hidden; white-space:nowrap; border-right:2px solid var(--green); animation: type 1.5s steps(20,end) forwards, cursor .7s step-end infinite; }
+  @keyframes type { from{width:0} to{width:100%} }
+  @keyframes cursor { 50%{border-color:transparent} }
+
+  .check-anim { animation: pop .4s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes pop { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+
+  .slide-up { animation: slideUp .5s ease forwards; }
+  @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div class="title-screen" id="title">
+  <div class="title-logo">⚡</div>
+  <div class="title-name">Condomínio A</div>
+  <div class="title-sub">Sistema de Carregamento de Veículos Elétricos</div>
+  <button class="title-btn" onclick="startDemo()">▶ Ver demonstração</button>
+</div>
+
+<!-- STAGE -->
+<div class="stage">
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen" id="screen">
+
+        <!-- SCENE 1: LOGIN -->
+        <div class="scene" id="s1">
+          <div style="margin-top:8px">
+            <div class="logo-big">⚡</div>
+            <div class="logo-name">KADOSH EV</div>
+            <div class="logo-sub">Sistema de Carregamento</div>
+          </div>
+          <div class="card">
+            <div class="input-wrap" style="margin-bottom:8px">
+              <div class="input-label">Email</div>
+              <div class="input-val">morador@email.com</div>
+            </div>
+            <div class="input-wrap" style="margin-bottom:10px">
+              <div class="input-label">Senha</div>
+              <div class="input-val">••••••••</div>
+            </div>
+            <div class="btn" id="btn-login">ENTRAR</div>
+          </div>
+          <div class="btn btn-outline">🔌 Status das Vagas</div>
+          <div class="caption-bar">
+            <div class="caption-scene">01 — Login</div>
+            <div class="caption-text">Morador acessa com email e senha. Simples e seguro.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 2: DASHBOARD -->
+        <div class="scene" id="s2">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div>
+              <div class="hdr-title">Condomínio A</div>
+              <div class="hdr-sub">Sistema EV · Condomínio A</div>
+            </div>
+          </div>
+          <div class="card profile-card">
+            <div class="avatar">B</div>
+            <div>
+              <div class="profile-name">João Silva</div>
+              <div class="profile-sub">morador@email.com</div>
+              <div class="profile-apto">🏠 Apartamento 1</div>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:5px">
+              <div style="width:32px;height:32px;background:#1e1e1e;border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">🔑</div>
+              <div style="width:32px;height:32px;background:#1e1e1e;border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);font-weight:700">$</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="label" style="margin-bottom:6px">Status Vagas</div>
+            <div class="badges-row">
+              <div class="badge"><div class="dot dot-green"></div>1A</div>
+              <div class="badge"><div class="dot dot-red"></div>2A</div>
+              <div class="badge"><div class="dot dot-green"></div>3A</div>
+              <div class="badge"><div class="dot dot-green"></div>3B</div>
+              <div class="badge"><div class="dot dot-red"></div>3C</div>
+              <div class="badge"><div class="dot dot-green"></div>3D</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="label">Status</div>
+            <div><span class="status-dot"></span><span class="status-txt">Pronto para carregar</span></div>
+          </div>
+          <div class="btn">📷 Escanear Vaga</div>
+          <div class="caption-bar">
+            <div class="caption-scene">02 — Dashboard</div>
+            <div class="caption-text">Visualize o status das vagas em tempo real antes de descer ao estacionamento.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 3: QR CODE -->
+        <div class="scene" id="s3">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Escanear Vaga</div></div>
+          </div>
+          <div style="text-align:center;font-size:12px;color:var(--sub);margin-top:4px">Aponte a câmera para o QR code da vaga</div>
+          <div class="qr-frame">
+            <div class="qr-corner tl"></div>
+            <div class="qr-corner tr"></div>
+            <div class="qr-corner bl"></div>
+            <div class="qr-corner br"></div>
+            <div class="qr-scan"></div>
+            <div style="font-size:48px;opacity:.2">▦</div>
+          </div>
+          <div style="text-align:center;font-size:11px;color:var(--green);font-weight:600">📍 Vaga 3C identificada!</div>
+          <div class="caption-bar">
+            <div class="caption-scene">03 — Scanner QR</div>
+            <div class="caption-text">Escaneie o QR code fixado na vaga para identificá-la automaticamente.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 4: LEITURA INICIAL -->
+        <div class="scene" id="s4">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Leitura Inicial</div></div>
+          </div>
+          <div class="card">
+            <div class="label">Vaga</div>
+            <div class="value value-green" style="font-family:'Space Grotesk',sans-serif;font-size:22px">Vaga 3C</div>
+          </div>
+          <div class="card" style="text-align:center">
+            <div style="font-size:11px;color:var(--sub);margin-bottom:6px">LEITURA ANTERIOR REGISTRADA</div>
+            <div class="leitura-big">8.097,5</div>
+            <div style="font-size:11px;color:var(--sub)">kWh</div>
+            <div style="font-size:12px;color:var(--txt);font-weight:600;margin-top:10px">A leitura acima está correta?</div>
+            <div class="btn-row" style="margin-top:10px">
+              <div class="btn-sim">✓ SIM</div>
+              <div class="btn-nao">✗ NÃO</div>
+            </div>
+          </div>
+          <div class="caption-bar">
+            <div class="caption-scene">04 — Confirmação de Leitura</div>
+            <div class="caption-text">O app sugere a última leitura registrada. Confirme com SIM ou corrija.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 5: CARREGANDO -->
+        <div class="scene" id="s5">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Condomínio A</div></div>
+          </div>
+          <div class="card profile-card">
+            <div class="avatar">B</div>
+            <div>
+              <div class="profile-name">João Silva</div>
+              <div class="profile-apto">🏠 Apartamento 1</div>
+            </div>
+          </div>
+          <div class="card" style="border-color:rgba(59,205,192,.3)">
+            <div class="label">Status</div>
+            <div><span class="status-dot" style="animation:pulse 1.5s infinite"></span><span class="status-txt">⚡ Carregando</span></div>
+            <style>@keyframes pulse{0%,100%{box-shadow:0 0 8px var(--green-glow)}50%{box-shadow:0 0 20px var(--green-glow)}}</style>
+            <div style="margin-top:10px;background:#1e1e1e;border-radius:10px;padding:10px">
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:4px"><span>Vaga</span><span style="color:var(--green);font-weight:700">3C</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:4px"><span>Início</span><span style="color:var(--txt)">18/07/2026 09:30</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub)"><span>Leitura</span><span style="color:var(--txt)">8.097,5 kWh</span></div>
+            </div>
+            <div class="placa" style="margin-top:10px">
+              <div class="placa-topo"><span style="font-size:7px">MERCOSUL</span><span>BRASIL</span><span>🇧🇷</span></div>
+              <div class="placa-num">ABC1D23</div>
+            </div>
+          </div>
+          <div class="btn" style="background:var(--red);box-shadow:0 4px 20px rgba(255,77,77,.3)">■ Encerrar Carregamento</div>
+          <div class="caption-bar">
+            <div class="caption-scene">05 — Em Carregamento</div>
+            <div class="caption-text">Dashboard mostra a sessão ativa com vaga, horário, leitura e placa do veículo.</div>
+          </div>
+        </div>
+
+
+        <!-- SCENE 6b: LEITURA FINAL -->
+        <div class="scene" id="s6b">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Encerrar Carregamento</div></div>
+          </div>
+          <div class="card">
+            <div class="label">Vaga</div>
+            <div class="value value-green" style="font-family:'Space Grotesk',sans-serif;font-size:22px">Vaga 3C</div>
+          </div>
+          <div class="card">
+            <div class="label">Leitura inicial registrada</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;color:var(--green)">8.097,5 kWh</div>
+          </div>
+          <div class="card">
+            <div class="input-label" style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Leitura final do relógio (kWh)</div>
+            <div style="background:#1e1e1e;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'Space Mono',monospace;font-size:24px;color:var(--txt);text-align:center">8115<span style="color:var(--green)">,7</span><span class="input-cursor" style="color:var(--green)"></span></div>
+            <div style="font-size:10px;color:var(--sub);margin-top:6px;text-align:center">A vírgula é inserida automaticamente</div>
+          </div>
+          <div class="btn" style="background:var(--red);box-shadow:0 4px 20px rgba(255,77,77,.3)">Encerrar Carregamento</div>
+          <div class="caption-bar">
+            <div class="caption-scene">06 — Leitura Final</div>
+            <div class="caption-text">Informe a leitura final do medidor. A vírgula decimal é inserida automaticamente.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 6: RESULTADO -->
+        <div class="scene" id="s6">
+          <div style="text-align:center;padding:10px 0 6px">
+            <div style="font-size:36px">✅</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;color:var(--green);font-weight:700;margin-top:4px">Carregamento Concluído</div>
+          </div>
+          <div class="card" style="text-align:center;background:#1a2d1a;border-color:rgba(59,205,192,.2)">
+            <div class="label">Consumo Total</div>
+            <div class="consumo-big">18,2</div>
+            <div class="consumo-unit">kWh</div>
+          </div>
+          <div class="info-grid">
+            <div class="info-cell"><div class="lbl">Duração</div><div class="val">4h 12min</div></div>
+            <div class="info-cell"><div class="lbl">Vaga</div><div class="val">3C</div></div>
+            <div class="info-cell"><div class="lbl">Leit. Inicial</div><div class="val">8.097,5</div></div>
+            <div class="info-cell"><div class="lbl">Leit. Final</div><div class="val">8.115,7</div></div>
+          </div>
+          <div style="font-size:11px;color:var(--sub);text-align:center">📧 Resumo enviado para o seu email</div>
+          <div class="caption-bar">
+            <div class="caption-scene">07 — Resumo do Carregamento</div>
+            <div class="caption-text">Consumo, duração e leituras exibidos. Email de resumo enviado automaticamente.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 7: STATUS VAGAS -->
+        <div class="scene" id="s7">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Status das Vagas</div><div class="hdr-sub">Sistema EV · Condomínio A</div></div>
+          </div>
+          <div style="font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.1em">Andar -3</div>
+          <div class="vaga-grid">
+            <div class="vaga-card livre"><div class="vaga-ico">🟢</div><div class="vaga-nome">3A</div><div class="vaga-st">Livre</div></div>
+            <div class="vaga-card ocupado"><div class="vaga-ico">🔴</div><div class="vaga-nome">3B</div><div class="vaga-st">Ocupado</div></div>
+            <div class="vaga-card livre"><div class="vaga-ico">🟢</div><div class="vaga-nome">3C</div><div class="vaga-st">Livre</div></div>
+            <div class="vaga-card livre"><div class="vaga-ico">🟢</div><div class="vaga-nome">3D</div><div class="vaga-st">Livre</div></div>
+          </div>
+          <div style="font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.1em">Andar -2</div>
+          <div class="vaga-grid">
+            <div class="vaga-card ocupado"><div class="vaga-ico">🔴</div><div class="vaga-nome">2A</div><div class="vaga-st">Ocupado</div></div>
+          </div>
+          <div class="caption-bar">
+            <div class="caption-scene">07 — Status das Vagas</div>
+            <div class="caption-text">Consulte quais vagas estão livres antes de descer ao estacionamento.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 8: FINANCEIRO -->
+        <div class="scene" id="s8">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Histórico Financeiro</div></div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="font-size:11px;color:var(--sub)">Clique no mês para detalhar</div>
+            </div>
+            <div class="fin-row"><span class="fin-mes">Jul/26</span><span class="fin-kwh">186,0 kWh</span><span class="fin-val">R$ 213,90</span></div>
+            <div class="fin-row"><span class="fin-mes">Jun/26</span><span class="fin-kwh">154,2 kWh</span><span class="fin-val">R$ 174,25</span></div>
+            <div class="fin-row"><span class="fin-mes">Mai/26</span><span class="fin-kwh">198,4 kWh</span><span class="fin-val">R$ 220,43</span></div>
+            <div class="fin-row" style="border:none"><span class="fin-mes">Abr/26</span><span class="fin-kwh">167,8 kWh</span><span class="fin-val">R$ 186,55</span></div>
+          </div>
+          <div class="btn" style="font-size:14px">📩 Enviar selecionados</div>
+          <div class="caption-bar">
+            <div class="caption-scene">08 — Histórico Financeiro</div>
+            <div class="caption-text">Consulte o consumo e valor de cada mês. Envie relatório detalhado por email.</div>
+          </div>
+        </div>
+
+
+        <!-- SCENE 8b: DETALHAMENTO -->
+        <div class="scene" id="s8b">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Detalhamento Jul/26</div></div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:4px">
+              <div style="font-size:12px;font-weight:700;color:var(--green)">Jul/26</div>
+              <div style="font-size:12px;font-weight:700;color:var(--green)">Total: 186,0 kWh</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;font-size:11px;margin-top:6px">
+              <div style="color:var(--sub);font-size:9px;text-transform:uppercase;letter-spacing:.06em">Data</div>
+              <div style="color:var(--sub);font-size:9px;text-transform:uppercase;letter-spacing:.06em">Vaga</div>
+              <div style="color:var(--sub);font-size:9px;text-transform:uppercase;letter-spacing:.06em">kWh</div>
+
+              <div style="color:var(--txt);padding:5px 0;border-bottom:1px solid var(--border)">02/06</div>
+              <div style="color:var(--sub);padding:5px 0;border-bottom:1px solid var(--border)">3C</div>
+              <div style="color:var(--txt);font-weight:600;padding:5px 0;border-bottom:1px solid var(--border)">18,2</div>
+
+              <div style="color:var(--txt);padding:5px 0;border-bottom:1px solid var(--border)">08/06</div>
+              <div style="color:var(--sub);padding:5px 0;border-bottom:1px solid var(--border)">3D</div>
+              <div style="color:var(--txt);font-weight:600;padding:5px 0;border-bottom:1px solid var(--border)">17,8</div>
+
+              <div style="color:var(--txt);padding:5px 0;border-bottom:1px solid var(--border)">15/06</div>
+              <div style="color:var(--sub);padding:5px 0;border-bottom:1px solid var(--border)">3C</div>
+              <div style="color:var(--txt);font-weight:600;padding:5px 0;border-bottom:1px solid var(--border)">16,4</div>
+
+              <div style="color:var(--txt);padding:5px 0;border-bottom:1px solid var(--border)">22/06</div>
+              <div style="color:var(--sub);padding:5px 0;border-bottom:1px solid var(--border)">3B</div>
+              <div style="color:var(--txt);font-weight:600;padding:5px 0;border-bottom:1px solid var(--border)">19,1</div>
+
+              <div style="color:var(--txt);padding:5px 0">28/06</div>
+              <div style="color:var(--sub);padding:5px 0">3C</div>
+              <div style="color:var(--txt);font-weight:600;padding:5px 0">18,5</div>
+            </div>
+          </div>
+          <div class="btn" style="font-size:14px">📩 Enviar relatório detalhado</div>
+          <div class="caption-bar">
+            <div class="caption-scene">09 — Detalhamento por Sessão</div>
+            <div class="caption-text">Clique em qualquer mês para ver cada sessão de carregamento com data, vaga e consumo.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 9: NOTIFICAÇÃO -->
+        <div class="scene" id="s9">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Condomínio A</div></div>
+            <div style="margin-left:auto">
+              <div class="sino-wrap">
+                🔔
+                <div class="sino-num">1</div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;padding:20px 0 10px">
+            <div style="font-size:48px">⚡</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--green);font-weight:700;margin-top:8px">Vaga 3C liberada!</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:4px">Vaga 3C está livre para carregamento.</div>
+          </div>
+          <div class="push-notif">
+            <div class="push-icon">⚡</div>
+            <div>
+              <div class="push-title">Vaga 3C liberada!</div>
+              <div class="push-body">Vaga 3C está livre para carregamento.</div>
+              <div style="font-size:10px;color:var(--sub);margin-top:3px">Agora mesmo • Condomínio A</div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-size:11px;font-weight:700;color:var(--txt);margin-bottom:8px">🔔 Notificações</div>
+            <div class="fin-row"><span style="color:var(--green);font-size:12px">⚡ Vaga 3C liberada!</span><span style="font-size:10px;color:var(--sub)">09:51</span></div>
+            <div class="fin-row" style="border:none"><span style="color:var(--green);font-size:12px">⚡ Vaga 3D liberada!</span><span style="font-size:10px;color:var(--sub)">09:48</span></div>
+          </div>
+          <div class="caption-bar">
+            <div class="caption-scene">09 — Notificações Push</div>
+            <div class="caption-text">Receba alertas automáticos quando uma vaga for liberada, mesmo com o app fechado.</div>
+          </div>
+        </div>
+
+        <!-- SCENE 10: CARROS -->
+        <div class="scene" id="s10">
+          <div class="hdr">
+            <div class="hdr-logo">⚡</div>
+            <div><div class="hdr-title">Meus Carros</div></div>
+          </div>
+          <div class="card" style="display:flex;align-items:center;gap:10px">
+            <div class="placa" style="flex-shrink:0">
+              <div class="placa-topo"><span style="font-size:7px">MERCOSUL</span><span>BRASIL</span><span>🇧🇷</span></div>
+              <div class="placa-num">ABC1D23</div>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--txt)">Volvo EX30</div>
+              <div style="font-size:11px;color:var(--sub)">ABC1D23 · Ativo</div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;align-items:center;gap:10px">
+            <div class="placa" style="flex-shrink:0">
+              <div class="placa-topo"><span style="font-size:7px">MERCOSUL</span><span>BRASIL</span><span>🇧🇷</span></div>
+              <div class="placa-num">XYZ9H87</div>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--txt)">BYD Dolphin</div>
+              <div style="font-size:11px;color:var(--sub)">XYZ9H87 · Ativo</div>
+            </div>
+          </div>
+          <div class="btn">🚗 Cadastrar Novo Carro</div>
+          <div class="caption-bar">
+            <div class="caption-scene">10 — Cadastro de Veículos</div>
+            <div class="caption-text">Cadastre seus veículos por marca, modelo e placa Mercosul. Até 2 carregamentos simultâneos.</div>
+          </div>
+        </div>
+
+        <!-- SCENE INTRO OVERLAY -->
+        <div class="scene-intro" id="scene-intro">
+          <div class="scene-intro-num" id="intro-num"></div>
+          <div class="scene-intro-name" id="intro-name"></div>
+        </div>
+
+      </div><!-- screen -->
+    </div><!-- phone -->
+  </div><!-- phone-wrap -->
+</div><!-- stage -->
+
+<!-- BOTÃO FIXO QUERO CONHECER -->
+<button class="btn-conhecer-fixed" onclick="abrirContato()">
+  💡 Quero conhecer
+</button>
+
+<!-- TELA FINAL -->
+<div class="final-screen" id="final-screen">
+  <div class="final-logo">⚡</div>
+  <div class="final-title">Gostou do sistema?</div>
+  <div class="final-sub">Sistema de carregamento EV para condomínios.<br>Controle inteligente, simples e acessível.</div>
+  <button class="btn-conhecer-big" onclick="abrirContato()">💡 Quero conhecer para meu condomínio</button>
+  <button class="btn-repetir" onclick="repetirDemo()">↺ Ver demonstração novamente</button>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="ctrl-btn" onclick="prevScene()">‹</button>
+  <div>
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="scene-counter" id="counter">1 / 10</div>
+  </div>
+  <button class="ctrl-btn" id="play-btn" onclick="togglePlay()">⏸</button>
+  <button class="ctrl-btn" onclick="nextScene()">›</button>
+</div>
+
+<script>
+const SCENES = [
+  { id: 's1',  num: '01', name: 'Login' },
+  { id: 's2',  num: '02', name: 'Dashboard' },
+  { id: 's3',  num: '03', name: 'Scanner QR Code' },
+  { id: 's4',  num: '04', name: 'Confirmação de Leitura' },
+  { id: 's5',  num: '05', name: 'Carregamento Ativo' },
+  { id: 's6b', num: '06', name: 'Leitura Final' },
+  { id: 's6',  num: '07', name: 'Resumo do Carregamento' },
+  { id: 's7',  num: '08', name: 'Status das Vagas' },
+  { id: 's8',  num: '09', name: 'Histórico Financeiro' },
+  { id: 's8b', num: '10', name: 'Detalhamento por Sessão' },
+  { id: 's9',  num: '11', name: 'Notificações Push' },
+  { id: 's10', num: '12', name: 'Cadastro de Veículos' },
+];
+
+let current = 0;
+let playing = true;
+let timer   = null;
+const DURATION = 5000; // ms por cena
+
+function showScene(idx) {
+  SCENES.forEach(function(s) {
+    document.getElementById(s.id).classList.remove('active');
+  });
+  current = (idx + SCENES.length) % SCENES.length;
+  document.getElementById(SCENES[current].id).classList.add('active');
+
+  // Intro overlay
+  var intro = document.getElementById('scene-intro');
+  document.getElementById('intro-num').textContent  = SCENES[current].num;
+  document.getElementById('intro-name').textContent = SCENES[current].name;
+  intro.classList.add('show');
+  setTimeout(function(){ intro.classList.remove('show'); }, 1200);
+
+  // Progress & counter
+  document.getElementById('progress').style.width = ((current + 1) / SCENES.length * 100) + '%';
+  document.getElementById('counter').textContent   = (current + 1) + ' / ' + SCENES.length;
+}
+
+function nextScene() {
+  if (current >= SCENES.length - 1) {
+    // Última cena — mostrar tela final e parar
+    clearInterval(timer);
+    playing = false;
+    document.getElementById('play-btn').textContent = '▶';
+    setTimeout(function() {
+      document.getElementById('final-screen').classList.add('show');
+    }, 1500);
+    return;
+  }
+  showScene(current + 1);
+  if (playing) resetTimer();
+}
+
+function prevScene() {
+  showScene(current - 1);
+  if (playing) resetTimer();
+}
+
+function resetTimer() {
+  clearInterval(timer);
+  if (playing) timer = setInterval(nextScene, DURATION);
+}
+
+function togglePlay() {
+  playing = !playing;
+  document.getElementById('play-btn').textContent = playing ? '⏸' : '▶';
+  if (playing) resetTimer();
+  else clearInterval(timer);
+}
+
+function startDemo() {
+  document.getElementById('title').classList.add('hidden');
+  showScene(0);
+  timer = setInterval(nextScene, DURATION);
+}
+
+function abrirContato() {
+  window.open('contato.html', '_blank');
+}
+
+function repetirDemo() {
+  document.getElementById('final-screen').classList.remove('show');
+  playing = true;
+  document.getElementById('play-btn').textContent = '⏸';
+  showScene(0);
+  resetTimer();
+}
+</script>
+</body>
+</html>
