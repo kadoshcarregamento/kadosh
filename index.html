@@ -1004,9 +1004,9 @@ function verificarTermosELogar() {
   api('verificarAceiteTermos', { email: String(App.usuario.email) })
     .then(function(res) {
       overlayHide();
-      if (res && res.aceito === false && res.termos) {
+      if (res && res.aceito === false) {
         try { localStorage.removeItem(LS_TERMOS); } catch(e) {}
-        exigirAceiteTermos(res.termos);
+        exigirAceiteTermos(res.termos || {});
         return;
       }
       if (res && res.aceito === true && res.dataAceite) {
