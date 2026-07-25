@@ -368,11 +368,11 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     </div>
     <button class="btn-status-vagas" onclick="mostrarTela('tela-status')">🔌&nbsp; Status das Vagas</button>
     <p class="hint-pwa" id="hint-pwa"></p>
-    <div class="termos-status" id="termos-status">
-      <button class="termos-link" onclick="abrirTermos(false)">Termos de uso</button>
+    <div class="termos-status">
+      <button class="termos-link" onclick="abrirTermosLeitura()">Termos de uso</button>
     </div>
     <div style="text-align:center;margin-top:6px">
-      <div style="font-size:11px;color:var(--txt-dim)">Desenvolvido por <span style="color:var(--txt-sub)">Bernardo Faria</span></div>
+      <div style="font-size:11px;color:var(--txt-dim)">Desenvolvido por <span style="color:var(--txt-sub)">Bernardo Faria</span> · <span id="app-build" style="font-size:10px;opacity:.55"></span></div>
       <a href="https://wa.me/?text=Veja%20este%20sistema%20de%20controle%20de%20carregamento%20de%20carros%20el%C3%A9tricos%20que%20tem%20aqui%20no%20pr%C3%A9dio%21%21%20https%3A//tinyurl.com/VagasEletricas"
          target="_blank"
          style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:6px 14px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);border-radius:20px;color:#25D366;font-size:11px;font-weight:600;text-decoration:none;letter-spacing:.04em">
@@ -818,18 +818,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </div>
 </div>
 
-<!-- MODAL TERMOS DE USO -->
-<div id="modal-termos" class="admin-modal-overlay oculto">
-  <div class="admin-modal-box">
-    <div class="admin-modal-titulo" style="font-size:20px" id="termos-titulo">Termos de Uso</div>
-    <div class="termos-scroll" id="termos-corpo">
-      <div class="hist-vazio">Carregando...</div>
-    </div>
-    <div class="termos-versao" id="termos-versao"></div>
-    <div id="termos-acoes"></div>
-  </div>
-</div>
-
 <!-- OVERLAY -->
 <div id="overlay" class="overlay oculto">
   <div class="overlay-box">
@@ -868,6 +856,9 @@ var APP_CONFIG = {
 
   // URL do logo (pode ser URL pública de imagem)
   LOGO_URL: 'https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png',
+
+  // Versão do build — suba este número a cada publicação para conferir cache
+  BUILD: '2026.07.25-termos',
 
   // ── FIREBASE PUSH NOTIFICATIONS ──────────────────────────────────────────
   // VAPID Key: Firebase Console → Configurações → Cloud Messaging → Certificados push da Web
@@ -910,10 +901,11 @@ window.addEventListener('load', function() {
   document.querySelectorAll('#app-logo-img').forEach(function(img){ img.src = APP_CONFIG.LOGO_URL; img.alt = APP_CONFIG.TITULO_APP; });
   document.querySelectorAll('.hdr-titulo-nome').forEach(function(el){ el.textContent = APP_CONFIG.NOME_COMPLETO; });
   document.querySelectorAll('.hdr-titulo-sub').forEach(function(el){ el.textContent = APP_CONFIG.NOME_CURTO; });
-  mostrarTela('tela-login'); carregarCredenciais(); mostrarHintPWA(); renderStatusTermos();
+  mostrarTela('tela-login'); carregarCredenciais(); mostrarHintPWA(); mostrarStatusTermos();
   registrarServiceWorker();
   carregarNotificacoes();
   mostrarStatusTermos();
+  var bd = document.getElementById('app-build'); if (bd) bd.textContent = 'v' + APP_CONFIG.BUILD;
   // Feedback tátil imediato no iOS para btn-iniciar
   document.addEventListener('touchstart', function(e) {
     var btn = e.target.closest('#btn-iniciar');
@@ -1012,17 +1004,21 @@ function verificarTermosELogar() {
   api('verificarAceiteTermos', { email: String(App.usuario.email) })
     .then(function(res) {
       overlayHide();
-      if (res && res.aceito) {
-        if (res.dataAceite) {
-          try { localStorage.setItem(LS_TERMOS, JSON.stringify({ data: res.dataAceite, versao: res.versao })); } catch(e) {}
-          renderStatusTermos();
-        }
-        entrarDashboard();
-      } else {
+      if (res && res.aceito === false && res.termos) {
         try { localStorage.removeItem(LS_TERMOS); } catch(e) {}
-        renderStatusTermos();
-        abrirTermos(true);
+        exigirAceiteTermos(res.termos);
+        return;
       }
+      if (res && res.aceito === true && res.dataAceite) {
+        try {
+          localStorage.setItem(LS_TERMOS, JSON.stringify({
+            data: String(res.dataAceite).split(' ')[0],
+            versao: res.versao
+          }));
+        } catch(e) {}
+        mostrarStatusTermos();
+      }
+      entrarDashboard();
     })
     .catch(function() { overlayHide(); entrarDashboard(); });
 }
@@ -1561,112 +1557,6 @@ function reativarUsuario(email) {
       carregarListaAdmin();
     })
     .catch(function() { alert('Falha. Tente novamente.'); });
-}
-
-// ══ TERMOS DE USO ════════════════════════════════════════════
-var LS_TERMOS = 'ev_termos_aceite';
-var _termosCache = null;
-
-function carregarTermos() {
-  if (_termosCache) return Promise.resolve(_termosCache);
-  return api('getTermos', {}).then(function(res) {
-    if (res && !res.erro) _termosCache = res;
-    return res;
-  });
-}
-
-// modoAceite=false: apenas leitura | true: exige o "De acordo"
-function abrirTermos(modoAceite) {
-  var modal  = document.getElementById('modal-termos');
-  var corpo  = document.getElementById('termos-corpo');
-  var acoes  = document.getElementById('termos-acoes');
-  var titulo = document.getElementById('termos-titulo');
-  var versao = document.getElementById('termos-versao');
-
-  corpo.innerHTML = '<div class="hist-vazio">Carregando...</div>';
-  versao.textContent = '';
-  acoes.innerHTML = modoAceite
-    ? ''
-    : '<button class="btn-link" onclick="fecharTermos()">Fechar</button>';
-  modal.classList.remove('oculto');
-
-  carregarTermos().then(function(res) {
-    if (!res || res.erro || !res.paragrafos || !res.paragrafos.length) {
-      corpo.innerHTML = '<div class="hist-vazio">Termos indisponiveis no momento.</div>';
-      if (modoAceite) acoes.innerHTML = '<button class="btn-link" onclick="recusarTermos()">Fechar</button>';
-      return;
-    }
-    titulo.textContent = res.titulo || 'Termos de Uso';
-    corpo.innerHTML = res.paragrafos.map(function(p) {
-      return '<p class="termos-p">' + p + '</p>';
-    }).join('');
-    versao.textContent = 'Versao ' + res.versao;
-
-    if (modoAceite) {
-      acoes.innerHTML =
-        '<button type="button" class="btn-primary" id="btn-aceitar-termos" onclick="aceitarTermos()" style="font-size:20px;margin-top:10px">' +
-          '<span class="btn-txt">De acordo</span>' +
-          '<span class="btn-load oculto">Aguarde...</span>' +
-        '</button>' +
-        '<button class="btn-link" onclick="recusarTermos()">Nao aceito</button>';
-    }
-  });
-}
-
-function fecharTermos() {
-  document.getElementById('modal-termos').classList.add('oculto');
-}
-
-function recusarTermos() {
-  fecharTermos();
-  App.usuario = null;
-  mostrarTela('tela-login');
-}
-
-function aceitarTermos() {
-  if (!App.usuario) { recusarTermos(); return; }
-  var btn = document.getElementById('btn-aceitar-termos');
-  if (btn) {
-    btn.disabled = true;
-    btn.querySelector('.btn-txt').classList.add('oculto');
-    btn.querySelector('.btn-load').classList.remove('oculto');
-  }
-  api('registrarAceiteTermos', {
-    email:       String(App.usuario.email),
-    nome:        String(App.usuario.nome),
-    apartamento: String(App.usuario.apartamento)
-  })
-  .then(function(res) {
-    if (btn) {
-      btn.disabled = false;
-      btn.querySelector('.btn-txt').classList.remove('oculto');
-      btn.querySelector('.btn-load').classList.add('oculto');
-    }
-    if (!res || res.erro) { alert('Erro ao registrar: ' + (res ? res.erro : 'tente novamente')); return; }
-    try { localStorage.setItem(LS_TERMOS, JSON.stringify({ data: res.dataAceite, versao: res.versao })); } catch(e) {}
-    renderStatusTermos();
-    fecharTermos();
-    entrarDashboard();
-  })
-  .catch(function() {
-    if (btn) {
-      btn.disabled = false;
-      btn.querySelector('.btn-txt').classList.remove('oculto');
-      btn.querySelector('.btn-load').classList.add('oculto');
-    }
-    alert('Falha de conexao. Tente novamente.');
-  });
-}
-
-function renderStatusTermos() {
-  var el = document.getElementById('termos-status');
-  if (!el) return;
-  var aceite = null;
-  try { aceite = JSON.parse(localStorage.getItem(LS_TERMOS) || 'null'); } catch(e) {}
-  el.innerHTML = (aceite && aceite.data)
-    ? '<span class="ok">&#10003;</span><span>Termos aceitos em ' + aceite.data + '</span>' +
-      '<button class="termos-link" onclick="abrirTermos(false)">ver termos</button>'
-    : '<button class="termos-link" onclick="abrirTermos(false)">Termos de uso</button>';
 }
 
 // ══ TERMOS DE USO ════════════════════════════════════════════
