@@ -1674,21 +1674,34 @@ var LS_TERMOS = 'ev_termos_aceite';
 var _termosPendente = null;
 
 function renderTermos(t) {
-  document.getElementById('termos-titulo').textContent = t.titulo || 'Termos de Uso';
-  document.getElementById('termos-versao').textContent = 'Versão ' + (t.versao || '1');
   var el = document.getElementById('termos-texto');
-  var blocos = t.blocos;
-  if (!blocos && t.paragrafos) blocos = t.paragrafos.map(function(p){ return {tipo:'p', texto:p}; });
-  if (!blocos || !blocos.length) {
-    el.innerHTML = '<div class="hist-vazio">Termos não disponíveis.</div>';
-    return;
+  try {
+    t = t || {};
+    document.getElementById('termos-titulo').textContent = t.titulo || 'Termos de Uso';
+    document.getElementById('termos-versao').textContent = 'Versão ' + (t.versao || '1');
+
+    var blocos = t.blocos;
+    // compatibilidade com versões antigas do backend
+    if ((!blocos || !blocos.length) && t.paragrafos && t.paragrafos.length) {
+      blocos = t.paragrafos.map(function(p){ return { tipo:'p', texto:p }; });
+    }
+    if (!blocos || !blocos.length) {
+      el.innerHTML = '<div class="hist-vazio">Não foi possível carregar o texto dos termos.<br>'
+        + '<span style="font-size:11px;color:var(--txt-dim)">Verifique a aba "Termos" na planilha.</span></div>';
+      return false;
+    }
+    el.innerHTML = blocos.map(function(b) {
+      if (b.tipo === 'sub')  return '<div class="termos-sub">'  + b.texto + '</div>';
+      if (b.tipo === 'item') return '<div class="termos-item">' + b.texto + '</div>';
+      return '<div class="termos-p">' + b.texto + '</div>';
+    }).join('');
+    el.scrollTop = 0;
+    return true;
+  } catch(err) {
+    el.innerHTML = '<div class="hist-vazio">Erro ao exibir os termos.<br>'
+      + '<span style="font-size:11px;color:var(--txt-dim)">' + (err && err.message ? err.message : 'desconhecido') + '</span></div>';
+    return false;
   }
-  el.innerHTML = blocos.map(function(b) {
-    if (b.tipo === 'sub')  return '<div class="termos-sub">'  + b.texto + '</div>';
-    if (b.tipo === 'item') return '<div class="termos-item">' + b.texto + '</div>';
-    return '<div class="termos-p">' + b.texto + '</div>';
-  }).join('');
-  el.scrollTop = 0;
 }
 
 function toggleTermosCheck() {
@@ -1701,7 +1714,15 @@ function toggleTermosCheck() {
 // Fluxo obrigatório (primeiro login ou nova versão)
 function exigirAceiteTermos(termos) {
   _termosPendente = termos;
-  renderTermos(termos);
+  var ok = renderTermos(termos);
+  // fallback: payload sem texto → busca direta
+  if (!ok) {
+    document.getElementById('termos-texto').innerHTML = '<div class="hist-vazio">Carregando...</div>';
+    api('getTermos', {}).then(function(t) {
+      if (t && !t.erro) { _termosPendente = t; renderTermos(t); }
+      else renderTermos(termos);
+    }).catch(function(){ renderTermos(termos); });
+  }
   document.getElementById('termos-acoes').classList.remove('oculto');
   document.getElementById('termos-acoes-leitura').classList.add('oculto');
   document.getElementById('termos-check').classList.remove('on');
@@ -2347,4 +2368,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
