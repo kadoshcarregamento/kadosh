@@ -177,6 +177,16 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .admin-user-apto{font-size:13px;font-weight:700;color:var(--k-green);min-width:36px;text-align:center;flex-shrink:0}
 .btn-remover{background:rgba(255,77,77,.1);border:1px solid rgba(255,77,77,.25);color:#ff8080;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;-webkit-appearance:none;white-space:nowrap;flex-shrink:0}
 .btn-remover:active{opacity:.7}
+.termos-scroll{max-height:46vh;overflow-y:auto;padding:2px 4px 2px 0;margin:4px 0}
+.termos-scroll::-webkit-scrollbar{width:5px}
+.termos-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.termos-p{font-size:14px;color:var(--txt-sub);line-height:1.65;margin-bottom:12px}
+.termos-p:last-child{margin-bottom:0}
+.termos-versao{font-size:11px;color:var(--txt-dim);text-align:center;letter-spacing:.06em}
+.termos-status{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--txt-dim);margin-top:8px;flex-wrap:wrap}
+.termos-status .ok{color:var(--k-green)}
+.termos-link{color:var(--txt-sub);text-decoration:underline;cursor:pointer;background:none;border:none;font-family:var(--f-body);font-size:12px;padding:0;-webkit-appearance:none}
+.termos-link:active{opacity:.6}
 .admin-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
 .admin-modal-overlay.oculto{display:none!important}
 .admin-modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;overflow-x:hidden;box-sizing:border-box}
@@ -214,6 +224,28 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-enviar-relatorio{width:100%;padding:12px 16px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);font-family:var(--f-body);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;-webkit-appearance:none;margin-bottom:12px}
 .btn-enviar-relatorio:active{opacity:.7}
 .btn-enviar-relatorio .ico{width:36px;height:36px;background:var(--k-green-dim);border:1px solid rgba(59,205,192,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.termos-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:22px 20px;width:100%;max-width:440px;display:flex;flex-direction:column;max-height:88vh}
+.termos-titulo{font-family:var(--f-display);font-size:22px;letter-spacing:.03em;color:var(--k-green);text-align:center;margin-bottom:4px}
+.termos-versao{font-size:11px;color:var(--txt-dim);text-align:center;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+.termos-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:6px;margin-bottom:16px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding-top:14px;padding-bottom:14px}
+.termos-scroll::-webkit-scrollbar{width:4px}
+.termos-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.termos-p{font-size:14px;color:var(--txt-sub);line-height:1.7;margin-bottom:12px}
+.termos-p:last-child{margin-bottom:0}
+.termos-p b,.termos-sub b,.termos-item b{color:var(--txt);font-weight:700}
+.termos-sub{font-family:var(--f-display);font-size:15px;letter-spacing:.02em;color:var(--k-green);margin:20px 0 8px;line-height:1.35}
+.termos-sub:first-child{margin-top:0}
+.termos-item{font-size:14px;color:var(--txt-sub);line-height:1.65;margin:0 0 8px 0;padding-left:12px;border-left:2px solid rgba(59,205,192,.25)}
+.termos-check{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;margin-bottom:10px}
+.termos-check.on{border-color:var(--k-green);background:rgba(59,205,192,.07)}
+.termos-check .box{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#0d0d0d;margin-top:1px}
+.termos-check.on .box{background:var(--k-green);border-color:var(--k-green)}
+.termos-check span{font-size:13px;color:var(--txt);line-height:1.45}
+.termos-acoes{display:flex;flex-direction:column;gap:8px}
+.btn-recusar{width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt-sub);font-family:var(--f-body);font-size:14px;cursor:pointer;-webkit-appearance:none}
+.termos-status{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--txt-dim);margin-top:8px;flex-wrap:wrap}
+.termos-status .ok{color:var(--k-green)}
+.termos-status a{color:var(--txt-sub);text-decoration:underline;cursor:pointer}
 .sino-btn{position:relative;background:none;border:none;font-size:24px;cursor:pointer;padding:8px;-webkit-appearance:none;color:var(--txt-sub)}
 .sino-badge{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .notif-item{padding:12px 0;border-bottom:1px solid var(--border)}
@@ -323,7 +355,11 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <span class="btn-txt">Entrar</span>
         <span class="btn-load oculto">Aguarde...</span>
       </button>
-      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+      <div class="termos-status oculto" id="termos-status">
+      <span class="ok">✓</span><span id="termos-status-txt"></span>
+      <a onclick="abrirTermosLeitura()">ver termos</a>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
       <button class="btn-link" onclick="abrirModalEsqueceuSenha()">Esqueci minha senha</button>
       <button class="sino-btn" id="btn-sino" onclick="abrirModalNotificacoes()" title="Notificações">
         🔔<span class="sino-badge oculto" id="sino-badge">0</span>
@@ -332,6 +368,9 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     </div>
     <button class="btn-status-vagas" onclick="mostrarTela('tela-status')">🔌&nbsp; Status das Vagas</button>
     <p class="hint-pwa" id="hint-pwa"></p>
+    <div class="termos-status" id="termos-status">
+      <button class="termos-link" onclick="abrirTermos(false)">Termos de uso</button>
+    </div>
     <div style="text-align:center;margin-top:6px">
       <div style="font-size:11px;color:var(--txt-dim)">Desenvolvido por <span style="color:var(--txt-sub)">Bernardo Faria</span></div>
       <a href="https://wa.me/?text=Veja%20este%20sistema%20de%20controle%20de%20carregamento%20de%20carros%20el%C3%A9tricos%20que%20tem%20aqui%20no%20pr%C3%A9dio%21%21%20https%3A//tinyurl.com/VagasEletricas"
@@ -745,12 +784,49 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   </div>
 </div>
 
+<!-- MODAL TERMOS DE USO -->
+<div id="modal-termos" class="admin-modal-overlay oculto">
+  <div class="termos-box">
+    <div class="termos-titulo" id="termos-titulo">Termos de Uso</div>
+    <div class="termos-versao" id="termos-versao"></div>
+    <div class="termos-scroll" id="termos-texto">
+      <div class="hist-vazio">Carregando...</div>
+    </div>
+    <div class="termos-acoes" id="termos-acoes">
+      <div class="termos-check" id="termos-check" onclick="toggleTermosCheck()">
+        <div class="box" id="termos-check-box"></div>
+        <span>Li e concordo com os termos de uso e as penalidades aplicáveis.</span>
+      </div>
+      <button type="button" class="btn-primary" id="btn-aceitar-termos" onclick="aceitarTermos()" style="font-size:19px" disabled>
+        <span class="btn-txt">Concordo e continuar</span>
+        <span class="btn-load oculto">Aguarde...</span>
+      </button>
+      <button type="button" class="btn-recusar" onclick="recusarTermos()">Não aceito</button>
+    </div>
+    <div class="termos-acoes oculto" id="termos-acoes-leitura">
+      <button type="button" class="btn-recusar" onclick="fecharTermosLeitura()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL NOTIFICAÇÕES -->
 <div id="modal-notificacoes" class="admin-modal-overlay oculto">
   <div class="admin-modal-box">
     <div class="admin-modal-titulo" style="font-size:20px">🔔 Notificações</div>
     <div id="notif-lista"><div class="hist-vazio">Carregando...</div></div>
     <button class="btn-link" onclick="document.getElementById('modal-notificacoes').classList.add('oculto')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL TERMOS DE USO -->
+<div id="modal-termos" class="admin-modal-overlay oculto">
+  <div class="admin-modal-box">
+    <div class="admin-modal-titulo" style="font-size:20px" id="termos-titulo">Termos de Uso</div>
+    <div class="termos-scroll" id="termos-corpo">
+      <div class="hist-vazio">Carregando...</div>
+    </div>
+    <div class="termos-versao" id="termos-versao"></div>
+    <div id="termos-acoes"></div>
   </div>
 </div>
 
@@ -834,9 +910,10 @@ window.addEventListener('load', function() {
   document.querySelectorAll('#app-logo-img').forEach(function(img){ img.src = APP_CONFIG.LOGO_URL; img.alt = APP_CONFIG.TITULO_APP; });
   document.querySelectorAll('.hdr-titulo-nome').forEach(function(el){ el.textContent = APP_CONFIG.NOME_COMPLETO; });
   document.querySelectorAll('.hdr-titulo-sub').forEach(function(el){ el.textContent = APP_CONFIG.NOME_CURTO; });
-  mostrarTela('tela-login'); carregarCredenciais(); mostrarHintPWA();
+  mostrarTela('tela-login'); carregarCredenciais(); mostrarHintPWA(); renderStatusTermos();
   registrarServiceWorker();
   carregarNotificacoes();
+  mostrarStatusTermos();
   // Feedback tátil imediato no iOS para btn-iniciar
   document.addEventListener('touchstart', function(e) {
     var btn = e.target.closest('#btn-iniciar');
@@ -924,9 +1001,30 @@ function efetuarLogin() {
       setTimeout(solicitarPermissaoPush, 1000); // solicitar push após login
       if(lembrar){salvarCredenciais(email,senha);try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'{}');r.nome=res.nome;localStorage.setItem(LS_KEY,JSON.stringify(r));}catch(e){}}
       else{try{localStorage.removeItem(LS_KEY);}catch(e){}}
-      entrarDashboard();
+      verificarTermosELogar();
     })
     .catch(function(err){btn.disabled=false;btn.querySelector('.btn-txt').classList.remove('oculto');btn.querySelector('.btn-load').classList.add('oculto');erroEl.textContent='Erro: '+(err?err.message:'tente novamente');erroEl.classList.remove('oculto');});
+}
+
+function verificarTermosELogar() {
+  if (!App.usuario) return;
+  overlayShow('Verificando...');
+  api('verificarAceiteTermos', { email: String(App.usuario.email) })
+    .then(function(res) {
+      overlayHide();
+      if (res && res.aceito) {
+        if (res.dataAceite) {
+          try { localStorage.setItem(LS_TERMOS, JSON.stringify({ data: res.dataAceite, versao: res.versao })); } catch(e) {}
+          renderStatusTermos();
+        }
+        entrarDashboard();
+      } else {
+        try { localStorage.removeItem(LS_TERMOS); } catch(e) {}
+        renderStatusTermos();
+        abrirTermos(true);
+      }
+    })
+    .catch(function() { overlayHide(); entrarDashboard(); });
 }
 
 function fazerLogout(){pararScanner();App.usuario=App.submissionId=App.vagaId=App.kwhInicial=App.inicio=null;App.carregando=false;document.getElementById('login-senha').value='';document.getElementById('login-erro').classList.add('oculto');carregarCredenciais();mostrarTela('tela-login');}
@@ -1463,6 +1561,229 @@ function reativarUsuario(email) {
       carregarListaAdmin();
     })
     .catch(function() { alert('Falha. Tente novamente.'); });
+}
+
+// ══ TERMOS DE USO ════════════════════════════════════════════
+var LS_TERMOS = 'ev_termos_aceite';
+var _termosCache = null;
+
+function carregarTermos() {
+  if (_termosCache) return Promise.resolve(_termosCache);
+  return api('getTermos', {}).then(function(res) {
+    if (res && !res.erro) _termosCache = res;
+    return res;
+  });
+}
+
+// modoAceite=false: apenas leitura | true: exige o "De acordo"
+function abrirTermos(modoAceite) {
+  var modal  = document.getElementById('modal-termos');
+  var corpo  = document.getElementById('termos-corpo');
+  var acoes  = document.getElementById('termos-acoes');
+  var titulo = document.getElementById('termos-titulo');
+  var versao = document.getElementById('termos-versao');
+
+  corpo.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  versao.textContent = '';
+  acoes.innerHTML = modoAceite
+    ? ''
+    : '<button class="btn-link" onclick="fecharTermos()">Fechar</button>';
+  modal.classList.remove('oculto');
+
+  carregarTermos().then(function(res) {
+    if (!res || res.erro || !res.paragrafos || !res.paragrafos.length) {
+      corpo.innerHTML = '<div class="hist-vazio">Termos indisponiveis no momento.</div>';
+      if (modoAceite) acoes.innerHTML = '<button class="btn-link" onclick="recusarTermos()">Fechar</button>';
+      return;
+    }
+    titulo.textContent = res.titulo || 'Termos de Uso';
+    corpo.innerHTML = res.paragrafos.map(function(p) {
+      return '<p class="termos-p">' + p + '</p>';
+    }).join('');
+    versao.textContent = 'Versao ' + res.versao;
+
+    if (modoAceite) {
+      acoes.innerHTML =
+        '<button type="button" class="btn-primary" id="btn-aceitar-termos" onclick="aceitarTermos()" style="font-size:20px;margin-top:10px">' +
+          '<span class="btn-txt">De acordo</span>' +
+          '<span class="btn-load oculto">Aguarde...</span>' +
+        '</button>' +
+        '<button class="btn-link" onclick="recusarTermos()">Nao aceito</button>';
+    }
+  });
+}
+
+function fecharTermos() {
+  document.getElementById('modal-termos').classList.add('oculto');
+}
+
+function recusarTermos() {
+  fecharTermos();
+  App.usuario = null;
+  mostrarTela('tela-login');
+}
+
+function aceitarTermos() {
+  if (!App.usuario) { recusarTermos(); return; }
+  var btn = document.getElementById('btn-aceitar-termos');
+  if (btn) {
+    btn.disabled = true;
+    btn.querySelector('.btn-txt').classList.add('oculto');
+    btn.querySelector('.btn-load').classList.remove('oculto');
+  }
+  api('registrarAceiteTermos', {
+    email:       String(App.usuario.email),
+    nome:        String(App.usuario.nome),
+    apartamento: String(App.usuario.apartamento)
+  })
+  .then(function(res) {
+    if (btn) {
+      btn.disabled = false;
+      btn.querySelector('.btn-txt').classList.remove('oculto');
+      btn.querySelector('.btn-load').classList.add('oculto');
+    }
+    if (!res || res.erro) { alert('Erro ao registrar: ' + (res ? res.erro : 'tente novamente')); return; }
+    try { localStorage.setItem(LS_TERMOS, JSON.stringify({ data: res.dataAceite, versao: res.versao })); } catch(e) {}
+    renderStatusTermos();
+    fecharTermos();
+    entrarDashboard();
+  })
+  .catch(function() {
+    if (btn) {
+      btn.disabled = false;
+      btn.querySelector('.btn-txt').classList.remove('oculto');
+      btn.querySelector('.btn-load').classList.add('oculto');
+    }
+    alert('Falha de conexao. Tente novamente.');
+  });
+}
+
+function renderStatusTermos() {
+  var el = document.getElementById('termos-status');
+  if (!el) return;
+  var aceite = null;
+  try { aceite = JSON.parse(localStorage.getItem(LS_TERMOS) || 'null'); } catch(e) {}
+  el.innerHTML = (aceite && aceite.data)
+    ? '<span class="ok">&#10003;</span><span>Termos aceitos em ' + aceite.data + '</span>' +
+      '<button class="termos-link" onclick="abrirTermos(false)">ver termos</button>'
+    : '<button class="termos-link" onclick="abrirTermos(false)">Termos de uso</button>';
+}
+
+// ══ TERMOS DE USO ════════════════════════════════════════════
+var LS_TERMOS = 'ev_termos_aceite';
+var _termosPendente = null;
+
+function renderTermos(t) {
+  document.getElementById('termos-titulo').textContent = t.titulo || 'Termos de Uso';
+  document.getElementById('termos-versao').textContent = 'Versão ' + (t.versao || '1');
+  var el = document.getElementById('termos-texto');
+  var blocos = t.blocos;
+  if (!blocos && t.paragrafos) blocos = t.paragrafos.map(function(p){ return {tipo:'p', texto:p}; });
+  if (!blocos || !blocos.length) {
+    el.innerHTML = '<div class="hist-vazio">Termos não disponíveis.</div>';
+    return;
+  }
+  el.innerHTML = blocos.map(function(b) {
+    if (b.tipo === 'sub')  return '<div class="termos-sub">'  + b.texto + '</div>';
+    if (b.tipo === 'item') return '<div class="termos-item">' + b.texto + '</div>';
+    return '<div class="termos-p">' + b.texto + '</div>';
+  }).join('');
+  el.scrollTop = 0;
+}
+
+function toggleTermosCheck() {
+  var box = document.getElementById('termos-check');
+  var on  = box.classList.toggle('on');
+  document.getElementById('termos-check-box').textContent = on ? '✓' : '';
+  document.getElementById('btn-aceitar-termos').disabled  = !on;
+}
+
+// Fluxo obrigatório (primeiro login ou nova versão)
+function exigirAceiteTermos(termos) {
+  _termosPendente = termos;
+  renderTermos(termos);
+  document.getElementById('termos-acoes').classList.remove('oculto');
+  document.getElementById('termos-acoes-leitura').classList.add('oculto');
+  document.getElementById('termos-check').classList.remove('on');
+  document.getElementById('termos-check-box').textContent = '';
+  var btn = document.getElementById('btn-aceitar-termos');
+  btn.disabled = true;
+  btn.querySelector('.btn-txt').classList.remove('oculto');
+  btn.querySelector('.btn-load').classList.add('oculto');
+  document.getElementById('modal-termos').classList.remove('oculto');
+}
+
+function aceitarTermos() {
+  if (!App.usuario) return;
+  var btn = document.getElementById('btn-aceitar-termos');
+  btn.disabled = true;
+  btn.querySelector('.btn-txt').classList.add('oculto');
+  btn.querySelector('.btn-load').classList.remove('oculto');
+
+  api('registrarAceiteTermos', {
+    email:       String(App.usuario.email),
+    nome:        String(App.usuario.nome),
+    apartamento: String(App.usuario.apartamento)
+  })
+  .then(function(res) {
+    btn.disabled = !document.getElementById('termos-check').classList.contains('on');
+    btn.querySelector('.btn-txt').classList.remove('oculto');
+    btn.querySelector('.btn-load').classList.add('oculto');
+    if (!res || res.erro) { alert('Erro ao registrar: ' + (res ? res.erro : 'tente novamente')); return; }
+    try {
+      localStorage.setItem(LS_TERMOS, JSON.stringify({
+        data: (res.dataAceite || '').split(' ')[0],
+        versao: res.versao
+      }));
+    } catch(e) {}
+    document.getElementById('modal-termos').classList.add('oculto');
+    entrarDashboard();
+  })
+  .catch(function() {
+    btn.disabled = !document.getElementById('termos-check').classList.contains('on');
+    btn.querySelector('.btn-txt').classList.remove('oculto');
+    btn.querySelector('.btn-load').classList.add('oculto');
+    alert('Falha de conexão. Tente novamente.');
+  });
+}
+
+function recusarTermos() {
+  document.getElementById('modal-termos').classList.add('oculto');
+  App.usuario = null;
+  mostrarTela('tela-login');
+  setTimeout(function() {
+    alert('É necessário aceitar os termos de uso para utilizar o sistema.');
+  }, 300);
+}
+
+// Leitura livre (link na tela de login)
+function abrirTermosLeitura() {
+  document.getElementById('termos-acoes').classList.add('oculto');
+  document.getElementById('termos-acoes-leitura').classList.remove('oculto');
+  document.getElementById('termos-texto').innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  document.getElementById('modal-termos').classList.remove('oculto');
+  api('getTermos', {}).then(function(t) {
+    if (t && !t.erro) renderTermos(t);
+    else document.getElementById('termos-texto').innerHTML = '<div class="hist-vazio">Não foi possível carregar.</div>';
+  }).catch(function() {
+    document.getElementById('termos-texto').innerHTML = '<div class="hist-vazio">Não foi possível carregar.</div>';
+  });
+}
+
+function fecharTermosLeitura() {
+  document.getElementById('modal-termos').classList.add('oculto');
+}
+
+// Linha de status na tela de login
+function mostrarStatusTermos() {
+  try {
+    var raw = localStorage.getItem(LS_TERMOS);
+    if (!raw) return;
+    var t = JSON.parse(raw);
+    if (!t || !t.data) return;
+    document.getElementById('termos-status-txt').textContent = 'Termos aceitos em ' + t.data + ' ·';
+    document.getElementById('termos-status').classList.remove('oculto');
+  } catch(e) {}
 }
 
 // ══ ESQUECI SENHA ════════════════════════════════════════════
