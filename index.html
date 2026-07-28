@@ -108,6 +108,13 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .resultado-card{text-align:center;gap:0!important;padding:28px 20px}
 .leitura-vaga-display{font-family:var(--f-display);font-size:24px;letter-spacing:.03em;color:var(--k-green);background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px}
 .helper-text-leitura{font-size:13px;color:var(--txt-sub);margin-top:6px;line-height:1.5}
+.li-alerta{
+  background:rgba(255,184,77,.09);border:1.5px solid rgba(255,184,77,.45);
+  border-radius:var(--r-sm);padding:16px 14px;text-align:center;
+}
+.li-alerta .ico{font-size:32px;line-height:1;margin-bottom:8px}
+.li-alerta .tit{font-size:16px;font-weight:700;color:#ffb84d;line-height:1.35;margin-bottom:6px}
+.li-alerta .txt{font-size:14px;color:var(--txt-sub);line-height:1.55}
 .li-buscando{font-size:18px;color:var(--k-green);text-align:center;padding:20px 0;line-height:1.6;font-weight:600}
 .li-confirmacao{display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0}
 .li-valor-sugerido{font-family:var(--f-display);font-size:42px;color:var(--k-green);letter-spacing:.02em;text-align:center}
@@ -513,6 +520,16 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       <div id="li-estado-buscando" class="li-buscando">
         Buscando última leitura do relógio...<br>
         Confira se o valor está correto.
+      </div>
+
+      <!-- Estado: sessão abandonada pelo morador anterior -->
+      <div id="li-estado-aviso" style="display:none">
+        <div class="li-alerta">
+          <div class="ico">⚠️</div>
+          <div class="tit">O morador anterior não encerrou a sessão nesta vaga</div>
+          <div class="txt">Não há leitura confiável para sugerir. <b style="color:var(--txt)">Confira o medidor</b> e digite o valor que está aparecendo agora.</div>
+        </div>
+        <button class="btn-primary" onclick="prosseguirAposAviso()" style="font-size:20px;margin-top:14px">Entendi, vou conferir</button>
       </div>
 
       <!-- Estado: confirmação -->
@@ -1168,6 +1185,7 @@ function processarQRCode(texto) {
   App._leituraSugerida = null;
   document.getElementById('li-vaga').textContent = vagaId.replace('VAGA_','Vaga ');
   document.getElementById('li-estado-buscando').style.display = 'block';
+  document.getElementById('li-estado-aviso').style.display = 'none';
   document.getElementById('li-estado-confirmacao').style.display = 'none';
   document.getElementById('li-estado-manual').style.display = 'none';
   document.getElementById('li-erro-geral').classList.add('oculto');
@@ -1179,12 +1197,19 @@ function processarQRCode(texto) {
   api('getUltimaLeitura', { vagaCodigo: vagaCodigo })
     .then(function(res) {
       document.getElementById('li-estado-buscando').style.display = 'none';
+      App._referencia = (res && res.leitura) ? res.leitura : null;
+
+      // Sessão abandonada: nunca sugerir valor — obriga conferência no medidor
+      if (res && res.sessaoAberta) {
+        App._leituraSugerida = null;
+        document.getElementById('li-estado-aviso').style.display = 'block';
+        return;
+      }
       if (res && res.leitura) {
         App._leituraSugerida = res.leitura;
         document.getElementById('li-sugestao').textContent = res.leitura + ' kWh';
         document.getElementById('li-estado-confirmacao').style.display = 'flex';
       } else {
-        // Sem leitura anterior — vai direto para digitação
         document.getElementById('li-estado-manual').style.display = 'block';
       }
     })
@@ -1213,6 +1238,14 @@ function leituraParaNumero(valor) {
 }
 
 // ══ LEITURA INICIAL ══════════════════════════════════════════
+function prosseguirAposAviso() {
+  document.getElementById('li-estado-aviso').style.display = 'none';
+  document.getElementById('li-estado-manual').style.display = 'block';
+  var campo = document.getElementById('li-leitura');
+  campo.value = '';
+  campo.focus();
+}
+
 function confirmarLeituraInicial(sim) {
   if (sim) {
     // Mostrar feedback visual enquanto envia
@@ -1254,8 +1287,32 @@ function _enviarLeituraInicialComValor(leitura) {
     placa:       App._placaSelecionada || ''
   })
   .then(function(res) {
+    overlayHide();
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-    if (!res || res.erro) { erroEl.textContent = res ? res.erro : 'Erro ao enviar leitura.'; erroEl.classList.remove('oculto'); return; }
+
+    if (!res || res.erro) {
+      var bs = document.querySelector('.btn-sim');
+      if (bs) { bs.disabled = false; bs.textContent = '✓ SIM'; }
+
+      // valor implausível: exige nova digitação, com o campo limpo
+      if (res && res.tipoErro) {
+        document.getElementById('li-estado-aviso').style.display        = 'none';
+        document.getElementById('li-estado-confirmacao').style.display  = 'none';
+        document.getElementById('li-estado-manual').style.display       = 'block';
+        var campo = document.getElementById('li-leitura');
+        campo.value = '';
+        var eCampo = document.getElementById('li-erro');
+        eCampo.textContent = res.erro;
+        eCampo.classList.remove('oculto');
+        if (erroEl) erroEl.classList.add('oculto');
+        campo.focus();
+        return;
+      }
+
+      erroEl.textContent = res ? res.erro : 'Erro ao enviar leitura.';
+      erroEl.classList.remove('oculto');
+      return;
+    }
     // Adicionar sessão ao array local
     if (!App._sessoes) App._sessoes = [];
     var carroSel = (App._carrosAtivos || []).filter(function(c){ return c.placa === App._placaSelecionada; })[0];
@@ -1272,6 +1329,10 @@ function _enviarLeituraInicialComValor(leitura) {
     document.getElementById('status-txt').textContent='⚡ Carregando';
     document.getElementById('vagas-badges').classList.add('oculto');
     overlayHide();
+    if (res.encerrouAbandonada) {
+      alert('A sessão em aberto do apartamento ' + res.encerrouAbandonada.apartamento +
+            ' foi encerrada automaticamente com a leitura que você informou.');
+    }
     atualizarBotaoIniciar();
     document.getElementById('resultado-card').classList.add('oculto');
     mostrarTela('tela-dash');
@@ -1312,7 +1373,15 @@ function enviarLeituraFinal() {
   })
   .then(function(res) {
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
-    if (!res || res.erro) { erroEl.textContent = res ? res.erro : 'Erro ao encerrar.'; erroEl.classList.remove('oculto'); return; }
+    if (!res || res.erro) {
+      erroEl.textContent = res ? res.erro : 'Erro ao encerrar.';
+      erroEl.classList.remove('oculto');
+      if (res && res.tipoErro) {
+        var cf = document.getElementById('lf-leitura');
+        cf.value = ''; cf.focus();
+      }
+      return;
+    }
     // Remover sessão encerrada do array local
     if (App._sessoes) {
       App._sessoes = App._sessoes.filter(function(s){ return s.submissionId !== App.submissionId; });
