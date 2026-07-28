@@ -29,7 +29,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .tela{display:none;min-height:100%;flex-direction:column;position:relative;z-index:1}
 .tela.ativa{display:flex}
 #tela-login,#tela-senha{background:var(--bg);background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(59,205,192,.15) 0%,transparent 70%);align-items:stretch}
-.login-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(var(--sat) + 20px) 24px calc(var(--sab) + 16px);display:flex;flex-direction:column;align-items:center;gap:16px}
+.login-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(var(--sat) + 16px) 24px calc(var(--sab) + 10px);display:flex;flex-direction:column;align-items:center;gap:9px}
 .logo-block{text-align:center}
 .logo-img{width:100px;height:100px;border-radius:14px;object-fit:contain;display:block;margin:0 auto 16px;box-shadow:0 0 0 1px rgba(59,205,192,.2),0 0 32px rgba(59,205,192,.2),0 8px 32px rgba(0,0,0,.5);animation:logoPulse 4s ease-in-out infinite}
 @keyframes logoPulse{0%,100%{box-shadow:0 0 0 1px rgba(59,205,192,.2),0 0 32px rgba(59,205,192,.2),0 8px 32px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 1px rgba(59,205,192,.4),0 0 48px rgba(59,205,192,.35),0 8px 32px rgba(0,0,0,.5)}}
@@ -48,7 +48,13 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .check-label input[type=checkbox]{width:18px;height:18px;accent-color:var(--k-green);cursor:pointer}
 .banner-lembrado{background:var(--k-green-dim);border:1px solid rgba(59,205,192,.25);border-radius:var(--r-sm);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;font-size:16px;font-weight:600;color:var(--k-green)}
 .banner-trocar{background:none;border:none;color:var(--txt-sub);font-size:16px;cursor:pointer;text-decoration:underline;font-family:var(--f-body);padding:2px}
-.hint-pwa{font-size:16px;color:var(--txt-dim);text-align:center;max-width:280px;line-height:1.7;padding:0 8px}
+.hint-pwa{font-size:13px;color:var(--txt-dim);text-align:center;line-height:1.45}
+.rodape{display:flex;flex-direction:column;align-items:center;gap:7px;width:100%}
+.rodape-linha{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;font-size:13px;color:var(--txt-dim);line-height:1.45;text-align:center}
+.rodape-sep{opacity:.4}
+.btn-whats{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);border-radius:20px;color:#25D366;font-size:12px;font-weight:600;text-decoration:none;letter-spacing:.03em}
+.btn-whats:active{opacity:.7}
+.credito{font-size:11px;color:var(--txt-dim);text-align:center}
 .btn-primary{width:100%;padding:13px 20px;background:var(--k-green);color:#0d0d0d;border:none;border-radius:var(--r-sm);font-family:var(--f-display);font-size:28px;letter-spacing:.04em;cursor:pointer;box-shadow:0 4px 20px var(--k-green-glow);transition:transform .12s,opacity .12s;-webkit-appearance:none;min-height:58px;display:flex;align-items:center;justify-content:center;gap:10px}
 .btn-primary:active{transform:scale(.97);opacity:.9}
 .btn-primary:disabled{opacity:.4}
@@ -190,7 +196,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .termos-p{font-size:14px;color:var(--txt-sub);line-height:1.65;margin-bottom:12px}
 .termos-p:last-child{margin-bottom:0}
 .termos-versao{font-size:11px;color:var(--txt-dim);text-align:center;letter-spacing:.06em}
-.termos-status{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--txt-dim);margin-top:8px;flex-wrap:wrap}
+.termos-status{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--txt-dim);margin-top:2px;flex-wrap:wrap}
 .termos-status .ok{color:var(--k-green)}
 .termos-link{color:var(--txt-sub);text-decoration:underline;cursor:pointer;background:none;border:none;font-family:var(--f-body);font-size:12px;padding:0;-webkit-appearance:none}
 .termos-link:active{opacity:.6}
@@ -250,7 +256,6 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .termos-check span{font-size:13px;color:var(--txt);line-height:1.45}
 .termos-acoes{display:flex;flex-direction:column;gap:8px}
 .btn-recusar{width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt-sub);font-family:var(--f-body);font-size:14px;cursor:pointer;-webkit-appearance:none}
-.termos-status{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--txt-dim);margin-top:8px;flex-wrap:wrap}
 .termos-status .ok{color:var(--k-green)}
 .termos-status a{color:var(--txt-sub);text-decoration:underline;cursor:pointer}
 .sino-btn{position:relative;background:none;border:none;font-size:24px;cursor:pointer;padding:8px;-webkit-appearance:none;color:var(--txt-sub)}
@@ -276,7 +281,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .vaga-status{font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .vaga-card.livre .vaga-status{color:var(--k-green)}
 .vaga-card.ocupado .vaga-status{color:var(--red)}
-.btn-status-vagas{width:100%;padding:14px 20px;background:transparent;color:var(--k-green);border:1px solid rgba(59,205,192,.4);border-radius:var(--r-sm);font-family:var(--f-display);font-size:22px;letter-spacing:.04em;cursor:pointer;-webkit-appearance:none;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-status-vagas{width:100%;padding:14px 20px;background:transparent;color:var(--k-green);border:1px solid rgba(59,205,192,.4);border-radius:var(--r-sm);font-family:var(--f-display);font-size:22px;letter-spacing:.04em;cursor:pointer;-webkit-appearance:none;margin-top:0;display:flex;align-items:center;justify-content:center;gap:10px}
 .btn-status-vagas:active{opacity:.7}
 .overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px}
 .overlay-box{background:rgba(20,20,20,.95);border-radius:20px;border:1px solid var(--border);padding:32px 36px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 0 0 1px rgba(59,205,192,.1),0 32px 64px rgba(0,0,0,.5);min-width:200px}
@@ -374,17 +379,17 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     </div>
     </div>
     <button class="btn-status-vagas" onclick="mostrarTela('tela-status')">🔌&nbsp; Status das Vagas</button>
-    <p class="hint-pwa" id="hint-pwa"></p>
-    <div class="termos-status">
-      <button class="termos-link" onclick="abrirTermosLeitura()">Termos de uso</button>
-    </div>
-    <div style="text-align:center;margin-top:6px">
-      <div style="font-size:11px;color:var(--txt-dim)">Desenvolvido por <span style="color:var(--txt-sub)">Bernardo Faria</span> · <span id="app-build" style="font-size:10px;opacity:.55"></span></div>
-      <a href="https://wa.me/?text=Veja%20este%20sistema%20de%20controle%20de%20carregamento%20de%20carros%20el%C3%A9tricos%20que%20tem%20aqui%20no%20pr%C3%A9dio%21%21%20https%3A//tinyurl.com/VagasEletricas"
-         target="_blank"
-         style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:6px 14px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);border-radius:20px;color:#25D366;font-size:11px;font-weight:600;text-decoration:none;letter-spacing:.04em">
+    <div class="rodape">
+      <div class="rodape-linha">
+        <span class="hint-pwa" id="hint-pwa"></span>
+        <span class="rodape-sep" id="rodape-sep">·</span>
+        <button class="termos-link" onclick="abrirTermosLeitura()">Termos de uso</button>
+      </div>
+      <a class="btn-whats" target="_blank"
+         href="https://wa.me/?text=Veja%20este%20sistema%20de%20controle%20de%20carregamento%20de%20carros%20el%C3%A9tricos%20que%20tem%20aqui%20no%20pr%C3%A9dio%21%21%20https%3A//tinyurl.com/VagasEletricas">
         <span style="font-size:14px">📲</span> Divulgar pelo WhatsApp
       </a>
+      <div class="credito">Desenvolvido por <span style="color:var(--txt-sub)">Bernardo Faria</span> · <span id="app-build" style="font-size:10px;opacity:.55"></span></div>
     </div>
   </div>
 </div>
@@ -952,9 +957,13 @@ function limparCredenciais() {
 }
 function mostrarHintPWA() {
   var h=document.getElementById('hint-pwa'),ua=navigator.userAgent;
-  if(window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches){h.textContent='App instalado!';return;}
-  if(/iPhone|iPad|iPod/.test(ua))h.textContent='Para instalar: Compartilhar → "Adicionar à Tela de Início"';
-  else if(/Android/.test(ua))h.textContent='Para instalar: menu ⋮ → "Adicionar à tela inicial"';
+  var instalado = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  if (instalado) h.textContent='App instalado';
+  else if(/iPhone|iPad|iPod/.test(ua)) h.textContent='Instalar: Compartilhar → Adicionar à Tela de Início';
+  else if(/Android/.test(ua))          h.textContent='Instalar: menu ⋮ → Adicionar à tela inicial';
+  else h.textContent='';
+  var sep = document.getElementById('rodape-sep');
+  if (sep) sep.style.display = h.textContent ? '' : 'none';
 }
 function mostrarTela(id) {
   document.querySelectorAll('.tela').forEach(function(t){t.classList.remove('ativa');t.style.display='';});
