@@ -1472,17 +1472,17 @@ function carregarPrecoAdmin() {
         '</div>' +
         '<div class="custo-campo">' +
           '<div class="custo-lbl"><b>Conta CEMIG</b>valor total em R$</div>' +
-          '<input type="text" class="custo-input" id="c-cemig" inputmode="decimal" placeholder="0,00" value="' + (cst.cemigRS ? fmtBR(cst.cemigRS,2) : '') + '" oninput="calcularCustoKwh()">' +
+          '<input type="text" class="custo-input" id="c-cemig" inputmode="numeric" placeholder="0,00" value="' + (cst.cemigRS ? fmtBR(cst.cemigRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
         '<div class="custo-campo">' +
           '<div class="custo-lbl"><b>Conta Energisa</b>valor total em R$</div>' +
-          '<input type="text" class="custo-input" id="c-energisa" inputmode="decimal" placeholder="0,00" value="' + (cst.energisaRS ? fmtBR(cst.energisaRS,2) : '') + '" oninput="calcularCustoKwh()">' +
+          '<input type="text" class="custo-input" id="c-energisa" inputmode="numeric" placeholder="0,00" value="' + (cst.energisaRS ? fmtBR(cst.energisaRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
         '<div class="custo-campo">' +
           '<div class="custo-lbl"><b>Consumo CEMIG</b>total em kWh</div>' +
-          '<input type="text" class="custo-input" id="c-kwh" inputmode="decimal" placeholder="0" value="' + (cst.cemigKwh ? fmtBR(cst.cemigKwh,0) : '') + '" oninput="calcularCustoKwh()">' +
+          '<input type="text" class="custo-input" id="c-kwh" inputmode="numeric" placeholder="0" value="' + (cst.cemigKwh ? fmtBR(cst.cemigKwh,0) : '') + '" oninput="mascaraInteiro(this)">' +
         '</div>' +
-        '<div class="custo-formula">R$/kWh = (conta CEMIG + conta Energisa) ÷ consumo CEMIG</div>' +
+        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + conta Energisa) ÷ consumo CEMIG</div>' +
         '<div class="custo-res vazio" id="custo-res">' +
           '<span class="k">Resultado</span><span class="v" id="custo-valor">—</span>' +
         '</div>' +
@@ -1494,6 +1494,21 @@ function carregarPrecoAdmin() {
       calcularCustoKwh();
     })
     .catch(function() { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Falha ao carregar.</div>'; });
+}
+
+function mascaraDinheiro(input) {
+  var d = input.value.replace(/\D/g, '').replace(/^0+/, '');
+  if (!d) { input.value = ''; calcularCustoKwh(); return; }
+  while (d.length < 3) d = '0' + d;
+  var inteiro = parseInt(d.slice(0, -2), 10).toLocaleString('pt-BR');
+  input.value = inteiro + ',' + d.slice(-2);
+  calcularCustoKwh();
+}
+
+function mascaraInteiro(input) {
+  var d = input.value.replace(/\D/g, '').replace(/^0+/, '');
+  input.value = d ? parseInt(d, 10).toLocaleString('pt-BR') : '';
+  calcularCustoKwh();
 }
 
 function _numCusto(id) {
@@ -2420,3 +2435,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
