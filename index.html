@@ -205,6 +205,16 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .admin-modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;overflow-x:hidden;box-sizing:border-box}
 .admin-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
 .admin-section-titulo{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub);margin-bottom:12px}
+.custo-campo{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.custo-lbl{flex:1;min-width:0;font-size:13px;color:var(--txt-sub);line-height:1.3}
+.custo-lbl b{display:block;color:var(--txt);font-size:14px;font-weight:600}
+.custo-input{width:126px;flex-shrink:0;font-size:16px;font-family:var(--f-body);padding:10px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);outline:none;text-align:right;-webkit-appearance:none}
+.custo-input:focus{border-color:var(--k-green)}
+.custo-res{background:var(--bg-input);border:1px solid rgba(59,205,192,.35);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 10px}
+.custo-res .k{font-size:11px;color:var(--txt-sub);letter-spacing:.1em;text-transform:uppercase}
+.custo-res .v{font-family:var(--f-display);font-size:26px;color:var(--k-green);letter-spacing:.02em}
+.custo-res.vazio .v{color:var(--txt-dim);font-size:20px}
+.custo-formula{font-size:11px;color:var(--txt-dim);line-height:1.5;margin-top:-4px;margin-bottom:10px}
 .admin-preco-row{display:flex;align-items:center;gap:8px}
 .admin-preco-mes{font-size:15px;font-weight:600;color:var(--k-green);min-width:60px;flex-shrink:0}
 .admin-preco-input{flex:1;min-width:0;font-size:16px;font-family:var(--f-body);padding:11px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);outline:none;-webkit-appearance:none}
@@ -639,7 +649,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   <div class="tela-admin-scroll">
     <!-- R$/kWh -->
     <div class="admin-section">
-      <div class="admin-section-titulo">Inserir R$/kWh do Mês</div>
+      <div class="admin-section-titulo">Custo do kWh do Mês</div>
       <div id="admin-preco-wrap">
         <div class="hist-vazio" style="padding:8px 0">Carregando...</div>
       </div>
@@ -743,7 +753,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:10px">Digite a placa do veículo:</div>
       <div class="placa-input-wrap">
         <div class="placa-input-topo">
-          <span style="font-size:6px">MERCOSUL</span>
+          <span style="font-size:9px">MERCOSUL</span>
           <span style="font-size:10px;letter-spacing:.2em;font-weight:800">BRASIL</span>
           <span>🇧🇷</span>
         </div>
@@ -880,7 +890,7 @@ var APP_CONFIG = {
   LOGO_URL: 'https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png',
 
   // Versão do build — suba este número a cada publicação para conferir cache
-  BUILD: '2026.07.25',
+  BUILD: '2026.07.25-termos',
 
   // ── FIREBASE PUSH NOTIFICATIONS ──────────────────────────────────────────
   // VAPID Key: Firebase Console → Configurações → Cloud Messaging → Certificados push da Web
@@ -1447,41 +1457,115 @@ function carregarPrecoAdmin() {
   if (!el) return;
   api('getMesParaInsercao', {})
     .then(function(res) {
-      if (!res || res.erro) { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">' + (res ? res.erro : 'Erro') + '</div>'; return; }
-      var precoAtual = res.precoAtual ? String(res.precoAtual).replace('.', ',') : '';
+      if (!res || res.erro) {
+        el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">' + (res ? res.erro : 'Erro') + '</div>';
+        return;
+      }
+      App._mesCusto   = res.mes;
+      App._colunaMes  = res.coluna;
+      var cst = res.custos || {};
+
       el.innerHTML =
-        '<div class="admin-preco-row">' +
-          '<div class="admin-preco-mes">' + res.mes + '</div>' +
-          '<input type="text" class="admin-preco-input" id="input-preco-kwh" placeholder="Ex: 1,13" value="' + precoAtual + '" inputmode="decimal">' +
-          '<button class="btn-gravar-preco" data-col="' + res.coluna + '" onclick="gravarPrecoKwh(this)">Salvar</button>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
+          '<div class="admin-preco-mes" style="min-width:auto">' + res.mes + '</div>' +
+          (res.precoAtual ? '<div style="font-size:11px;color:var(--txt-sub)">já lançado: R$ ' + fmtBR(res.precoAtual,4) + '</div>' : '') +
         '</div>' +
-        (res.precoAtual ? '<p style="font-size:12px;color:var(--txt-sub);margin-top:6px">Valor atual: R$ ' + precoAtual + '/kWh</p>' : '');
+        '<div class="custo-campo">' +
+          '<div class="custo-lbl"><b>Conta CEMIG</b>valor total em R$</div>' +
+          '<input type="text" class="custo-input" id="c-cemig" inputmode="decimal" placeholder="0,00" value="' + (cst.cemigRS ? fmtBR(cst.cemigRS,2) : '') + '" oninput="calcularCustoKwh()">' +
+        '</div>' +
+        '<div class="custo-campo">' +
+          '<div class="custo-lbl"><b>Conta Energisa</b>valor total em R$</div>' +
+          '<input type="text" class="custo-input" id="c-energisa" inputmode="decimal" placeholder="0,00" value="' + (cst.energisaRS ? fmtBR(cst.energisaRS,2) : '') + '" oninput="calcularCustoKwh()">' +
+        '</div>' +
+        '<div class="custo-campo">' +
+          '<div class="custo-lbl"><b>Consumo CEMIG</b>total em kWh</div>' +
+          '<input type="text" class="custo-input" id="c-kwh" inputmode="decimal" placeholder="0" value="' + (cst.cemigKwh ? fmtBR(cst.cemigKwh,0) : '') + '" oninput="calcularCustoKwh()">' +
+        '</div>' +
+        '<div class="custo-formula">R$/kWh = (conta CEMIG + conta Energisa) ÷ consumo CEMIG</div>' +
+        '<div class="custo-res vazio" id="custo-res">' +
+          '<span class="k">Resultado</span><span class="v" id="custo-valor">—</span>' +
+        '</div>' +
+        '<div id="custo-msg" class="oculto" style="margin-bottom:8px"></div>' +
+        '<button type="button" class="btn-primary" id="btn-custo-salvar" onclick="salvarCustoKwh()" style="font-size:19px">' +
+          '<span class="btn-txt">Salvar R$/kWh</span><span class="btn-load oculto">Aguarde...</span>' +
+        '</button>';
+
+      calcularCustoKwh();
     })
     .catch(function() { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Falha ao carregar.</div>'; });
 }
 
-function gravarPrecoKwh(btn) {
-  var val = document.getElementById('input-preco-kwh').value.trim().replace(',', '.');
-  var num = parseFloat(val);
-  if (isNaN(num) || num <= 0) { alert('Informe um valor válido. Ex: 1,13'); return; }
-  var coluna = parseInt(btn.dataset.col);
-  btn.disabled = true; btn.textContent = '...';
-  api('gravarPrecoKwh', { coluna: coluna, preco: num })
-    .then(function(res) {
-      btn.disabled = false; btn.textContent = 'Salvar';
-      if (res && res.erro) { alert('Erro: ' + res.erro); return; }
-      alert('R$/kWh salvo com sucesso!');
-      carregarPrecoAdmin();
-    })
-    .catch(function() { btn.disabled = false; btn.textContent = 'Salvar'; alert('Falha ao salvar.'); });
+function _numCusto(id) {
+  var v = document.getElementById(id);
+  if (!v) return NaN;
+  return parseLeituraJS(v.value.trim());
+}
+
+function calcularCustoKwh() {
+  var a = _numCusto('c-cemig'), b = _numCusto('c-energisa'), q = _numCusto('c-kwh');
+  var box = document.getElementById('custo-res');
+  var val = document.getElementById('custo-valor');
+  if (!box || !val) return NaN;
+
+  if (isNaN(a) || isNaN(b) || isNaN(q) || q <= 0) {
+    box.classList.add('vazio');
+    val.textContent = '—';
+    return NaN;
+  }
+  var p = (a + b) / q;
+  box.classList.remove('vazio');
+  val.textContent = 'R$ ' + fmtBR(p, 4);
+  return p;
+}
+
+function salvarCustoKwh() {
+  var a = _numCusto('c-cemig'), b = _numCusto('c-energisa'), q = _numCusto('c-kwh');
+  var msg = document.getElementById('custo-msg');
+  var btn = document.getElementById('btn-custo-salvar');
+  msg.className = 'oculto';
+
+  if (isNaN(a)) { msg.textContent = 'Informe o valor da conta CEMIG.'; msg.className = 'msg-erro'; return; }
+  if (isNaN(b)) { msg.textContent = 'Informe o valor da conta Energisa.'; msg.className = 'msg-erro'; return; }
+  if (isNaN(q) || q <= 0) { msg.textContent = 'Informe o consumo total da CEMIG em kWh.'; msg.className = 'msg-erro'; return; }
+
+  var p = calcularCustoKwh();
+  if (!confirm('Confirmar R$ ' + fmtBR(p,4) + '/kWh para ' + App._mesCusto + '?')) return;
+
+  btn.disabled = true;
+  btn.querySelector('.btn-txt').classList.add('oculto');
+  btn.querySelector('.btn-load').classList.remove('oculto');
+
+  api('gravarCustoKwh', {
+    coluna:     App._colunaMes,
+    mes:        App._mesCusto,
+    cemigRS:    a,
+    energisaRS: b,
+    cemigKwh:   q
+  })
+  .then(function(res) {
+    btn.disabled = false;
+    btn.querySelector('.btn-txt').classList.remove('oculto');
+    btn.querySelector('.btn-load').classList.add('oculto');
+    if (!res || res.erro) { msg.textContent = res ? res.erro : 'Erro ao salvar.'; msg.className = 'msg-erro'; return; }
+    msg.textContent = '✅ R$ ' + res.precoFmt + '/kWh gravado para ' + App._mesCusto + '.';
+    msg.className = 'msg-ok';
+    carregarMesesRelAdmin();
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.querySelector('.btn-txt').classList.remove('oculto');
+    btn.querySelector('.btn-load').classList.add('oculto');
+    msg.textContent = 'Falha de conexão.'; msg.className = 'msg-erro';
+  });
 }
 
 function toggleMesesAdmin() {
   var el  = document.getElementById('admin-meses-rel');
   var ico = document.getElementById('toggle-meses-ico');
   var aberto = el.style.display !== 'none';
-  el.style.display  = aberto ? 'none' : 'block';
-  ico.textContent   = aberto ? '▼' : '▲';
+  el.style.display = aberto ? 'none' : 'block';
+  ico.textContent  = aberto ? '▼' : '▲';
   if (!aberto) carregarMesesRelAdmin();
 }
 
@@ -2336,4 +2420,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
