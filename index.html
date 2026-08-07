@@ -1496,7 +1496,7 @@ function carregarPrecoAdmin() {
           '<input type="text" class="custo-input" id="c-piscofins" inputmode="numeric" placeholder="0,00" value="' + (cst.pisCofinsRS ? fmtBR(cst.pisCofinsRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
         '<div class="custo-campo">' +
-          '<div class="custo-lbl"><b>Conta Energisa</b>valor total em R$</div>' +
+          '<div class="custo-lbl"><b>Conta (Re) Energisa</b>valor total em R$</div>' +
           '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_energisa_valor.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-energisa" inputmode="numeric" placeholder="0,00" value="' + (cst.energisaRS ? fmtBR(cst.energisaRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
@@ -1505,7 +1505,7 @@ function carregarPrecoAdmin() {
           '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_cemig_kwh.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-kwh" inputmode="numeric" placeholder="0" value="' + (cst.cemigKwh ? fmtBR(cst.cemigKwh,0) : '') + '" oninput="mascaraInteiro(this)">' +
         '</div>' +
-        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + PIS/COFINS + conta Energisa) ÷ consumo CEMIG</div>' +
+        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + PIS/COFINS + conta (Re)Energisa) ÷ consumo CEMIG</div>' +
         '<div class="custo-res vazio" id="custo-res">' +
           '<span class="k">Resultado</span><span class="v" id="custo-valor">—</span>' +
         '</div>' +
@@ -1565,7 +1565,7 @@ function salvarCustoKwh() {
 
   if (isNaN(a)) { msg.textContent = 'Informe o valor da conta CEMIG.'; msg.className = 'msg-erro'; return; }
   if (isNaN(pisCofins)) { msg.textContent = 'Informe o valor do PIS/COFINS da CEMIG.'; msg.className = 'msg-erro'; return; }
-  if (isNaN(b)) { msg.textContent = 'Informe o valor da conta Energisa.'; msg.className = 'msg-erro'; return; }
+  if (isNaN(b)) { msg.textContent = 'Informe o valor da conta (Re)Energisa.'; msg.className = 'msg-erro'; return; }
   if (isNaN(q) || q <= 0) { msg.textContent = 'Informe o consumo total da CEMIG em kWh.'; msg.className = 'msg-erro'; return; }
 
   var p = calcularCustoKwh();
