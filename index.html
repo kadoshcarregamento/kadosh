@@ -205,7 +205,14 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .admin-modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;overflow-x:hidden;box-sizing:border-box}
 .admin-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
 .admin-section-titulo{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub);margin-bottom:12px}
-.custo-campo{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.custo-campo{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.custo-ajuda{width:26px;height:26px;flex-shrink:0;border-radius:50%;background:var(--bg-input);border:1px solid var(--border);color:var(--txt-sub);font-size:13px;font-weight:700;font-family:var(--f-body);cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center}
+.custo-ajuda:active{opacity:.6}
+.foto-ajuda-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:400;display:flex;align-items:center;justify-content:center;padding:16px}
+.foto-ajuda-overlay.oculto{display:none}
+.foto-ajuda-box{max-width:100%;max-height:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+.foto-ajuda-box img{max-width:100%;max-height:78vh;border-radius:10px;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.foto-ajuda-fechar{padding:9px 22px;background:var(--bg-input);border:1px solid var(--border);border-radius:20px;color:var(--txt);font-family:var(--f-body);font-size:14px;cursor:pointer;-webkit-appearance:none}
 .custo-lbl{flex:1;min-width:0;font-size:13px;color:var(--txt-sub);line-height:1.3}
 .custo-lbl b{display:block;color:var(--txt);font-size:14px;font-weight:600}
 .custo-input{width:126px;flex-shrink:0;font-size:16px;font-family:var(--f-body);padding:10px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);outline:none;text-align:right;-webkit-appearance:none}
@@ -813,6 +820,14 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       <span class="btn-load oculto">Aguarde...</span>
     </button>
     <button class="btn-link" onclick="fecharModalEsqueceuSenha()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL FOTO DE AJUDA -->
+<div id="foto-ajuda-overlay" class="foto-ajuda-overlay oculto" onclick="if(event.target===this)fecharFotoAjuda()">
+  <div class="foto-ajuda-box">
+    <img id="foto-ajuda-img" src="" alt="Onde encontrar o valor">
+    <button type="button" class="foto-ajuda-fechar" onclick="fecharFotoAjuda()">Fechar</button>
   </div>
 </div>
 
@@ -1471,18 +1486,26 @@ function carregarPrecoAdmin() {
           (res.precoAtual ? '<div style="font-size:11px;color:var(--txt-sub)">já lançado: R$ ' + fmtBR(res.precoAtual,4) + '</div>' : '') +
         '</div>' +
         '<div class="custo-campo">' +
-          '<div class="custo-lbl"><b>Conta CEMIG</b>valor total em R$</div>' +
+          '<div class="custo-lbl"><b>Conta CEMIG</b>valor dos kWh, sem PIS/COFINS</div>' +
+          '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_cemig_valor.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-cemig" inputmode="numeric" placeholder="0,00" value="' + (cst.cemigRS ? fmtBR(cst.cemigRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
         '<div class="custo-campo">' +
-          '<div class="custo-lbl"><b>Conta (Re)energisa</b>valor total em R$</div>' +
+          '<div class="custo-lbl"><b>PIS/COFINS CEMIG</b>valor do PIS/COFINS, em R$</div>' +
+          '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_cemig_pis_cofins.jpg\')">?</button>' +
+          '<input type="text" class="custo-input" id="c-piscofins" inputmode="numeric" placeholder="0,00" value="' + (cst.pisCofinsRS ? fmtBR(cst.pisCofinsRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
+        '</div>' +
+        '<div class="custo-campo">' +
+          '<div class="custo-lbl"><b>Conta Energisa</b>valor total em R$</div>' +
+          '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_energisa_valor.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-energisa" inputmode="numeric" placeholder="0,00" value="' + (cst.energisaRS ? fmtBR(cst.energisaRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
         '<div class="custo-campo">' +
           '<div class="custo-lbl"><b>Consumo CEMIG</b>total em kWh</div>' +
+          '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_cemig_kwh.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-kwh" inputmode="numeric" placeholder="0" value="' + (cst.cemigKwh ? fmtBR(cst.cemigKwh,0) : '') + '" oninput="mascaraInteiro(this)">' +
         '</div>' +
-        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + conta Energisa) ÷ consumo CEMIG</div>' +
+        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + PIS/COFINS + conta Energisa) ÷ consumo CEMIG</div>' +
         '<div class="custo-res vazio" id="custo-res">' +
           '<span class="k">Resultado</span><span class="v" id="custo-valor">—</span>' +
         '</div>' +
@@ -1518,29 +1541,30 @@ function _numCusto(id) {
 }
 
 function calcularCustoKwh() {
-  var a = _numCusto('c-cemig'), b = _numCusto('c-energisa'), q = _numCusto('c-kwh');
+  var a = _numCusto('c-cemig'), pisCofins = _numCusto('c-piscofins'), b = _numCusto('c-energisa'), q = _numCusto('c-kwh');
   var box = document.getElementById('custo-res');
   var val = document.getElementById('custo-valor');
   if (!box || !val) return NaN;
 
-  if (isNaN(a) || isNaN(b) || isNaN(q) || q <= 0) {
+  if (isNaN(a) || isNaN(pisCofins) || isNaN(b) || isNaN(q) || q <= 0) {
     box.classList.add('vazio');
     val.textContent = '—';
     return NaN;
   }
-  var p = (a + b) / q;
+  var p = (a + pisCofins + b) / q;
   box.classList.remove('vazio');
   val.textContent = 'R$ ' + fmtBR(p, 4);
   return p;
 }
 
 function salvarCustoKwh() {
-  var a = _numCusto('c-cemig'), b = _numCusto('c-energisa'), q = _numCusto('c-kwh');
+  var a = _numCusto('c-cemig'), pisCofins = _numCusto('c-piscofins'), b = _numCusto('c-energisa'), q = _numCusto('c-kwh');
   var msg = document.getElementById('custo-msg');
   var btn = document.getElementById('btn-custo-salvar');
   msg.className = 'oculto';
 
   if (isNaN(a)) { msg.textContent = 'Informe o valor da conta CEMIG.'; msg.className = 'msg-erro'; return; }
+  if (isNaN(pisCofins)) { msg.textContent = 'Informe o valor do PIS/COFINS da CEMIG.'; msg.className = 'msg-erro'; return; }
   if (isNaN(b)) { msg.textContent = 'Informe o valor da conta Energisa.'; msg.className = 'msg-erro'; return; }
   if (isNaN(q) || q <= 0) { msg.textContent = 'Informe o consumo total da CEMIG em kWh.'; msg.className = 'msg-erro'; return; }
 
@@ -1555,6 +1579,7 @@ function salvarCustoKwh() {
     coluna:     App._colunaMes,
     mes:        App._mesCusto,
     cemigRS:    a,
+    pisCofinsRS: pisCofins,
     energisaRS: b,
     cemigKwh:   q
   })
@@ -1769,6 +1794,14 @@ function renderTermos(t) {
       + '<span style="font-size:11px;color:var(--txt-dim)">' + (err && err.message ? err.message : 'desconhecido') + '</span></div>';
     return false;
   }
+}
+
+function abrirFotoAjuda(arquivo) {
+  document.getElementById('foto-ajuda-img').src = arquivo;
+  document.getElementById('foto-ajuda-overlay').classList.remove('oculto');
+}
+function fecharFotoAjuda() {
+  document.getElementById('foto-ajuda-overlay').classList.add('oculto');
 }
 
 function toggleTermosCheck() {
@@ -2435,4 +2468,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
