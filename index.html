@@ -1036,7 +1036,7 @@ function efetuarLogin() {
   erroEl.classList.add('oculto');
   if(!email||!senha){erroEl.textContent='Preencha email e senha.';erroEl.classList.remove('oculto');return;}
   btn.disabled=true;btn.querySelector('.btn-txt').classList.add('oculto');btn.querySelector('.btn-load').classList.remove('oculto');
-  api('fazerLogin',{email:email,senha:senha})
+  api('fazerLoginCompleto',{email:email,senha:senha})
     .then(function(res){
       btn.disabled=false;btn.querySelector('.btn-txt').classList.remove('oculto');btn.querySelector('.btn-load').classList.add('oculto');
       if(res.erro){erroEl.textContent=res.erro;erroEl.classList.remove('oculto');return;}
@@ -1044,7 +1044,20 @@ function efetuarLogin() {
       setTimeout(solicitarPermissaoPush, 1000); // solicitar push após login
       if(lembrar){salvarCredenciais(email,senha);try{var r=JSON.parse(localStorage.getItem(LS_KEY)||'{}');r.nome=res.nome;localStorage.setItem(LS_KEY,JSON.stringify(r));}catch(e){}}
       else{try{localStorage.removeItem(LS_KEY);}catch(e){}}
-      verificarTermosELogar();
+
+      // Termos já vieram junto no login — sem 2ª ida ao servidor
+      if (res.termosAceito === false) {
+        try { localStorage.removeItem(LS_TERMOS); } catch(e) {}
+        exigirAceiteTermos(res.termos || {});
+        return;
+      }
+      if (res.termosAceito === true && res.termosDataAceite) {
+        try {
+          localStorage.setItem(LS_TERMOS, JSON.stringify({ data: String(res.termosDataAceite).split(' ')[0], versao: res.termosVersao }));
+        } catch(e) {}
+        mostrarStatusTermos();
+      }
+      entrarDashboard();
     })
     .catch(function(err){btn.disabled=false;btn.querySelector('.btn-txt').classList.remove('oculto');btn.querySelector('.btn-load').classList.add('oculto');erroEl.textContent='Erro: '+(err?err.message:'tente novamente');erroEl.classList.remove('oculto');});
 }
@@ -1085,32 +1098,31 @@ function entrarDashboard() {
   mostrarTela('tela-dash');
   document.getElementById('resultado-card').classList.add('oculto');
   estadoDesligado();
-  carregarBadges();
-  // Buscar e cachear carros ativos do apto
-  App._totalCarros = 1;
-  App._carrosAtivos = [];
-  api('listarCarrosApartamento', { apartamento: String(u.apartamento) })
-    .then(function(res) {
-      App._carrosAtivos = (res && res.carros) ? res.carros.filter(function(c){ return c.status === 'Ativo'; }) : [];
-      App._totalCarros  = Math.max(App._carrosAtivos.length, 1);
-      atualizarBotaoIniciar();
-    });
-  // Botão admin
+
   var btnAdmin = document.getElementById('btn-admin-hdr');
   if (btnAdmin) {
     if (u.perfil === 'Admin') btnAdmin.classList.remove('oculto');
     else btnAdmin.classList.add('oculto');
   }
+
+  App._totalCarros = 1;
+  App._carrosAtivos = [];
+
+  // Status das vagas + carros do apto + sessão ativa numa única ida ao servidor
   overlayShow('Verificando sessão...');
-  api('verificarSessaoAtiva',{apartamento:String(u.apartamento)})
-    .then(function(res){
+  api('getDashboardInicial', { apartamento: String(u.apartamento) })
+    .then(function(res) {
       overlayHide();
+
+      App._carrosAtivos = (res && res.carros) ? res.carros.filter(function(c){ return c.status === 'Ativo'; }) : [];
+      App._totalCarros  = Math.max(App._carrosAtivos.length, 1);
+
+      renderBadges((res && res.vagas) ? res.vagas : []);
+
       App._sessoes = (res && res.sessoes) ? res.sessoes : [];
       renderSessoesAtivas(App._sessoes);
-      // Botão iniciar: atualiza baseado no total de carros
-      var btnIni = document.getElementById('btn-iniciar');
       atualizarBotaoIniciar();
-      // Status
+
       if (App._sessoes.length > 0) {
         document.getElementById('status-dot').className='status-dot ligado';
         document.getElementById('status-txt').textContent='⚡ Carregando';
@@ -1118,7 +1130,12 @@ function entrarDashboard() {
       }
       carregarHistorico();
     })
-    .catch(function(){overlayHide();carregarHistorico();});
+    .catch(function(){
+      overlayHide();
+      atualizarBotaoIniciar();
+      carregarBadges();   // fallback: busca separada se a combinada falhar
+      carregarHistorico();
+    });
 }
 
 function estadoLigado(s){
@@ -1496,7 +1513,7 @@ function carregarPrecoAdmin() {
           '<input type="text" class="custo-input" id="c-piscofins" inputmode="numeric" placeholder="0,00" value="' + (cst.pisCofinsRS ? fmtBR(cst.pisCofinsRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
         '<div class="custo-campo">' +
-          '<div class="custo-lbl"><b>Conta (Re) Energisa</b>valor total em R$</div>' +
+          '<div class="custo-lbl"><b>Conta Energisa</b>valor total em R$</div>' +
           '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_energisa_valor.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-energisa" inputmode="numeric" placeholder="0,00" value="' + (cst.energisaRS ? fmtBR(cst.energisaRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
@@ -1505,7 +1522,7 @@ function carregarPrecoAdmin() {
           '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_cemig_kwh.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-kwh" inputmode="numeric" placeholder="0" value="' + (cst.cemigKwh ? fmtBR(cst.cemigKwh,0) : '') + '" oninput="mascaraInteiro(this)">' +
         '</div>' +
-        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + PIS/COFINS + conta (Re)Energisa) ÷ consumo CEMIG</div>' +
+        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + PIS/COFINS + conta Energisa) ÷ consumo CEMIG</div>' +
         '<div class="custo-res vazio" id="custo-res">' +
           '<span class="k">Resultado</span><span class="v" id="custo-valor">—</span>' +
         '</div>' +
@@ -1565,7 +1582,7 @@ function salvarCustoKwh() {
 
   if (isNaN(a)) { msg.textContent = 'Informe o valor da conta CEMIG.'; msg.className = 'msg-erro'; return; }
   if (isNaN(pisCofins)) { msg.textContent = 'Informe o valor do PIS/COFINS da CEMIG.'; msg.className = 'msg-erro'; return; }
-  if (isNaN(b)) { msg.textContent = 'Informe o valor da conta (Re)Energisa.'; msg.className = 'msg-erro'; return; }
+  if (isNaN(b)) { msg.textContent = 'Informe o valor da conta Energisa.'; msg.className = 'msg-erro'; return; }
   if (isNaN(q) || q <= 0) { msg.textContent = 'Informe o consumo total da CEMIG em kWh.'; msg.className = 'msg-erro'; return; }
 
   var p = calcularCustoKwh();
@@ -2062,33 +2079,37 @@ function abrirModalNotificacoes() {
 }
 
 // ══ BADGES DAS VAGAS (dashboard) ════════════════════════════
+function renderBadges(vagas) {
+  var el = document.getElementById('vagas-badges');
+  if (!el) return;
+  if (!vagas || !Array.isArray(vagas) || !vagas.length) {
+    el.innerHTML = '<div class="vaga-badge">Indisponível</div>';
+    return;
+  }
+  var linha1 = vagas.slice(0,3).map(function(v) {
+    var livre = String(v.status).toLowerCase() === 'livre';
+    return '<div class="vaga-badge"><div class="dot ' + (livre?'livre':'ocupado') + '"></div>' + v.id + '</div>';
+  }).join('');
+  var linha2 = vagas.slice(3).map(function(v) {
+    var livre = String(v.status).toLowerCase() === 'livre';
+    return '<div class="vaga-badge"><div class="dot ' + (livre?'livre':'ocupado') + '"></div>' + v.id + '</div>';
+  }).join('');
+  el.innerHTML =
+    '<div class="badges-header"><div class="badges-titulo">Status Vagas</div><div class="badges-atualizar-label">Atualizar</div></div>' +
+    '<div class="badges-body">' +
+      '<div class="badges-linhas">' +
+        '<div class="badges-linha">' + linha1 + '</div>' +
+        '<div class="badges-linha">' + linha2 + '</div>' +
+      '</div>' +
+      '<button type="button" class="badges-atualizar" onclick="event.stopPropagation();carregarBadges()">🔄</button>' +
+    '</div>';
+}
+
 function carregarBadges() {
   var el = document.getElementById('vagas-badges');
   if (!el) return;
   api('getStatusVagas', {})
-    .then(function(vagas) {
-      if (!vagas || !Array.isArray(vagas) || !vagas.length) {
-        el.innerHTML = '<div class="vaga-badge">Indisponível</div>';
-        return;
-      }
-      var linha1 = vagas.slice(0,3).map(function(v) {
-        var livre = String(v.status).toLowerCase() === 'livre';
-        return '<div class="vaga-badge"><div class="dot ' + (livre?'livre':'ocupado') + '"></div>' + v.id + '</div>';
-      }).join('');
-      var linha2 = vagas.slice(3).map(function(v) {
-        var livre = String(v.status).toLowerCase() === 'livre';
-        return '<div class="vaga-badge"><div class="dot ' + (livre?'livre':'ocupado') + '"></div>' + v.id + '</div>';
-      }).join('');
-      el.innerHTML =
-        '<div class="badges-header"><div class="badges-titulo">Status Vagas</div><div class="badges-atualizar-label">Atualizar</div></div>' +
-        '<div class="badges-body">' +
-          '<div class="badges-linhas">' +
-            '<div class="badges-linha">' + linha1 + '</div>' +
-            '<div class="badges-linha">' + linha2 + '</div>' +
-          '</div>' +
-          '<button type="button" class="badges-atualizar" onclick="event.stopPropagation();carregarBadges()">🔄</button>' +
-        '</div>';
-    })
+    .then(function(vagas) { renderBadges(vagas); })
     .catch(function() { el.innerHTML = '<div class="vaga-badge">Indisponível</div>'; });
 }
 
@@ -2468,3 +2489,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
