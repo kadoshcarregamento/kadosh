@@ -326,6 +326,18 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 /* ── MODAL CARRO ── */
 .marca-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:260px;overflow-y:auto}
 .marca-btn{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;text-align:center;-webkit-appearance:none}
+.qr-fallback{display:flex;flex-direction:column;align-items:center;gap:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:24px 20px;margin-top:8px;text-align:center}
+.qr-fallback-ico{font-size:34px;opacity:.7}
+.qr-fallback-titulo{font-size:15px;color:var(--txt);font-weight:600;line-height:1.4}
+.btn-outline-vaga{width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt-sub);font-family:var(--f-body);font-size:15px;font-weight:600;cursor:pointer;-webkit-appearance:none}
+.btn-outline-vaga:active{opacity:.6}
+.vaga-manual-btn{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 6px;cursor:pointer;-webkit-appearance:none;display:flex;flex-direction:column;align-items:center;gap:6px}
+.vaga-manual-btn .id{font-family:var(--f-display);font-size:20px;color:var(--txt);letter-spacing:.02em}
+.vaga-manual-btn .st{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.vaga-manual-btn.livre{border-color:rgba(59,205,192,.35)}
+.vaga-manual-btn.livre .st{color:var(--k-green)}
+.vaga-manual-btn.ocupada{border-color:rgba(255,82,82,.3);opacity:.65}
+.vaga-manual-btn.ocupada .st{color:var(--red)}
 .marca-btn:active,.marca-btn.sel{background:rgba(59,205,192,.15);border-color:var(--k-green);color:var(--k-green)}
 .modelo-grid{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto}
 .modelo-btn{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-size:14px;color:var(--txt);cursor:pointer;text-align:left;-webkit-appearance:none}
@@ -450,6 +462,23 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     </div>
     <div id="qr-status" class="qr-status">Iniciando câmera...</div>
     <div id="qr-erro" class="msg-erro oculto"></div>
+
+    <div id="qr-fallback" class="qr-fallback oculto">
+      <div class="qr-fallback-ico">📷</div>
+      <div class="qr-fallback-titulo" id="qr-fallback-titulo">Não conseguimos identificar o QR code.</div>
+      <button type="button" class="btn-primary" onclick="tentarNovamenteScanner()" style="font-size:19px">🔄 Tentar novamente</button>
+      <button type="button" class="btn-outline-vaga" onclick="abrirSelecaoManualVaga()">⌨️ Selecionar vaga manualmente</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SELECIONAR VAGA MANUALMENTE -->
+<div id="modal-selecionar-vaga" class="admin-modal-overlay oculto">
+  <div class="admin-modal-box">
+    <div class="admin-modal-titulo" style="font-size:20px">Selecionar Vaga</div>
+    <p style="font-size:14px;color:var(--txt-sub);text-align:center;margin:0">Use apenas se a câmera não estiver funcionando. Confira o número da vaga antes de confirmar.</p>
+    <div id="lista-vagas-manual" class="marca-grid" style="grid-template-columns:1fr 1fr 1fr"><div class="hist-vazio">Carregando...</div></div>
+    <button class="btn-link" onclick="document.getElementById('modal-selecionar-vaga').classList.add('oculto')">Cancelar</button>
   </div>
 </div>
 
@@ -927,7 +956,7 @@ var APP_CONFIG = {
 var GAS_URL = APP_CONFIG.GAS_URL;
 var App = { usuario:null, submissionId:null, vagaId:null, kwhInicial:null, inicio:null, carregando:false };
 var LS_KEY = 'ev_charge_creds';
-var _qrScanner = null, _qrProcessing = false, _cbCounter = 0;
+var _qrScanner = null, _qrProcessing = false, _cbCounter = 0, _qrTimeoutHandle = null;
 
 function api(action, params) {
   return new Promise(function(resolve, reject) {
@@ -1212,17 +1241,75 @@ function abrirScanner(){
     btnIni.querySelector('.btn-load').classList.add('oculto');
   }
   _qrProcessing=false;mostrarTela('tela-qr');document.getElementById('qr-erro').classList.add('oculto');document.getElementById('qr-status').textContent='Iniciando câmera...';setTimeout(iniciarScanner,200);}
-function fecharScanner(){pararScanner();mostrarTela('tela-dash');}
+function fecharScanner(){pararScanner();ocultarFallbackScanner();mostrarTela('tela-dash');}
 function iniciarScanner(){
   if(typeof Html5Qrcode==='undefined'){setTimeout(iniciarScanner,400);return;}
   pararScanner();document.getElementById('qr-reader').innerHTML='';
+  ocultarFallbackScanner();
+  clearTimeout(_qrTimeoutHandle);
   _qrScanner=new Html5Qrcode('qr-reader');
   _qrScanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220},aspectRatio:1.0,formatsToSupport:[Html5QrcodeSupportedFormats.QR_CODE]},
-    function(decodedText){if(_qrProcessing)return;_qrProcessing=true;pararScanner();processarQRCode(decodedText.trim());},function(){})
-  .then(function(){document.getElementById('qr-status').textContent='Aponte a câmera para o QR code da vaga';})
-  .catch(function(err){document.getElementById('qr-status').textContent='';document.getElementById('qr-erro').textContent=String(err).indexOf('ermission')>=0?'Permissão negada. Vá em Ajustes → Safari → Câmera.':'Câmera indisponível: '+err;document.getElementById('qr-erro').classList.remove('oculto');});
+    function(decodedText){if(_qrProcessing)return;_qrProcessing=true;clearTimeout(_qrTimeoutHandle);pararScanner();processarQRCode(decodedText.trim());},function(){})
+  .then(function(){
+    document.getElementById('qr-status').textContent='Aponte a câmera para o QR code da vaga';
+    // Se não ler nenhum QR em 18s, oferece tentar de novo ou escolher a vaga na mão
+    _qrTimeoutHandle = setTimeout(function(){ mostrarFallbackScanner('Não conseguimos identificar o QR code.'); }, 18000);
+  })
+  .catch(function(err){
+    document.getElementById('qr-status').textContent='';
+    var permissao = String(err).indexOf('ermission')>=0;
+    mostrarFallbackScanner(permissao ? 'Permissão de câmera negada.' : 'Câmera indisponível neste aparelho.');
+  });
 }
-function pararScanner(){if(_qrScanner){_qrScanner.stop().catch(function(){});_qrScanner=null;}_qrProcessing=false;}
+function pararScanner(){if(_qrScanner){_qrScanner.stop().catch(function(){});_qrScanner=null;}_qrProcessing=false;clearTimeout(_qrTimeoutHandle);}
+
+
+// ══ FALLBACK DO SCANNER (câmera falha ou não lê) ═══════════════
+function mostrarFallbackScanner(motivo) {
+  pararScanner();
+  document.getElementById('qr-fallback-titulo').textContent = motivo || 'Não conseguimos identificar o QR code.';
+  document.getElementById('qr-fallback').classList.remove('oculto');
+  document.getElementById('qr-status').textContent = '';
+}
+
+function ocultarFallbackScanner() {
+  var el = document.getElementById('qr-fallback');
+  if (el) el.classList.add('oculto');
+}
+
+function tentarNovamenteScanner() {
+  ocultarFallbackScanner();
+  document.getElementById('qr-erro').classList.add('oculto');
+  document.getElementById('qr-status').textContent = 'Iniciando câmera...';
+  iniciarScanner();
+}
+
+function abrirSelecaoManualVaga() {
+  var el = document.getElementById('lista-vagas-manual');
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  document.getElementById('modal-selecionar-vaga').classList.remove('oculto');
+  api('getStatusVagas', {})
+    .then(function(vagas) {
+      if (!vagas || !Array.isArray(vagas) || !vagas.length) {
+        el.innerHTML = '<div class="hist-vazio">Não foi possível carregar as vagas.</div>';
+        return;
+      }
+      el.innerHTML = vagas.map(function(v) {
+        var livre = String(v.status).toLowerCase() === 'livre';
+        return '<button type="button" class="vaga-manual-btn ' + (livre?'livre':'ocupada') + '" data-id="' + v.id + '" ' +
+          (livre ? 'onclick="selecionarVagaManual(this.dataset.id)"' : 'disabled') + '>' +
+          '<span class="id">' + v.id + '</span><span class="st">' + (livre?'Livre':'Ocupada') + '</span>' +
+          '</button>';
+      }).join('');
+    })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio">Falha ao carregar. Tente de novo.</div>'; });
+}
+
+function selecionarVagaManual(id) {
+  document.getElementById('modal-selecionar-vaga').classList.add('oculto');
+  ocultarFallbackScanner();
+  avancarParaLeituraInicial('VAGA_' + id);
+}
 
 function processarQRCode(texto) {
   var vagaId=texto.trim().toUpperCase();
@@ -1230,6 +1317,13 @@ function processarQRCode(texto) {
     try{var url=new URL(texto);var param=url.searchParams.get('vaga');if(param){vagaId=param.trim().toUpperCase();}else{document.getElementById('qr-erro').textContent='QR inválido: "'+texto+'".';document.getElementById('qr-erro').classList.remove('oculto');document.getElementById('qr-status').textContent='Tente novamente';setTimeout(function(){_qrProcessing=false;iniciarScanner();},2500);return;}}catch(e){vagaId=texto.trim().toUpperCase();}
   }
   if(!/^VAGA_[A-Z0-9]{1,4}$/.test(vagaId)){document.getElementById('qr-erro').textContent='QR inválido: "'+texto+'". Escaneie o código da vaga.';document.getElementById('qr-erro').classList.remove('oculto');document.getElementById('qr-status').textContent='Tente novamente';setTimeout(function(){_qrProcessing=false;iniciarScanner();},2500);return;}
+
+  avancarParaLeituraInicial(vagaId);
+}
+
+function avancarParaLeituraInicial(vagaId) {
+  clearTimeout(_qrTimeoutHandle);
+  pararScanner();
 
   // Abre a tela de leitura inicial com a vaga identificada
   App.vagaId = vagaId;
@@ -1513,7 +1607,7 @@ function carregarPrecoAdmin() {
           '<input type="text" class="custo-input" id="c-piscofins" inputmode="numeric" placeholder="0,00" value="' + (cst.pisCofinsRS ? fmtBR(cst.pisCofinsRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
         '<div class="custo-campo">' +
-          '<div class="custo-lbl"><b>Conta (Re)Energisa</b>valor total em R$</div>' +
+          '<div class="custo-lbl"><b>Conta Energisa</b>valor total em R$</div>' +
           '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_energisa_valor.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-energisa" inputmode="numeric" placeholder="0,00" value="' + (cst.energisaRS ? fmtBR(cst.energisaRS,2) : '') + '" oninput="mascaraDinheiro(this)">' +
         '</div>' +
@@ -1522,7 +1616,7 @@ function carregarPrecoAdmin() {
           '<button type="button" class="custo-ajuda" onclick="abrirFotoAjuda(\'ajuda_cemig_kwh.jpg\')">?</button>' +
           '<input type="text" class="custo-input" id="c-kwh" inputmode="numeric" placeholder="0" value="' + (cst.cemigKwh ? fmtBR(cst.cemigKwh,0) : '') + '" oninput="mascaraInteiro(this)">' +
         '</div>' +
-        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + PIS/COFINS + conta (Re)Energisa) ÷ consumo CEMIG</div>' +
+        '<div class="custo-formula">Digite apenas números — os separadores entram automaticamente.<br>R$/kWh = (conta CEMIG + PIS/COFINS + conta Energisa) ÷ consumo CEMIG</div>' +
         '<div class="custo-res vazio" id="custo-res">' +
           '<span class="k">Resultado</span><span class="v" id="custo-valor">—</span>' +
         '</div>' +
@@ -1582,7 +1676,7 @@ function salvarCustoKwh() {
 
   if (isNaN(a)) { msg.textContent = 'Informe o valor da conta CEMIG.'; msg.className = 'msg-erro'; return; }
   if (isNaN(pisCofins)) { msg.textContent = 'Informe o valor do PIS/COFINS da CEMIG.'; msg.className = 'msg-erro'; return; }
-  if (isNaN(b)) { msg.textContent = 'Informe o valor da conta (Re)Energisa.'; msg.className = 'msg-erro'; return; }
+  if (isNaN(b)) { msg.textContent = 'Informe o valor da conta Energisa.'; msg.className = 'msg-erro'; return; }
   if (isNaN(q) || q <= 0) { msg.textContent = 'Informe o consumo total da CEMIG em kWh.'; msg.className = 'msg-erro'; return; }
 
   var p = calcularCustoKwh();
