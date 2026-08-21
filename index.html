@@ -931,9 +931,10 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
         <div class="val g" id="ajuda-leitura-inicial"></div>
       </div>
 
-      <div class="input-wrap" style="margin-bottom:12px">
-        <div class="input-label">Leitura final (kWh)</div>
-        <input type="tel" inputmode="decimal" id="ajuda-leitura-final" class="input-leitura" placeholder="0,0" oninput="mascaraLeitura(this)">
+      <div class="campo" style="margin-bottom:14px">
+        <label>Leitura final do relógio (kWh)</label>
+        <input type="text" id="ajuda-leitura-final" placeholder="Digite apenas números" inputmode="numeric" oninput="mascaraLeitura(this)">
+        <div class="helper-text-leitura">Digite apenas números — a vírgula é inserida automaticamente antes do último dígito.</div>
       </div>
 
       <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--txt-sub);line-height:1.5;margin-bottom:14px;cursor:pointer">
@@ -1384,7 +1385,7 @@ function ajudaSelecionarSessao(i) {
   _ajudaSessaoAtual = s;
   document.getElementById('ajuda-nome').textContent = s.nome;
   document.getElementById('ajuda-vaga').textContent = s.vaga.replace('VAGA_','Vaga ');
-  document.getElementById('ajuda-leitura-inicial').textContent = s.kwhInicial + ' kWh';
+  document.getElementById('ajuda-leitura-inicial').textContent = fmtBR(s.kwhInicial, 1) + ' kWh';
   document.getElementById('ajuda-leitura-final').value = '';
   document.getElementById('ajuda-checkbox').checked = false;
   document.getElementById('ajuda-erro').classList.add('oculto');
@@ -2763,3 +2764,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
