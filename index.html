@@ -890,7 +890,72 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
   <div class="admin-modal-box">
     <div class="admin-modal-titulo" style="font-size:20px">🔔 Notificações</div>
     <div id="notif-lista"><div class="hist-vazio">Carregando...</div></div>
-    <button class="btn-link" onclick="document.getElementById('modal-notificacoes').classList.add('oculto')">Fechar</button>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn-link" onclick="document.getElementById('modal-notificacoes').classList.add('oculto')">Fechar</button>
+      <button class="btn-link" style="opacity:.55" onclick="document.getElementById('modal-notificacoes').classList.add('oculto');abrirAjudaConexao()">Ajuda</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJUDA DE CONEXÃO (encerramento de emergência) -->
+<div id="modal-ajuda-conexao" class="admin-modal-overlay oculto">
+  <div class="admin-modal-box">
+    <div class="admin-modal-titulo" style="font-size:19px">Problema de conexão</div>
+
+    <div id="ajuda-passo-pergunta">
+      <p style="font-size:14px;color:var(--txt-sub);text-align:center;margin:0 0 14px">Você tem uma sessão de carregamento aberta agora?</p>
+      <div style="display:flex;gap:10px">
+        <button class="btn-primary" style="font-size:18px" onclick="ajudaResponderSim()">Sim</button>
+        <button class="btn-outline-vaga" onclick="ajudaResponderNao()">Não</button>
+      </div>
+    </div>
+
+    <div id="ajuda-passo-nao" class="oculto">
+      <p style="font-size:14px;color:var(--txt-sub);text-align:center;margin:0 0 16px">Para iniciar um carregamento é preciso fazer login normalmente no aplicativo.</p>
+      <button class="btn-link" onclick="fecharAjudaConexao()">Fechar</button>
+    </div>
+
+    <div id="ajuda-passo-lista" class="oculto">
+      <p style="font-size:13px;color:var(--txt-sub);text-align:center;margin:0 0 12px">Selecione o seu apartamento:</p>
+      <div id="ajuda-lista-aptos" style="display:flex;flex-direction:column;gap:8px"></div>
+      <button class="btn-link" onclick="fecharAjudaConexao()" style="margin-top:6px">Cancelar</button>
+    </div>
+
+    <div id="ajuda-passo-encerrar" class="oculto">
+      <div class="card" style="margin-bottom:12px">
+        <div class="lbl">Morador</div>
+        <div class="val" id="ajuda-nome" style="margin-bottom:10px"></div>
+        <div class="lbl">Vaga</div>
+        <div class="val" id="ajuda-vaga" style="margin-bottom:10px"></div>
+        <div class="lbl">Leitura inicial registrada</div>
+        <div class="val g" id="ajuda-leitura-inicial"></div>
+      </div>
+
+      <div class="input-wrap" style="margin-bottom:12px">
+        <div class="input-label">Leitura final (kWh)</div>
+        <input type="tel" inputmode="decimal" id="ajuda-leitura-final" class="input-leitura" placeholder="0,0" oninput="mascaraLeitura(this)">
+      </div>
+
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--txt-sub);line-height:1.5;margin-bottom:14px;cursor:pointer">
+        <input type="checkbox" id="ajuda-checkbox" style="margin-top:2px;flex-shrink:0" onchange="ajudaAtualizarBotao()">
+        <span>Confirmo que sou o morador do apartamento selecionado e estou com problemas de conexão no aplicativo.</span>
+      </label>
+
+      <div id="ajuda-erro" class="msg-erro oculto" style="margin-bottom:10px"></div>
+
+      <button class="btn-primary" id="ajuda-btn-enviar" disabled style="font-size:19px" onclick="ajudaEnviarEncerramento()">
+        <span class="btn-txt">Enviar</span>
+        <span class="btn-load oculto">Enviando...</span>
+      </button>
+      <button class="btn-link" onclick="fecharAjudaConexao()" style="margin-top:8px">Cancelar</button>
+    </div>
+
+    <div id="ajuda-passo-sucesso" class="oculto" style="text-align:center">
+      <div style="font-size:38px;margin-bottom:8px">✅</div>
+      <p style="font-size:15px;color:var(--txt);font-weight:600;margin:0 0 6px">Carregamento encerrado!</p>
+      <p style="font-size:13px;color:var(--txt-sub);margin:0 0 16px">Um email de confirmação foi enviado. Confira se os dados estão corretos.</p>
+      <button class="btn-primary" style="font-size:18px" onclick="fecharAjudaConexao()">Fechar</button>
+    </div>
   </div>
 </div>
 
@@ -961,12 +1026,17 @@ var _qrScanner = null, _qrProcessing = false, _cbCounter = 0, _qrTimeoutHandle =
 function api(action, params) {
   return new Promise(function(resolve, reject) {
     var cbName = '_gasCb' + (++_cbCounter);
-    var timeout = setTimeout(function() { delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); reject(new Error('Timeout')); }, 90000);
+    // 20s é generoso para uma chamada normal; deixar a pessoa travada por 90s
+    // sem feedback nenhum é pior do que arriscar um timeout um pouco cedo.
+    var timeout = setTimeout(function() {
+      delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove();
+      reject(new Error('Sem resposta do servidor. Verifique sua conexão (Wi-Fi ou dados) e tente novamente.'));
+    }, 20000);
     window[cbName] = function(data) { clearTimeout(timeout); delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); resolve(data); };
     var url = GAS_URL + '?action=' + encodeURIComponent(action) + '&payload=' + encodeURIComponent(JSON.stringify(params||{})) + '&callback=' + cbName;
     var script = document.createElement('script');
     script.id = cbName; script.src = url;
-    script.onerror = function() { clearTimeout(timeout); delete window[cbName]; script.remove(); reject(new Error('Falha ao contactar o servidor')); };
+    script.onerror = function() { clearTimeout(timeout); delete window[cbName]; script.remove(); reject(new Error('Falha ao contactar o servidor. Verifique sua conexão e tente novamente.')); };
     document.head.appendChild(script);
   });
 }
@@ -1263,6 +1333,116 @@ function iniciarScanner(){
 }
 function pararScanner(){if(_qrScanner){_qrScanner.stop().catch(function(){});_qrScanner=null;}_qrProcessing=false;clearTimeout(_qrTimeoutHandle);}
 
+
+
+// ══ AJUDA DE CONEXÃO — encerramento de emergência ═══════════════
+var _ajudaSessaoAtual = null;
+
+function _ajudaMostrarPasso(id) {
+  ['ajuda-passo-pergunta','ajuda-passo-nao','ajuda-passo-lista','ajuda-passo-encerrar','ajuda-passo-sucesso']
+    .forEach(function(p){ document.getElementById(p).classList.toggle('oculto', p !== id); });
+}
+
+function abrirAjudaConexao() {
+  _ajudaSessaoAtual = null;
+  _ajudaMostrarPasso('ajuda-passo-pergunta');
+  document.getElementById('modal-ajuda-conexao').classList.remove('oculto');
+}
+
+function fecharAjudaConexao() {
+  document.getElementById('modal-ajuda-conexao').classList.add('oculto');
+}
+
+function ajudaResponderNao() {
+  _ajudaMostrarPasso('ajuda-passo-nao');
+}
+
+function ajudaResponderSim() {
+  _ajudaMostrarPasso('ajuda-passo-lista');
+  var el = document.getElementById('ajuda-lista-aptos');
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  api('getSessoesAbertasTodas', {})
+    .then(function(res) {
+      var sessoes = (res && res.sessoes) ? res.sessoes : [];
+      if (!sessoes.length) {
+        el.innerHTML = '<div class="hist-vazio">Nenhuma sessão aberta no momento.</div>';
+        return;
+      }
+      el.innerHTML = sessoes.map(function(s, i) {
+        return '<button type="button" class="btn-outline-vaga" style="text-align:left" onclick="ajudaSelecionarSessao(' + i + ')">' +
+          '<b>Apartamento ' + s.apartamento + '</b> · ' + s.vaga.replace('VAGA_','Vaga ') +
+          '</button>';
+      }).join('');
+      window._ajudaSessoesCache = sessoes;
+    })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio">Falha ao carregar. Tente novamente.</div>'; });
+}
+
+function ajudaSelecionarSessao(i) {
+  var s = (window._ajudaSessoesCache || [])[i];
+  if (!s) return;
+  _ajudaSessaoAtual = s;
+  document.getElementById('ajuda-nome').textContent = s.nome;
+  document.getElementById('ajuda-vaga').textContent = s.vaga.replace('VAGA_','Vaga ');
+  document.getElementById('ajuda-leitura-inicial').textContent = s.kwhInicial + ' kWh';
+  document.getElementById('ajuda-leitura-final').value = '';
+  document.getElementById('ajuda-checkbox').checked = false;
+  document.getElementById('ajuda-erro').classList.add('oculto');
+  ajudaAtualizarBotao();
+  _ajudaMostrarPasso('ajuda-passo-encerrar');
+}
+
+function ajudaAtualizarBotao() {
+  var chk = document.getElementById('ajuda-checkbox').checked;
+  var val = document.getElementById('ajuda-leitura-final').value.trim();
+  document.getElementById('ajuda-btn-enviar').disabled = !(chk && val);
+}
+
+function ajudaEnviarEncerramento() {
+  if (!_ajudaSessaoAtual) return;
+  var leitura = document.getElementById('ajuda-leitura-final').value.trim();
+  var erroEl  = document.getElementById('ajuda-erro');
+  var btn     = document.getElementById('ajuda-btn-enviar');
+  erroEl.classList.add('oculto');
+
+  if (!leitura) { erroEl.textContent = 'Digite a leitura final.'; erroEl.classList.remove('oculto'); return; }
+  if (!document.getElementById('ajuda-checkbox').checked) { return; }
+
+  btn.disabled = true;
+  btn.querySelector('.btn-txt').classList.add('oculto');
+  btn.querySelector('.btn-load').classList.remove('oculto');
+
+  api('encerrarEmergenciaConexao', {
+    vagaId:       _ajudaSessaoAtual.vaga,
+    submissionId: _ajudaSessaoAtual.submissionId,
+    leituraFinal: leitura
+  })
+  .then(function(res) {
+    btn.disabled = false;
+    btn.querySelector('.btn-txt').classList.remove('oculto');
+    btn.querySelector('.btn-load').classList.add('oculto');
+    if (!res || res.erro) {
+      erroEl.textContent = res ? res.erro : 'Falha ao encerrar. Tente novamente.';
+      erroEl.classList.remove('oculto');
+      var campo = document.getElementById('ajuda-leitura-final');
+      if (res && res.tipoErro) { campo.value = ''; campo.focus(); }
+      return;
+    }
+    _ajudaMostrarPasso('ajuda-passo-sucesso');
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.querySelector('.btn-txt').classList.remove('oculto');
+    btn.querySelector('.btn-load').classList.add('oculto');
+    erroEl.textContent = 'Falha de conexão. Tente novamente.';
+    erroEl.classList.remove('oculto');
+  });
+}
+
+// checkbox e campo de leitura precisam reavaliar o botão a cada mudança
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 'ajuda-leitura-final') ajudaAtualizarBotao();
+});
 
 // ══ FALLBACK DO SCANNER (câmera falha ou não lê) ═══════════════
 function mostrarFallbackScanner(motivo) {
@@ -2583,4 +2763,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
