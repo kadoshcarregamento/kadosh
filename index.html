@@ -691,6 +691,14 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       </div>
     </div>
 
+    <!-- Leitura mensal apto 1404 -->
+    <div class="admin-section">
+      <div class="admin-section-titulo">Leitura Mensal — Apartamento 1404</div>
+      <div id="apto1404-wrap">
+        <div class="hist-vazio" style="padding:8px 0">Carregando...</div>
+      </div>
+    </div>
+
     <!-- Relatório mensal -->
     <div class="admin-section">
       <div class="admin-section-titulo">Relatório Financeiro por Email</div>
@@ -1095,7 +1103,7 @@ function mostrarTela(id) {
   var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa'); window.scrollTo(0,0);
   if(id==='tela-status') carregarStatusVagas();
   if(id==='tela-cobranca') carregarCobranca();
-  if(id==='tela-admin') { carregarListaAdmin(); carregarPrecoAdmin(); carregarMesesRelAdmin(); }
+  if(id==='tela-admin') { carregarListaAdmin(); carregarPrecoAdmin(); carregarMesesRelAdmin(); carregarApto1404(); }
   if(id==='tela-carros') carregarCarros();
 }
 function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg||'Aguarde...';document.getElementById('overlay').classList.remove('oculto');}
@@ -1335,6 +1343,94 @@ function iniciarScanner(){
 function pararScanner(){if(_qrScanner){_qrScanner.stop().catch(function(){});_qrScanner=null;}_qrProcessing=false;clearTimeout(_qrTimeoutHandle);}
 
 
+
+
+// ══ LEITURA MENSAL — APARTAMENTO 1404 ═══════════════════════════
+function carregarApto1404() {
+  var el = document.getElementById('apto1404-wrap');
+  if (!el) return;
+  api('getEstadoLeituraMensal1404', {})
+    .then(function(res) { renderApto1404(res); })
+    .catch(function() { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Falha ao carregar.</div>'; });
+}
+
+function renderApto1404(res) {
+  var el = document.getElementById('apto1404-wrap');
+  if (!res || !res.existeAba) {
+    el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Aba "Registros_1404" não encontrada. Crie a aba na planilha (duplicando uma das abas Registros_ existentes) antes de usar esta função.</div>';
+    return;
+  }
+
+  var statusHtml = '';
+  if (res.temLeituraAnterior) {
+    statusHtml = '<div style="font-size:12px;color:var(--txt-sub);margin-bottom:10px">' +
+      (res.aberto ? 'Última leitura (em aberto): ' : 'Última leitura registrada: ') +
+      '<b style="color:var(--txt)">' + res.leituraAnterior + ' kWh</b> em ' + res.dataAnterior + '</div>';
+  } else {
+    statusHtml = '<div style="font-size:12px;color:var(--txt-sub);margin-bottom:10px">Nenhuma leitura registrada ainda. O primeiro envio será a leitura inicial do medidor.</div>';
+  }
+
+  el.innerHTML = statusHtml +
+    '<div class="campo" style="margin-bottom:10px">' +
+      '<label>Leitura atual do medidor (kWh)</label>' +
+      '<input type="text" id="apto1404-leitura" placeholder="Digite apenas números" inputmode="numeric" oninput="mascaraLeitura(this)">' +
+      '<div class="helper-text-leitura">Digite apenas números — a vírgula é inserida automaticamente antes do último dígito.</div>' +
+    '</div>' +
+    '<div id="apto1404-msg" class="oculto" style="margin-bottom:8px"></div>' +
+    '<button type="button" class="btn-primary" id="apto1404-btn" style="font-size:19px" onclick="enviarLeituraApto1404()">' +
+      '<span class="btn-txt">Enviar leitura 1404</span>' +
+      '<span class="btn-load oculto">Enviando...</span>' +
+    '</button>';
+}
+
+function enviarLeituraApto1404() {
+  var campo = document.getElementById('apto1404-leitura');
+  var msg   = document.getElementById('apto1404-msg');
+  var btn   = document.getElementById('apto1404-btn');
+  var valor = campo.value.trim();
+
+  msg.className = 'oculto';
+  if (!valor) { msg.textContent = 'Digite a leitura do medidor.'; msg.className = 'msg-erro'; return; }
+
+  btn.disabled = true;
+  btn.querySelector('.btn-txt').classList.add('oculto');
+  btn.querySelector('.btn-load').classList.remove('oculto');
+
+  api('registrarLeituraMensal1404', {
+    valor:      valor,
+    nomeAdmin:  App.usuario ? App.usuario.nome  : 'Administração',
+    emailAdmin: App.usuario ? App.usuario.email : ''
+  })
+  .then(function(res) {
+    btn.disabled = false;
+    btn.querySelector('.btn-txt').classList.remove('oculto');
+    btn.querySelector('.btn-load').classList.add('oculto');
+
+    if (!res || res.erro) {
+      msg.textContent = res ? res.erro : 'Erro ao registrar.';
+      msg.className = 'msg-erro';
+      if (res && res.tipoErro) { campo.value = ''; campo.focus(); }
+      return;
+    }
+
+    if (res.periodoFechado) {
+      var p = res.periodoFechado;
+      msg.textContent = '✅ Período de ' + p.inicio.split(' ')[0] + ' a ' + p.fim.split(' ')[0] +
+        ': consumo de ' + p.consumo + ' kWh. Nova leitura inicial (' + res.novaLeituraInicial + ' kWh) já registrada.';
+    } else {
+      msg.textContent = '✅ Leitura inicial de ' + res.novaLeituraInicial + ' kWh registrada. O consumo será calculado na próxima leitura mensal.';
+    }
+    msg.className = 'msg-ok';
+    carregarApto1404();
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.querySelector('.btn-txt').classList.remove('oculto');
+    btn.querySelector('.btn-load').classList.add('oculto');
+    msg.textContent = 'Falha de conexão. Tente novamente.';
+    msg.className = 'msg-erro';
+  });
+}
 
 // ══ AJUDA DE CONEXÃO — encerramento de emergência ═══════════════
 var _ajudaSessaoAtual = null;
@@ -2764,4 +2860,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
