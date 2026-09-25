@@ -1032,6 +1032,21 @@ var App = { usuario:null, submissionId:null, vagaId:null, kwhInicial:null, inici
 var LS_KEY = 'ev_charge_creds';
 var _qrScanner = null, _qrProcessing = false, _cbCounter = 0, _qrTimeoutHandle = null;
 
+
+// Envolve chamadas idempotentes (iniciar/parar carregamento) com uma
+// segunda tentativa silenciosa antes de mostrar erro ao morador. Como o
+// backend já é seguro contra repetição (lock + resposta idempotente), se a
+// 1ª chamada tiver realmente gravado e só a resposta se perdeu por sinal
+// instável, a 2ª tentativa traz de volta o mesmo resultado de sucesso —
+// sem o morador nunca ver a mensagem de falha.
+function apiComRetentativa(action, params, aoRetentar) {
+  return api(action, params).catch(function(err) {
+    if (aoRetentar) aoRetentar();
+    return new Promise(function(resolve) { setTimeout(resolve, 1200); })
+      .then(function() { return api(action, params); });
+  });
+}
+
 function api(action, params) {
   return new Promise(function(resolve, reject) {
     var cbName = '_gasCb' + (++_cbCounter);
@@ -1700,16 +1715,20 @@ function _enviarLeituraInicialComValor(leitura) {
   if (erroEl) erroEl.classList.add('oculto');
   if (btn) { btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto'); }
 
-  api('iniciarCarregamento', {
+  apiComRetentativa('iniciarCarregamento', {
     apartamento: String(App.usuario.apartamento),
     nome:        String(App.usuario.nome),
     email:       String(App.usuario.email),
     vagaId:      App.vagaId,
     leituraInicial: leitura,
     placa:       App._placaSelecionada || ''
+  }, function() {
+    if (btn) btn.querySelector('.btn-txt').textContent = 'Verificando...';
+    overlayShow('Verificando...');
   })
   .then(function(res) {
     overlayHide();
+    if (btn) btn.querySelector('.btn-txt').textContent = 'Enviar Leitura';
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
 
     if (!res || res.erro) {
@@ -1786,14 +1805,15 @@ function enviarLeituraFinal() {
 
   btn.disabled=true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
 
-  api('pararCarregamento', {
+  apiComRetentativa('pararCarregamento', {
     apartamento:    String(App.usuario.apartamento),
     submissionId:   String(App.submissionId),
     vagaId:         App.vagaId,
     leituraFinal:   leitura,
     nomeEncerrou:   String(App.usuario.nome)
-  })
+  }, function() { btn.querySelector('.btn-txt').textContent = 'Verificando...'; })
   .then(function(res) {
+    btn.querySelector('.btn-txt').textContent = 'Encerrar Carregamento';
     btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto');
     if (!res || res.erro) {
       erroEl.textContent = res ? res.erro : 'Erro ao encerrar.';
