@@ -418,7 +418,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
          href="https://wa.me/?text=Veja%20este%20sistema%20de%20controle%20de%20carregamento%20de%20carros%20el%C3%A9tricos%20que%20tem%20aqui%20no%20pr%C3%A9dio%21%21%20https%3A//tinyurl.com/VagasEletricas">
         <span style="font-size:14px">📲</span> Divulgar pelo WhatsApp
       </a>
-      <div class="credito">Desenvolvido por <span style="color:var(--txt-sub)">Bernardo Faria</span> · <span id="app-build" style="font-size:10px;opacity:.55"></span></div>
+      <div class="credito">Desenvolvido por <span style="color:var(--txt-sub)">Bernardo Faria</span> · <span id="app-build" style="font-size:10px;opacity:.55"></span> · <button type="button" class="termos-link" style="font-size:11px" onclick="limparCacheEAtualizar()">Atualizar app</button></div>
     </div>
   </div>
 </div>
@@ -901,6 +901,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div style="display:flex;gap:10px;margin-top:4px">
       <button class="btn-link" onclick="document.getElementById('modal-notificacoes').classList.add('oculto')">Fechar</button>
       <button class="btn-link" style="opacity:.55" onclick="document.getElementById('modal-notificacoes').classList.add('oculto');abrirAjudaConexao()">Ajuda</button>
+      <button class="btn-link" style="opacity:.55" onclick="document.getElementById('modal-notificacoes').classList.add('oculto');limparCacheEAtualizar()">Atualizar app</button>
     </div>
   </div>
 </div>
@@ -1057,7 +1058,7 @@ function api(action, params) {
       reject(new Error('Sem resposta do servidor. Verifique sua conexão (Wi-Fi ou dados) e tente novamente.'));
     }, 20000);
     window[cbName] = function(data) { clearTimeout(timeout); delete window[cbName]; var s=document.getElementById(cbName); if(s)s.remove(); resolve(data); };
-    var url = GAS_URL + '?action=' + encodeURIComponent(action) + '&payload=' + encodeURIComponent(JSON.stringify(params||{})) + '&callback=' + cbName;
+    var url = GAS_URL + '?action=' + encodeURIComponent(action) + '&payload=' + encodeURIComponent(JSON.stringify(params||{})) + '&callback=' + cbName + '&_=' + Date.now();
     var script = document.createElement('script');
     script.id = cbName; script.src = url;
     script.onerror = function() { clearTimeout(timeout); delete window[cbName]; script.remove(); reject(new Error('Falha ao contactar o servidor. Verifique sua conexão e tente novamente.')); };
@@ -1066,6 +1067,11 @@ function api(action, params) {
 }
 
 window.addEventListener('load', function() {
+  // Após "Atualizar app", tira o parâmetro temporário da URL
+  try {
+    var _u = new URL(location.href);
+    if (_u.searchParams.has('r')) { _u.searchParams.delete('r'); history.replaceState(null, '', _u.pathname + (_u.search || '') + _u.hash); }
+  } catch(e) {}
   // Injetar configurações no DOM
   document.title = APP_CONFIG.TITULO_APP;
   document.querySelectorAll('#app-logo-img').forEach(function(img){ img.src = APP_CONFIG.LOGO_URL; img.alt = APP_CONFIG.TITULO_APP; });
@@ -1444,6 +1450,37 @@ function enviarLeituraApto1404() {
     btn.querySelector('.btn-load').classList.add('oculto');
     msg.textContent = 'Falha de conexão. Tente novamente.';
     msg.className = 'msg-erro';
+  });
+}
+
+// ══ ATUALIZAR APP (limpa cache e recarrega) ══════════════════
+function limparCacheEAtualizar() {
+  if (navigator.onLine === false) { alert('Sem conexão no momento. Tente novamente quando estiver conectado.'); return; }
+  if (!confirm('Atualizar o app? Ele será recarregado com a versão mais recente. Carregamentos em andamento não são afetados.')) return;
+
+  overlayShow('Atualizando...');
+  var tarefas = [];
+  try { sessionStorage.clear(); } catch(e) {}
+
+  // Cache Storage (o app não usa, mas garante que nada antigo fique guardado)
+  if (window.caches && caches.keys) {
+    tarefas.push(caches.keys().then(function(ks) {
+      return Promise.all(ks.map(function(k) { return caches.delete(k); }));
+    }).catch(function() {}));
+  }
+
+  // Força o navegador a baixar de novo a página e o service worker, ignorando o cache HTTP
+  var base = location.origin + location.pathname;
+  tarefas.push(fetch(base, { cache: 'reload' }).catch(function() {}));
+  tarefas.push(fetch(new URL('sw.js', base).href, { cache: 'reload' }).catch(function() {}));
+  if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+    tarefas.push(navigator.serviceWorker.getRegistration().then(function(r) { if (r) return r.update(); }).catch(function() {}));
+  }
+
+  // Não trava se a rede estiver ruim: espera no máximo 6s
+  var limite = new Promise(function(res) { setTimeout(res, 6000); });
+  Promise.race([Promise.all(tarefas), limite]).then(function() {
+    location.replace(base + '?r=' + Date.now());
   });
 }
 
@@ -2880,3 +2917,4 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
+
