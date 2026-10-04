@@ -333,11 +333,11 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .btn-outline-vaga:active{opacity:.6}
 .vaga-manual-btn{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 6px;cursor:pointer;-webkit-appearance:none;display:flex;flex-direction:column;align-items:center;gap:6px}
 .vaga-manual-btn .id{font-family:var(--f-display);font-size:20px;color:var(--txt);letter-spacing:.02em}
-.vaga-manual-btn .st{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.vaga-manual-btn .st{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3}
 .vaga-manual-btn.livre{border-color:rgba(59,205,192,.35)}
 .vaga-manual-btn.livre .st{color:var(--k-green)}
-.vaga-manual-btn.ocupada{border-color:rgba(255,82,82,.3);opacity:.65}
-.vaga-manual-btn.ocupada .st{color:var(--red)}
+.vaga-manual-btn.ocupada{border-color:rgba(255,184,77,.45);background:rgba(255,184,77,.06)}
+.vaga-manual-btn.ocupada .st{color:#ffb84d}
 .marca-btn:active,.marca-btn.sel{background:rgba(59,205,192,.15);border-color:var(--k-green);color:var(--k-green)}
 .modelo-grid{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto}
 .modelo-btn{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-size:14px;color:var(--txt);cursor:pointer;text-align:left;-webkit-appearance:none}
@@ -476,7 +476,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 <div id="modal-selecionar-vaga" class="admin-modal-overlay oculto">
   <div class="admin-modal-box">
     <div class="admin-modal-titulo" style="font-size:20px">Selecionar Vaga</div>
-    <p style="font-size:14px;color:var(--txt-sub);text-align:center;margin:0">Use apenas se a câmera não estiver funcionando. Confira o número da vaga antes de confirmar.</p>
+    <p style="font-size:14px;color:var(--txt-sub);text-align:center;margin:0">Use apenas se a câmera não estiver funcionando. Confira o número da vaga antes de confirmar. Se a vaga constar como &quot;sessão aberta&quot;, você poderá selecioná-la e será orientado a conferir o medidor.</p>
     <div id="lista-vagas-manual" class="marca-grid" style="grid-template-columns:1fr 1fr 1fr"><div class="hist-vazio">Carregando...</div></div>
     <button class="btn-link" onclick="document.getElementById('modal-selecionar-vaga').classList.add('oculto')">Cancelar</button>
   </div>
@@ -1625,9 +1625,12 @@ function abrirSelecaoManualVaga() {
       }
       el.innerHTML = vagas.map(function(v) {
         var livre = String(v.status).toLowerCase() === 'livre';
+        // Vaga ocupada = há sessão aberta. Continua selecionável: o fluxo normal
+        // (avancarParaLeituraInicial) detecta a sessão aberta, mostra o alerta,
+        // pede a leitura atual e encerra a sessão anterior automaticamente.
         return '<button type="button" class="vaga-manual-btn ' + (livre?'livre':'ocupada') + '" data-id="' + v.id + '" ' +
-          (livre ? 'onclick="selecionarVagaManual(this.dataset.id)"' : 'disabled') + '>' +
-          '<span class="id">' + v.id + '</span><span class="st">' + (livre?'Livre':'Ocupada') + '</span>' +
+          'onclick="selecionarVagaManual(this.dataset.id)">' +
+          '<span class="id">' + v.id + '</span><span class="st">' + (livre?'Livre':'Ocupado / sessão aberta') + '</span>' +
           '</button>';
       }).join('');
     })
