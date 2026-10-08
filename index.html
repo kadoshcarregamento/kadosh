@@ -204,6 +204,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .admin-modal-overlay.oculto{display:none!important}
 .admin-modal-box{background:#111;border:1px solid rgba(59,205,192,.2);border-radius:var(--r);padding:24px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;overflow-x:hidden;box-sizing:border-box}
 .admin-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.res-in{font-size:16px;font-family:var(--f-body);padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);outline:none;width:100%;-webkit-appearance:none;box-sizing:border-box}
 .admin-section-titulo{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-sub);margin-bottom:12px}
 .custo-campo{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .custo-ajuda{width:26px;height:26px;flex-shrink:0;border-radius:50%;background:var(--bg-input);border:1px solid var(--border);color:var(--txt-sub);font-size:13px;font-weight:700;font-family:var(--f-body);cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center}
@@ -683,6 +684,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
   <div class="tela-admin-scroll">
+    <button class="btn-primary" onclick="mostrarTela('tela-reservas')" style="font-size:20px">📅 Reservas</button>
     <!-- R$/kWh -->
     <div class="admin-section">
       <div class="admin-section-titulo">Custo do kWh do Mês</div>
@@ -711,6 +713,59 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 
     <button class="btn-primary" onclick="abrirModalCadastro()" style="font-size:20px">➕ Cadastrar Novo Usuário</button>
     <div id="admin-lista"><div class="hist-vazio">Carregando...</div></div>
+  </div>
+</div>
+
+<!-- RESERVAS (teste, só admin) -->
+<div id="tela-reservas" class="tela">
+  <header class="app-header">
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Reservas<span class="hdr-titulo-sub">Fase de teste · Admin</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-admin')">← Voltar</button></div>
+  </header>
+  <div class="tela-admin-scroll">
+    <div class="admin-section">
+      <div class="admin-section-titulo">Nova reserva</div>
+      <div class="campo"><label>Vaga</label>
+        <select class="res-in" id="res-vaga" onchange="resAtualizarTranches()">
+          <option value="3A">3A</option><option value="3B">3B</option><option value="3C">3C</option>
+          <option value="3D">3D</option><option value="2A">2A</option><option value="1A">1A</option>
+        </select></div>
+      <div class="campo"><label>Dia</label><input type="date" class="res-in" id="res-data"></div>
+      <div class="campo"><label>Horário de início (hora cheia ou meia hora)</label>
+        <select class="res-in" id="res-hora"></select></div>
+      <div class="campo"><label>Duração</label>
+        <select class="res-in" id="res-tranche"></select></div>
+      <div class="custo-formula" id="res-resumo">—</div>
+      <div id="res-msg" class="oculto" style="margin-bottom:8px"></div>
+      <button type="button" class="btn-primary" id="btn-res-criar" onclick="resCriar()" style="font-size:19px">
+        <span class="btn-txt">Reservar</span><span class="btn-load oculto">Aguarde...</span>
+      </button>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-titulo">Valores (definidos pelo admin)</div>
+      <div class="custo-campo">
+        <div class="custo-lbl"><b>Hora extra / ociosidade</b>R$ por hora, após 10 min de tolerância</div>
+        <input type="text" class="custo-input" id="res-cfg-he" inputmode="numeric" placeholder="0,00" oninput="mascaraDinheiroSimples(this)">
+      </div>
+      <div class="custo-campo">
+        <div class="custo-lbl"><b>Não comparecimento</b>R$ por reserva não utilizada</div>
+        <input type="text" class="custo-input" id="res-cfg-ns" inputmode="numeric" placeholder="0,00" oninput="mascaraDinheiroSimples(this)">
+      </div>
+      <div class="custo-campo">
+        <div class="custo-lbl"><b>Antecedência mínima</b>minutos antes do início</div>
+        <input type="text" class="custo-input" id="res-cfg-an" inputmode="numeric" placeholder="15" oninput="this.value=this.value.replace(/\D/g,'')">
+      </div>
+      <div id="res-cfg-msg" class="oculto" style="margin-bottom:8px"></div>
+      <button type="button" class="btn-primary" onclick="resSalvarConfig()" style="font-size:19px">Salvar valores</button>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-titulo">Reservas (futuras e últimos 7 dias)</div>
+      <div class="custo-formula" style="margin-bottom:10px">Comparação com a sessão real (hora extra / não comparecimento) só para o apto 1601. Nada é cobrado automaticamente.</div>
+      <div id="res-lista"><div class="hist-vazio" style="padding:8px 0">Carregando...</div></div>
+    </div>
   </div>
 </div>
 
@@ -1009,7 +1064,7 @@ var APP_CONFIG = {
   LOGO_URL: 'https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png',
 
   // Versão do build — suba este número a cada publicação para conferir cache
-  BUILD: '2026.07.25-termos',
+  BUILD: '2026.10.07-reservas',
 
   // ── FIREBASE PUSH NOTIFICATIONS ──────────────────────────────────────────
   // VAPID Key: Firebase Console → Configurações → Cloud Messaging → Certificados push da Web
@@ -1126,6 +1181,7 @@ function mostrarTela(id) {
   if(id==='tela-cobranca') carregarCobranca();
   if(id==='tela-admin') { carregarListaAdmin(); carregarPrecoAdmin(); carregarMesesRelAdmin(); carregarApto1404(); }
   if(id==='tela-carros') carregarCarros();
+  if(id==='tela-reservas') resIniciarTela();
 }
 function overlayShow(msg){document.getElementById('overlay-msg').textContent=msg||'Aguarde...';document.getElementById('overlay').classList.remove('oculto');}
 function overlayHide(){document.getElementById('overlay').classList.add('oculto');}
@@ -1365,6 +1421,127 @@ function pararScanner(){if(_qrScanner){_qrScanner.stop().catch(function(){});_qr
 
 
 
+
+// ══ RESERVAS (teste, só admin) ══════════════════════════════════
+var RES_TRANCHES = [2,4,6,8,10,12];
+function resKw(vaga){ return vaga==='2A' ? 4.5 : 2; }
+function resIniciarTela() {
+  var h = document.getElementById('res-hora');
+  if (h && !h.options.length) {
+    for (var i=0;i<48;i++){ var hh=('0'+Math.floor(i/2)).slice(-2), mm=(i%2?'30':'00'); var o=document.createElement('option'); o.value=hh+':'+mm; o.textContent=hh+':'+mm; h.appendChild(o); }
+    h.value='08:00';
+  }
+  var d = document.getElementById('res-data');
+  if (d && !d.value) {
+    var n = new Date(); var iso = n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2)+'-'+('0'+n.getDate()).slice(-2);
+    d.min = iso; d.value = iso;
+  }
+  resAtualizarTranches();
+  ['res-data','res-hora','res-tranche'].forEach(function(id){ var e=document.getElementById(id); if(e) e.onchange=resAtualizarResumo; });
+  resCarregarConfig();
+  resCarregarLista();
+}
+function resAtualizarTranches() {
+  var vaga = document.getElementById('res-vaga').value;
+  var sel = document.getElementById('res-tranche');
+  var atual = sel.value || '4';
+  sel.innerHTML = '';
+  RES_TRANCHES.forEach(function(t){
+    var kwh = Math.round(t*resKw(vaga));
+    var o = document.createElement('option'); o.value = String(t); o.textContent = t+' horas — ≈ '+kwh+' kWh';
+    sel.appendChild(o);
+  });
+  sel.value = atual;
+  resAtualizarResumo();
+}
+function resAtualizarResumo() {
+  var el = document.getElementById('res-resumo'); if (!el) return;
+  var data = document.getElementById('res-data').value, hora = document.getElementById('res-hora').value;
+  var t = Number(document.getElementById('res-tranche').value);
+  if (!data || !hora || !t) { el.textContent = '—'; return; }
+  var p = data.split('-'), hm = hora.split(':');
+  var ini = new Date(+p[0], +p[1]-1, +p[2], +hm[0], +hm[1]);
+  var fim = new Date(ini.getTime() + t*3600000);
+  function f(d){ return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+  el.innerHTML = 'Das <b>'+f(ini)+'</b> até <b>'+f(fim)+'</b>';
+}
+function mascaraDinheiroSimples(input) {
+  var d = input.value.replace(/\D/g, '').replace(/^0+/, '');
+  if (!d) { input.value = ''; return; }
+  while (d.length < 3) d = '0' + d;
+  input.value = parseInt(d.slice(0, -2), 10).toLocaleString('pt-BR') + ',' + d.slice(-2);
+}
+function resMsg(id, txt, ok) {
+  var m = document.getElementById(id); if (!m) return;
+  m.textContent = txt; m.className = ok ? 'msg-ok' : 'msg-erro';
+}
+function resCarregarConfig() {
+  api('res_getConfig', { email: App.usuario.email }).then(function(r){
+    if (!r || r.erro) { resMsg('res-cfg-msg', r ? r.erro : 'Erro ao carregar valores.', false); return; }
+    document.getElementById('res-cfg-he').value = fmtBR(r.horaExtra,2);
+    document.getElementById('res-cfg-ns').value = fmtBR(r.noShow,2);
+    document.getElementById('res-cfg-an').value = String(r.antecedencia);
+    document.getElementById('res-cfg-msg').className = 'oculto';
+  }).catch(function(){ resMsg('res-cfg-msg','Falha de conexão.',false); });
+}
+function resSalvarConfig() {
+  api('res_salvarConfig', {
+    email: App.usuario.email,
+    horaExtra: document.getElementById('res-cfg-he').value,
+    noShow: document.getElementById('res-cfg-ns').value,
+    antecedencia: document.getElementById('res-cfg-an').value || '0'
+  }).then(function(r){
+    if (!r || r.erro) { resMsg('res-cfg-msg', r ? r.erro : 'Erro ao salvar.', false); return; }
+    resMsg('res-cfg-msg','Valores salvos ✓',true); resCarregarLista();
+  }).catch(function(){ resMsg('res-cfg-msg','Falha de conexão. Confira se salvou antes de repetir.',false); });
+}
+function resCriar() {
+  var btn = document.getElementById('btn-res-criar');
+  var u = App.usuario;
+  btn.disabled = true; btn.querySelector('.btn-txt').classList.add('oculto'); btn.querySelector('.btn-load').classList.remove('oculto');
+  document.getElementById('res-msg').className = 'oculto';
+  function fim(){ btn.disabled=false; btn.querySelector('.btn-txt').classList.remove('oculto'); btn.querySelector('.btn-load').classList.add('oculto'); }
+  api('res_criar', {
+    email: u.email, apto: String(u.apartamento), nome: u.nome,
+    vaga: document.getElementById('res-vaga').value,
+    data: document.getElementById('res-data').value,
+    hora: document.getElementById('res-hora').value,
+    tranche: Number(document.getElementById('res-tranche').value)
+  }).then(function(r){
+    fim();
+    if (!r || r.erro) { resMsg('res-msg', r ? r.erro : 'Erro ao reservar.', false); return; }
+    resMsg('res-msg','Reservado: '+r.inicio+' até '+r.fim+' ✓',true);
+    resCarregarLista();
+  }).catch(function(){ fim(); resMsg('res-msg','Falha de conexão. Veja na lista abaixo se a reserva foi criada antes de repetir.',false); });
+}
+function resCancelar(id) {
+  if (!confirm('Cancelar esta reserva?')) return;
+  api('res_cancelar', { email: App.usuario.email, id: id }).then(function(r){
+    if (!r || r.erro) { alert(r ? r.erro : 'Erro ao cancelar.'); return; }
+    resCarregarLista();
+  }).catch(function(){ alert('Falha de conexão.'); });
+}
+function resCarregarLista() {
+  var el = document.getElementById('res-lista'); if (!el) return;
+  api('res_listar', { email: App.usuario.email }).then(function(r){
+    if (!r || r.erro) { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">'+(r?r.erro:'Erro')+'</div>'; return; }
+    if (!r.reservas.length) { el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Nenhuma reserva.</div>'; return; }
+    var cor = { ok:'var(--k-green)', usando:'var(--k-green)', futura:'var(--txt-sub)', andamento:'var(--txt-sub)', excedendo:'#ff8080', excedeu:'#ff8080', naocomp:'#ff8080' };
+    el.innerHTML = r.reservas.map(function(x){
+      var av = x.avaliacao, extra = '';
+      if (x.status !== 'Ativa') extra = '<div style="font-size:13px;color:var(--txt-sub)">'+x.status+'</div>';
+      else if (av) {
+        extra = '<div style="font-size:13px;color:'+(cor[av.estado]||'var(--txt-sub)')+';margin-top:4px">'+av.texto+
+          (av.inicioReal ? ' · sessão '+av.inicioReal+(av.fimReal?' → '+av.fimReal:' → em curso') : '')+
+          (av.taxa ? ' · R$ '+fmtBR(av.taxa,2) : '')+'</div>';
+      }
+      var btn = x.status === 'Ativa' ? '<button type="button" class="btn-link" style="padding:6px 0" onclick="resCancelar(\''+x.id+'\')">Cancelar</button>' : '';
+      return '<div style="padding:10px 0;border-bottom:1px solid var(--border)">'+
+        '<div style="font-weight:600">Vaga '+x.vaga+' · Apto '+x.apto+'</div>'+
+        '<div style="font-size:14px;color:var(--txt-sub)">'+x.inicio+' → '+x.fim+' ('+x.tranche+'h)</div>'+extra+btn+'</div>';
+    }).join('');
+  }).catch(function(){ el.innerHTML = '<div class="hist-vazio" style="padding:8px 0">Falha ao carregar.</div>'; });
+}
 
 // ══ LEITURA MENSAL — APARTAMENTO 1404 ═══════════════════════════
 function carregarApto1404() {
