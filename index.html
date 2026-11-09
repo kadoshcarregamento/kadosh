@@ -454,6 +454,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div class="hdr-dir"><button class="btn-sair" onclick="fecharScanner()">← Voltar</button></div>
   </header>
   <div class="qr-scroll">
+    <div id="qr-area-scan" style="display:contents">
     <div>
       <h2 class="qr-titulo">Escanear Vaga</h2>
       <p class="qr-sub">Aponte a câmera para o QR code da vaga</p>
@@ -466,10 +467,11 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     </div>
     <div id="qr-status" class="qr-status">Iniciando câmera...</div>
     <div id="qr-erro" class="msg-erro oculto"></div>
+    </div>
 
     <div id="qr-fallback" class="qr-fallback oculto">
       <div class="qr-fallback-ico">📷</div>
-      <div class="qr-fallback-titulo" id="qr-fallback-titulo">Não conseguimos identificar o QR code.</div>
+      <div class="qr-fallback-titulo" id="qr-fallback-titulo">Não foi possível ler o QR code. Afaste o telefone do QR code e tente novamente, ou selecione a vaga manualmente.</div>
       <button type="button" class="btn-primary" onclick="tentarNovamenteScanner()" style="font-size:19px">🔄 Tentar novamente</button>
       <button type="button" class="btn-outline-vaga" onclick="abrirSelecaoManualVaga()">⌨️ Selecionar vaga manualmente</button>
     </div>
@@ -1472,7 +1474,7 @@ function iniciarScanner(){
   .then(function(){
     document.getElementById('qr-status').textContent='Aponte a câmera para o QR code da vaga';
     // Se não ler nenhum QR em 18s, oferece tentar de novo ou escolher a vaga na mão
-    _qrTimeoutHandle = setTimeout(function(){ mostrarFallbackScanner('Não conseguimos identificar o QR code.'); }, 18000);
+    _qrTimeoutHandle = setTimeout(function(){ mostrarFallbackScanner('Não foi possível ler o QR code. Afaste o telefone do QR code e tente novamente, ou selecione a vaga manualmente.'); }, 18000);
   })
   .catch(function(err){
     document.getElementById('qr-status').textContent='';
@@ -1836,7 +1838,8 @@ document.addEventListener('input', function(e) {
 // ══ FALLBACK DO SCANNER (câmera falha ou não lê) ═══════════════
 function mostrarFallbackScanner(motivo) {
   pararScanner();
-  document.getElementById('qr-fallback-titulo').textContent = motivo || 'Não conseguimos identificar o QR code.';
+  document.getElementById('qr-fallback-titulo').textContent = motivo || 'Não foi possível ler o QR code. Afaste o telefone do QR code e tente novamente, ou selecione a vaga manualmente.';
+  document.getElementById('qr-area-scan').style.display = 'none';
   document.getElementById('qr-fallback').classList.remove('oculto');
   document.getElementById('qr-status').textContent = '';
 }
@@ -1844,6 +1847,8 @@ function mostrarFallbackScanner(motivo) {
 function ocultarFallbackScanner() {
   var el = document.getElementById('qr-fallback');
   if (el) el.classList.add('oculto');
+  var area = document.getElementById('qr-area-scan');
+  if (area) area.style.display = 'contents';
 }
 
 function tentarNovamenteScanner() {
