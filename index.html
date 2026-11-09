@@ -292,6 +292,9 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
 .andar-titulo{font-family:var(--f-display);font-size:18px;letter-spacing:.06em;color:var(--txt-sub);text-transform:uppercase;margin-bottom:8px}
 .vagas-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .vaga-card{background:var(--bg-card);border-radius:var(--r);border:1px solid var(--border);padding:18px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.vaga-badge.em-breve,.vaga-card.em-breve,.vaga-manual-btn.em-breve{opacity:.45;filter:grayscale(1)}
+.vaga-card.em-breve{border-style:dashed}
+.vaga-badge.em-breve .dot{background:var(--txt-sub)}
 .vaga-card.livre{border-color:rgba(59,205,192,.4);background:rgba(59,205,192,.06)}
 .vaga-card.ocupado{border-color:rgba(255,77,77,.3);background:rgba(255,77,77,.05)}
 .vaga-icone{font-size:32px}
@@ -684,24 +687,54 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
     <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-dash')">← Voltar</button></div>
   </header>
   <div class="tela-admin-scroll">
+    <button class="btn-primary" onclick="mostrarTela('tela-admin-kwh')" style="font-size:20px">💲 Custo do kWh</button>
+    <button class="btn-primary" onclick="mostrarTela('tela-admin-1404')" style="font-size:20px">🔌 Leitura Apto 1404</button>
+    <button class="btn-primary" onclick="mostrarTela('tela-admin-relatorio')" style="font-size:20px">📩 Relatório mensal</button>
+    <button class="btn-primary" onclick="mostrarTela('tela-admin-moradores')" style="font-size:20px">👥 Cadastro de Moradores</button>
+    <button class="btn-primary" onclick="mostrarTela('tela-admin-vagas')" style="font-size:20px">🅿️ Gestão de Vagas</button>
     <button class="btn-primary" onclick="mostrarTela('tela-reservas')" style="font-size:20px">📅 Reservas</button>
-    <!-- R$/kWh -->
+  </div>
+</div>
+
+<div id="tela-admin-kwh" class="tela">
+  <header class="app-header">
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Custo do kWh<span class="hdr-titulo-sub">Administração · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-admin')">← Voltar</button></div>
+  </header>
+  <div class="tela-admin-scroll">
     <div class="admin-section">
       <div class="admin-section-titulo">Custo do kWh do Mês</div>
       <div id="admin-preco-wrap">
         <div class="hist-vazio" style="padding:8px 0">Carregando...</div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Leitura mensal apto 1404 -->
+<div id="tela-admin-1404" class="tela">
+  <header class="app-header">
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Leitura Apto 1404<span class="hdr-titulo-sub">Administração · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-admin')">← Voltar</button></div>
+  </header>
+  <div class="tela-admin-scroll">
     <div class="admin-section">
       <div class="admin-section-titulo">Leitura Mensal — Apartamento 1404</div>
       <div id="apto1404-wrap">
         <div class="hist-vazio" style="padding:8px 0">Carregando...</div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Relatório mensal -->
+<div id="tela-admin-relatorio" class="tela">
+  <header class="app-header">
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Relatório mensal<span class="hdr-titulo-sub">Administração · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-admin')">← Voltar</button></div>
+  </header>
+  <div class="tela-admin-scroll">
     <div class="admin-section">
       <div class="admin-section-titulo">Relatório Financeiro por Email</div>
       <button type="button" onclick="toggleMesesAdmin()" id="btn-toggle-meses" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--txt);font-family:var(--f-body);font-size:15px;padding:11px 14px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;-webkit-appearance:none;margin-bottom:0">
@@ -710,9 +743,34 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       <div id="admin-meses-rel" style="display:none;margin-top:8px"><div class="hist-vazio" style="padding:8px 0">Carregando...</div></div>
       <button type="button" class="btn-primary" id="btn-enviar-rel-admin" onclick="enviarRelatorioAdmin()" style="font-size:20px;margin-top:12px">📩 Enviar relatório</button>
     </div>
+  </div>
+</div>
 
+<div id="tela-admin-moradores" class="tela">
+  <header class="app-header">
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Cadastro de Moradores<span class="hdr-titulo-sub">Administração · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-admin')">← Voltar</button></div>
+  </header>
+  <div class="tela-admin-scroll">
     <button class="btn-primary" onclick="abrirModalCadastro()" style="font-size:20px">➕ Cadastrar Novo Usuário</button>
     <div id="admin-lista"><div class="hist-vazio">Carregando...</div></div>
+  </div>
+</div>
+
+<div id="tela-admin-vagas" class="tela">
+  <header class="app-header">
+    <img id="app-logo-img" src="" class="hdr-logo-img" alt="Kadosh">
+    <div class="hdr-titulo">Gestão de Vagas<span class="hdr-titulo-sub">Administração · Kadosh</span></div>
+    <div class="hdr-dir"><button class="btn-sair" onclick="mostrarTela('tela-admin')">← Voltar</button></div>
+  </header>
+  <div class="tela-admin-scroll">
+    <div class="admin-section">
+      <div class="admin-section-titulo">Ativar / desativar vagas</div>
+      <div style="font-size:13px;color:var(--txt-sub);margin-bottom:10px">Vaga desativada aparece como "Em breve" para os moradores e não pode ser usada. O admin ainda consegue testá-la.</div>
+      <div id="vagas-admin-lista"><div class="hist-vazio">Carregando...</div></div>
+      <div id="vagas-admin-msg" class="msg-erro oculto"></div>
+    </div>
   </div>
 </div>
 
@@ -729,7 +787,7 @@ body{height:100%;width:100%;font-family:var(--f-body);background:var(--bg);color
       <div class="campo"><label>Vaga</label>
         <select class="res-in" id="res-vaga" onchange="resAtualizarTranches()">
           <option value="3A">3A</option><option value="3B">3B</option><option value="3C">3C</option>
-          <option value="3D">3D</option><option value="2A">2A</option><option value="1A">1A</option>
+          <option value="3D">3D</option><option value="2A">2A</option><option value="2B">2B</option><option value="1A">1A</option>
         </select></div>
       <div class="campo"><label>Dia</label><input type="date" class="res-in" id="res-data"></div>
       <div class="campo"><label>Horário de início (hora cheia ou meia hora)</label>
@@ -1064,7 +1122,7 @@ var APP_CONFIG = {
   LOGO_URL: 'https://raw.githubusercontent.com/kadoshcarregamento/kadosh/d4f52f23e72d21516bc1c69743b8cf78b63a93e1/Logo_kadosh512.png',
 
   // Versão do build — suba este número a cada publicação para conferir cache
-  BUILD: '2026.10.07-reservas',
+  BUILD: '2026.11.09-vagas',
 
   // ── FIREBASE PUSH NOTIFICATIONS ──────────────────────────────────────────
   // VAPID Key: Firebase Console → Configurações → Cloud Messaging → Certificados push da Web
@@ -1179,7 +1237,11 @@ function mostrarTela(id) {
   var el=document.getElementById(id); el.style.display=''; el.classList.add('ativa'); window.scrollTo(0,0);
   if(id==='tela-status') carregarStatusVagas();
   if(id==='tela-cobranca') carregarCobranca();
-  if(id==='tela-admin') { carregarListaAdmin(); carregarPrecoAdmin(); carregarMesesRelAdmin(); carregarApto1404(); }
+  if(id==='tela-admin-kwh') carregarPrecoAdmin();
+  if(id==='tela-admin-1404') carregarApto1404();
+  if(id==='tela-admin-relatorio') carregarMesesRelAdmin();
+  if(id==='tela-admin-moradores') carregarListaAdmin();
+  if(id==='tela-admin-vagas') carregarVagasAdmin();
   if(id==='tela-carros') carregarCarros();
   if(id==='tela-reservas') resIniciarTela();
 }
@@ -1801,6 +1863,10 @@ function abrirSelecaoManualVaga() {
         return;
       }
       el.innerHTML = vagas.map(function(v) {
+        if (v.ativa === false && !ehAdminApp()) {
+          return '<button type="button" class="vaga-manual-btn em-breve" disabled style="cursor:not-allowed">' +
+            '<span class="id">' + v.id + '</span><span class="st">Em breve</span></button>';
+        }
         var livre = String(v.status).toLowerCase() === 'livre';
         // Vaga ocupada = há sessão aberta. Continua selecionável: o fluxo normal
         // (avancarParaLeituraInicial) detecta a sessão aberta, mostra o alerta,
@@ -1827,8 +1893,12 @@ function processarQRCode(texto) {
   }
   if(!/^VAGA_[A-Z0-9]{1,4}$/.test(vagaId)){document.getElementById('qr-erro').textContent='QR inválido: "'+texto+'". Escaneie o código da vaga.';document.getElementById('qr-erro').classList.remove('oculto');document.getElementById('qr-status').textContent='Tente novamente';setTimeout(function(){_qrProcessing=false;iniciarScanner();},2500);return;}
 
+  var _inf=(App._vagas||[]).filter(function(v){return 'VAGA_'+v.id===vagaId;})[0];
+  if(_inf && _inf.ativa===false && !ehAdminApp()){document.getElementById('qr-erro').textContent='Vaga '+_inf.id+' ainda não está disponível (em breve).';document.getElementById('qr-erro').classList.remove('oculto');document.getElementById('qr-status').textContent='Tente outra vaga';setTimeout(function(){_qrProcessing=false;iniciarScanner();},2500);return;}
   avancarParaLeituraInicial(vagaId);
 }
+
+function ehAdminApp(){ return !!(App.usuario && String(App.usuario.perfil||'').toLowerCase()==='admin'); }
 
 function avancarParaLeituraInicial(vagaId) {
   clearTimeout(_qrTimeoutHandle);
@@ -2690,15 +2760,18 @@ function abrirModalNotificacoes() {
 function renderBadges(vagas) {
   var el = document.getElementById('vagas-badges');
   if (!el) return;
+  if (vagas && Array.isArray(vagas)) App._vagas = vagas;
   if (!vagas || !Array.isArray(vagas) || !vagas.length) {
     el.innerHTML = '<div class="vaga-badge">Indisponível</div>';
     return;
   }
   var linha1 = vagas.slice(0,3).map(function(v) {
+    if (v.ativa === false) return '<div class="vaga-badge em-breve" title="Em breve"><div class="dot"></div>' + v.id + '<span style="font-size:9px;font-weight:600">em breve</span></div>';
     var livre = String(v.status).toLowerCase() === 'livre';
     return '<div class="vaga-badge"><div class="dot ' + (livre?'livre':'ocupado') + '"></div>' + v.id + '</div>';
   }).join('');
   var linha2 = vagas.slice(3).map(function(v) {
+    if (v.ativa === false) return '<div class="vaga-badge em-breve" title="Em breve"><div class="dot"></div>' + v.id + '<span style="font-size:9px;font-weight:600">em breve</span></div>';
     var livre = String(v.status).toLowerCase() === 'livre';
     return '<div class="vaga-badge"><div class="dot ' + (livre?'livre':'ocupado') + '"></div>' + v.id + '</div>';
   }).join('');
@@ -2795,6 +2868,33 @@ function enviarRelatorioDetalhado() {
 }
 
 
+// ══ GESTÃO DE VAGAS (admin) ══════════════════════════════════
+function carregarVagasAdmin() {
+  var el = document.getElementById('vagas-admin-lista');
+  if (!el || !App.usuario) return;
+  el.innerHTML = '<div class="hist-vazio">Carregando...</div>';
+  api('vagas_listarAdmin', { email: App.usuario.email }).then(renderVagasAdmin)
+    .catch(function(){ el.innerHTML = '<div class="hist-vazio">Falha ao carregar.</div>'; });
+}
+function renderVagasAdmin(res) {
+  var el = document.getElementById('vagas-admin-lista');
+  var msg = document.getElementById('vagas-admin-msg');
+  if (msg) msg.classList.add('oculto');
+  if (!res || res.erro || !res.vagas) { el.innerHTML = '<div class="hist-vazio">' + ((res && res.erro) || 'Erro ao carregar.') + '</div>'; return; }
+  el.innerHTML = res.vagas.map(function(v) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">' +
+      '<div><b>Vaga ' + v.id + '</b><div style="font-size:12px;color:var(--txt-sub)">' + (v.ativa ? 'Ativa' : 'Desativada (Em breve)') + '</div></div>' +
+      '<button type="button" class="btn-primary" style="width:auto;padding:8px 16px;font-size:15px;' + (v.ativa ? 'background:var(--red)' : '') + '" onclick="definirVagaAtiva(\'' + v.id + '\',' + (!v.ativa) + ')">' + (v.ativa ? 'Desativar' : 'Ativar') + '</button></div>';
+  }).join('');
+}
+function definirVagaAtiva(id, ativa) {
+  if (!ativa && !confirm('Desativar a vaga ' + id + '? Ela aparecerá como "Em breve" e ninguém conseguirá iniciar carga nela.')) return;
+  overlayShow('Salvando...');
+  api('vagas_definir', { email: App.usuario.email, vaga: id, ativa: String(ativa) })
+    .then(function(res){ overlayHide(); renderVagasAdmin(res); })
+    .catch(function(){ overlayHide(); var m=document.getElementById('vagas-admin-msg'); m.textContent='Falha ao salvar. Tente de novo.'; m.classList.remove('oculto'); });
+}
+
 // ══ STATUS DAS VAGAS ═════════════════════════════════════════
 function carregarStatusVagas() {
   var el = document.getElementById('status-vagas-lista');
@@ -2818,6 +2918,10 @@ function carregarStatusVagas() {
       sortedAndares.forEach(function(andar) {
         html += '<div class="andar-titulo">Andar -' + andar + '</div><div class="vagas-grid">';
         andares[andar].forEach(function(v) {
+          if (v.ativa === false) {
+            html += '<div class="vaga-card em-breve"><div class="vaga-icone">⏳</div><div class="vaga-nome">Vaga ' + v.id + '</div><div class="vaga-status">Em breve</div></div>';
+            return;
+          }
           var livre = String(v.status).toLowerCase() === 'livre';
           html += '<div class="vaga-card ' + (livre ? 'livre' : 'ocupado') + '">'
             + '<div class="vaga-icone">' + (livre ? '🟢' : '🔴') + '</div>'
@@ -3097,4 +3201,3 @@ document.addEventListener('keydown',function(e){
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 </body>
 </html>
-
