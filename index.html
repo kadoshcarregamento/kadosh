@@ -1457,6 +1457,7 @@ function abrirScanner(){
     btnIni.disabled = false;
     btnIni.querySelector('.btn-txt').classList.remove('oculto');
     btnIni.querySelector('.btn-load').classList.add('oculto');
+    btnIni.style.opacity = '';
   }
   _qrProcessing=false;mostrarTela('tela-qr');document.getElementById('qr-erro').classList.add('oculto');document.getElementById('qr-status').textContent='Iniciando câmera...';setTimeout(iniciarScanner,200);}
 function fecharScanner(){pararScanner();ocultarFallbackScanner();mostrarTela('tela-dash');}
@@ -3109,6 +3110,8 @@ function iniciarNovoCarregamento() {
     alert('Máximo de 2 carregamentos simultâneos atingido. Encerre um antes de iniciar outro.');
     return;
   }
+  // Feedback imediato: desabilita o botão e mostra "Aguarde..."
+  setBtnIniciarCarregando(true);
   // Buscar carros ativos do apartamento
   api('listarCarrosApartamento', { apartamento: String(App.usuario.apartamento) })
     .then(function(res) {
@@ -3132,9 +3135,24 @@ function iniciarNovoCarregamento() {
             + '</div>'
           + '</div>';
         }).join('');
+        setBtnIniciarCarregando(false);
         document.getElementById('modal-escolher-carro').classList.remove('oculto');
       }
+    })
+    .catch(function() {
+      setBtnIniciarCarregando(false);
+      alert('Não foi possível iniciar. Verifique a conexão e tente de novo.');
     });
+}
+
+function setBtnIniciarCarregando(on) {
+  var b = document.getElementById('btn-iniciar');
+  if (!b) return;
+  b.disabled = !!on;
+  b.style.opacity = on ? '.55' : '';
+  var t = b.querySelector('.btn-txt'), l = b.querySelector('.btn-load');
+  if (t) t.classList.toggle('oculto', !!on);
+  if (l) l.classList.toggle('oculto', !on);
 }
 
 function selecionarCarroParaCarregar(placa) {
